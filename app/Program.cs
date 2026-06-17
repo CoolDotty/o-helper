@@ -111,6 +111,7 @@ namespace GHelper
 
             acpi = new AsusACPI();
 
+            // ACPI hardware is optional — UI works without it
             if (!acpi.IsConnected() && AppConfig.IsASUS())
             {
                 DialogResult dialogResult = MessageBox.Show(Properties.Strings.ACPIError, Properties.Strings.StartupError, MessageBoxButtons.YesNo);

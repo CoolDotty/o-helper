@@ -2,15 +2,16 @@
 
 ## What This Is
 
-G-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0) that replaces ASUS Armoury Crate. It runs as a single EXE with a system tray icon and a settings form, communicating with ASUS hardware via ACPI (the `\\.\ATKACPI` device) and HID (the `\\.\ASUSINPUT` device).
+G-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), forked from the ASUS Armoury Crate replacement. The original ASUS ACPI/HID hardware communication has been **gutted** — all hardware calls are stubbed so the UI runs identically without ASUS hardware. The app is ready to be refactored into an HP Omen controller.
 
 ## Essential Commands
 
 | Command | Purpose |
 |---------|---------|
-| `dotnet build app/GHelper.sln` | Build (Debug, AnyCPU) |
+| `dev.bat` | Build debug + launch |
+| `prod.bat` | Publish single-file release + launch |
+| `dotnet build app/GHelper.sln` | Build only (Debug) |
 | `dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained` | Publish release EXE |
-| `dotnet build app/GHelper.sln -c Release -r win-x64` | Build release |
 
 - **No test project** exists. No unit tests, no test framework.
 - **Build kills running GHelper processes** before building (see `.csproj` line 94 — only applies locally, not on CI).
@@ -20,7 +21,7 @@ G-Helper is a **lightweight Windows Forms (WinForms) tray application** written 
 ```
 app/
 ├── Program.cs             # Entry point — sets up singletons, tray icon, event subs
-├── AsusACPI.cs            # ACPI driver interface (DEVS/DSTS/INIT) — core HW comm
+├── AsusACPI.cs            # STUBBED — all ACPI methods return defaults, no HW access
 ├── AppConfig.cs           # JSON config store (debounced write, atomic file ops)
 ├── HardwareControl.cs     # Static class — sensor polling, native battery API, fan/GpuControl refs
 ├── NativeMethods.cs       # P/Invoke helpers (idle time, screen off, lock, error lookup)
@@ -40,9 +41,9 @@ app/
 ├── Battery/               # Battery charge limit control
 ├── Input/                 # Keyboard hook, hotkey dispatcher, ACPI event listener
 ├── Overlay/               # Hardware overlay (FPS, temps, usage) with ETW FPS monitor
-├── USB/                   # HID device access (Aura RGB, XG Mobile, AsusHid)
-├── AnimeMatrix/           # Anime Matrix / Slash display + communication protocol
-├── Peripherals/           # ASUS mouse detection + per-model configs
+├── USB/                   # HID device access (Aura RGB, XG Mobile, AsusHid) — safe-falls if no HW
+├── AnimeMatrix/           # Anime Matrix / Slash display — safe-falls if no HW
+├── Peripherals/           # ASUS mouse detection + per-model configs — safe-falls if no HW
 ├── Pawn/                  # PawnIO — Ryzen SMU & Intel MSR access (embedded binaries)
 ├── Ally/                  # ROG Ally-specific controls
 ├── AutoUpdate/            # Auto-update checker
@@ -56,14 +57,14 @@ app/
 1. Parse CLI args (supports `charge`, `cpu`, `gpu`, `services`, etc.)
 2. Set up localization from `config.json`
 3. Create **global static singletons**: `settingsForm`, `modeControl`, `gpuControl`, `allyControl`, `clamshellControl`, `toast`, `hardwareOverlay`, `acpi`, `trayIcon`, `inputDispatcher`
-4. Initialize ACPI — if `AsusACPI.IsConnected()` fails on an ASUS machine, show error and exit
+4. Initialize ACPI — stub connects always, no longer blocks startup on non-ASUS hardware
 5. Set up tray icon, context menu, input dispatcher (keyboard hook), XGM, aura, matrix
 6. Subscribe to system events: `PowerModeChanged`, `SessionSwitch`, `DisplaySettingsChanged`, power setting notifications
 7. Start sensor refresh timers
 
 ### Global Singletons (accessed via `Program.*`)
 
-- `Program.acpi` — `AsusACPI` instance, all raw ACPI device communication
+- `Program.acpi` — `AsusACPI` instance, **all methods stubbed** (DeviceSet/DeviceGet/GetFan/SetGPUEco/etc. return defaults)
 - `Program.modeControl` — `ModeControl`, performance/power/fan/UV mode application
 - `Program.gpuControl` — `GPUModeControl`, GPU eco/standard/ultimate switching
 - `Program.settingsForm` — `SettingsForm`, main UI window
@@ -72,16 +73,9 @@ app/
 - `Program.toast` — `ToastForm`, OSD toast notifications
 - `HardwareControl.GpuControl` — `IGpuControl?`, Nvidia or AMD GPU sensor/OC interface
 
-### Hardware Communication
-
-Two main channels:
-
-1. **ACPI** (`AsusACPI.cs`): Uses `\\.\ATKACPI` device with `DeviceSet` (DEVS) and `DeviceGet` (DSTS) IOCTL calls. Device IDs are `uint` constants (e.g., `0x00120075` for PerformanceMode, `0x00120057` for BatteryLimit).
-2. **HID** (`AsusHid.cs` / `Aura.cs`): Uses `\\.\ASUSINPUT` for keyboard backlight, Aura RGB, and per-key lighting.
-
 ### Configuration (`AppConfig.cs`)
 
-- JSON file stored at `%APPDATA%\GHelper\config.json` (with fallback to startup dir and `%COMMON_APPDATA%\GHelper\config.json`)
+- JSON file stored at `%APPDATA%\GHelper\config.json` (fallback to startup dir and `%COMMON_APPDATA%\GHelper\config.json`)
 - **Debounced writes** — 2-second timer, atomic file replacement (`.tmp` → `.bak` → final)
 - **Robust recovery** — can reconstruct config from regex-scavenged key-value pairs if JSON is corrupt
 - Thread-safe via `configLock`
@@ -98,24 +92,8 @@ Three built-in modes + up to 20 custom:
 | 2 | Silent |
 | 3+ | Custom |
 
-- Applied via ACPI `PerformanceMode` + fan curves + power limits + CPU boost + GPU clocks
 - Mode settings stored as `{key}_{modeID}` in config (e.g., `limit_total_0`, `fan_profile_cpu_1`)
 - Auto-mode switching on power state change (AC ↔ battery) is configurable
-- Reapply timer for Ryzen CPUs that silently reset temp limits under load
-
-### GPU Modes (`GPU/`)
-
-Four GPU modes communicated via ACPI:
-| Mode | Value | ACPI call |
-|------|-------|-----------|
-| Eco (iGPU only) | 0 | `SetGPUEco(1)` |
-| Standard | 1 | `SetGPUEco(0)` |
-| Ultimate (dGPU only, MUX switch) | 2 | `GPUMux = 0` |
-| Optimized (auto-switch) | — | Switches based on power state |
-
-- Ultimate mode requires **restart** (MUX switch)
-- Eco mode stops NV services, kills GPU apps
-- Standard mode restarts NV services after delay
 
 ### Custom UI Controls (`UI/`)
 
@@ -129,6 +107,18 @@ All custom WinForms controls in the `GHelper.UI` namespace:
 ### Localization
 
 Labels use `Properties.Strings.{Key}` — resources are in `.resx` files. Localization is handled via standard .NET satellite assemblies (Crowdin-managed).
+
+## Stubbed Hardware Layer
+
+The following files are modified to safely no-op on non-ASUS hardware:
+
+| File | What was changed |
+|------|-----------------|
+| `AsusACPI.cs` | All ACPI methods stubbed — `DeviceGet()` returns -1, `DeviceSet()` returns 1, `GetFan()` returns -1, `IsSupported()` returns false, `IsConnected()` returns true, etc. |
+| `AnimeMatrix/.../WindowsUsbProvider.cs` | No longer throws on missing HID devices; all IO methods null-guard the stream |
+| `Program.cs` | ACPI connection check no longer blocks startup |
+
+All other files (`AsusHid.cs`, `Aura.cs`, `AnimeMatrixDevice.cs`, `Peripherals/*`) already have try-catch guards that prevent crashes when hardware isn't found.
 
 ## Key Patterns & Gotchas
 
@@ -151,19 +141,14 @@ Two binaries are embedded resources in `Pawn/`:
 
 These are loaded at runtime by `RyzenSmuService` and `IntelMsrService` to access CPU power management registers.
 
-### ACPI Quirk Handling
-The codebase has model-specific workarounds:
-- `AppConfig.IsASUS()`, `AppConfig.IsTUF()`, `IsVivoZenPro()`, `IsAlly()`, `IsDUO()`, `IsZ13()`, `IsPZ13()` — model detection based on WMI `Win32_ComputerSystem.Model`
-- Vivo/Zenbook models use different ACPI device IDs (e.g., `GPUEcoVivo` vs `GPUEcoROG`)
-- Vivobook has fallback `SetVivoMode()` when standard performance mode ACPI calls fail
-- G14 2024 has a workaround (`IsResetRequired`) for power limits not resetting properly
-- Some Ryzen families (Renoir, Mobile, Raphael) have timer-based reapply workarounds for temp limits and power settings that silently reset under load
+### Model Detection (ASUS Stubs)
+`AppConfig` still contains ASUS model detection methods (`IsASUS()`, `IsTUF()`, `IsROG()`, `IsAlly()`, etc.) that use WMI to check `Win32_ComputerSystem.Model`. These remain as stubs — they return false on non-ASUS machines. When porting to HP Omen, these should be replaced with HP model detection.
 
 ### Fan Profiles
-Fan curves are stored as byte arrays serialized to config strings (`fan_profile_cpu_{mode}`, etc.). The `FanSensorControl.cs` contains **per-model fan max tables** — every model has different max RPM values. Calibration runs the fans at full speed for ~15 seconds to measure actual max.
+Fan curves are stored as byte arrays serialized to config strings (`fan_profile_cpu_{mode}`, etc.). The `FanSensorControl.cs` contains **per-model fan max tables**. Calibration still runs the fans via ACPI stubs (no-ops).
 
 ### Mouse Peripheral Models
-Mice are modeled as individual classes under `Peripherals/Mouse/Models/` with per-model feature support (DPI, polling rate, buttons, etc.). Detection is HID-based via `HidSharp`.
+Mice are modeled as individual classes under `Peripherals/Mouse/Models/` with per-model feature support. Detection is HID-based via `HidSharp` — safe-falls gracefully when no mouse is connected.
 
 ## Conventions
 
@@ -184,6 +169,5 @@ Mice are modeled as individual classes under `Peripherals/Mouse/Models/` with pe
 
 - Do not add a test framework — the architecture (massive static dependencies, WinForms tight coupling) doesn't support it
 - Do not refactor away from static singletons unless the entire architecture changes — `Program.{thing}` is the consistent pattern
-- Do not hardcode model names in new code without adding them to the switch tables in `FanSensorControl.cs` and `AppConfig.cs`
 - Do not try to build or run this on anything except Windows — it uses WinForms, P/Invoke, and NT device paths
 - Do not change `.Designer.cs` files unless absolutely necessary, and if you do, keep the designer code in the `#region Windows Form Designer generated code` block
