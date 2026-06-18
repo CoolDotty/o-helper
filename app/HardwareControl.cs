@@ -440,7 +440,7 @@ public static class HardwareControl
         lastUpdate = last;
 
         if (isPZ13) return (float)GetCPUTempWMI();
-        cpuTemp = Program.acpi.DeviceGet(AsusACPI.Temp_CPU);
+        cpuTemp = Program.acpi.DeviceGet(HpACPI.Temp_CPU);
 
         if (cpuTemp < 0) try
         {
@@ -498,7 +498,7 @@ public static class HardwareControl
 
         if (gpuTemp is null || gpuTemp < 0)
         {
-            int acpiTemp = Program.acpi.DeviceGet(AsusACPI.Temp_GPU);
+            int acpiTemp = Program.acpi.DeviceGet(HpACPI.Temp_GPU);
             gpuTemp = (acpiTemp > 0 && acpiTemp < 125) ? acpiTemp : null;
         }
 
@@ -735,9 +735,9 @@ public static class HardwareControl
 
         if (Program.acpi is null) return;
 
-        cpuFan = FanSensorControl.FormatFan(AsusFan.CPU, Program.acpi.GetFan(AsusFan.CPU));
-        gpuFan = FanSensorControl.FormatFan(AsusFan.GPU, Program.acpi.GetFan(AsusFan.GPU));
-        midFan = FanSensorControl.FormatFan(AsusFan.Mid, Program.acpi.GetFan(AsusFan.Mid));
+        cpuFan = FanSensorControl.FormatFan(HpFan.CPU, Program.acpi.GetFan(HpFan.CPU));
+        gpuFan = FanSensorControl.FormatFan(HpFan.GPU, Program.acpi.GetFan(HpFan.GPU));
+        midFan = FanSensorControl.FormatFan(HpFan.Mid, Program.acpi.GetFan(HpFan.Mid));
 
         cpuTemp = GetCPUTemp();
         gpuTemp = GetGPUTemp();
@@ -756,8 +756,8 @@ public static class HardwareControl
 
         if (readFans)
         {
-            cpuFanRPM = Program.acpi.GetFan(AsusFan.CPU) * 100;
-            gpuFanRPM = Program.acpi.GetFan(AsusFan.GPU) * 100;
+            cpuFanRPM = Program.acpi.GetFan(HpFan.CPU) * 100;
+            gpuFanRPM = Program.acpi.GetFan(HpFan.GPU) * 100;
         }
         else
         {

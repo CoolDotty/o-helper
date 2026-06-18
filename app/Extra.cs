@@ -242,7 +242,7 @@ namespace GHelper
                 labelFNV.Visible = comboFNV.Visible = textFNV.Visible = false;
             }
 
-            if (!Program.acpi.IsSupported(AsusACPI.GPUEco))
+            if (!Program.acpi.IsSupported(HpACPI.GPUEco))
             {
                 checkGpuApps.Visible = false;
                 checkUSBC.Visible = false;
@@ -438,14 +438,14 @@ namespace GHelper
             checkGpuApps.Checked = AppConfig.Is("kill_gpu_apps");
             checkGpuApps.CheckedChanged += CheckGpuApps_CheckedChanged;
 
-            int bootSound = Program.acpi.DeviceGet(AsusACPI.BootSound);
+            int bootSound = Program.acpi.DeviceGet(HpACPI.BootSound);
             checkBootSound.Visible = bootSound >= 0;
             if (bootSound < 0 || bootSound > UInt16.MaxValue) bootSound = AppConfig.Get("boot_sound", 0);
 
             checkBootSound.Checked = (bootSound == 1);
             checkBootSound.CheckedChanged += CheckBootSound_CheckedChanged;
 
-            var statusLed = Program.acpi.DeviceGet(AsusACPI.StatusLed);
+            var statusLed = Program.acpi.DeviceGet(HpACPI.StatusLed);
             checkStatusLed.Visible = statusLed >= 0;
             checkStatusLed.Checked = (statusLed > 0);
             checkStatusLed.CheckedChanged += CheckLEDStatus_CheckedChanged;
@@ -565,11 +565,11 @@ namespace GHelper
             comboCoresE.DropDownStyle = ComboBoxStyle.DropDownList;
             comboCoresP.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            for (int i = AsusACPI.PCoreMin; i <= pCoresMax; i++) comboCoresP.Items.Add(i.ToString() + " Pcores");
-            for (int i = AsusACPI.ECoreMin; i <= eCoresMax; i++) comboCoresE.Items.Add(i.ToString() + " Ecores");
+            for (int i = HpACPI.PCoreMin; i <= pCoresMax; i++) comboCoresP.Items.Add(i.ToString() + " Pcores");
+            for (int i = HpACPI.ECoreMin; i <= eCoresMax; i++) comboCoresE.Items.Add(i.ToString() + " Ecores");
 
-            comboCoresP.SelectedIndex = Math.Max(Math.Min(pCores - AsusACPI.PCoreMin, comboCoresP.Items.Count - 1), 0);
-            comboCoresE.SelectedIndex = Math.Max(Math.Min(eCores - AsusACPI.ECoreMin, comboCoresE.Items.Count - 1), 0);
+            comboCoresP.SelectedIndex = Math.Max(Math.Min(pCores - HpACPI.PCoreMin, comboCoresP.Items.Count - 1), 0);
+            comboCoresE.SelectedIndex = Math.Max(Math.Min(eCores - HpACPI.ECoreMin, comboCoresE.Items.Count - 1), 0);
 
             buttonCores.Click += ButtonCores_Click;
 
@@ -581,7 +581,7 @@ namespace GHelper
 
             if (dialogResult == DialogResult.Yes)
             {
-                Program.acpi.SetCores(AsusACPI.ECoreMin + comboCoresE.SelectedIndex, AsusACPI.PCoreMin + comboCoresP.SelectedIndex);
+                Program.acpi.SetCores(HpACPI.ECoreMin + comboCoresE.SelectedIndex, HpACPI.PCoreMin + comboCoresP.SelectedIndex);
                 Process.Start("shutdown", "/r /t 1");
             }
         }
@@ -615,7 +615,7 @@ namespace GHelper
         private void CheckBootSound_CheckedChanged(object? sender, EventArgs e)
         {
             int bootSound = checkBootSound.Checked ? 1 : 0;
-            Program.acpi.DeviceSet(AsusACPI.BootSound, bootSound, "BootSound");
+            Program.acpi.DeviceSet(HpACPI.BootSound, bootSound, "BootSound");
             AppConfig.Set("boot_sound", bootSound);
         }
 

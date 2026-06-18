@@ -1589,17 +1589,17 @@ namespace GHelper
 
         private void ButtonUltimate_Click(object? sender, EventArgs e)
         {
-            gpuControl.SetGPUMode(AsusACPI.GPUModeUltimate);
+            gpuControl.SetGPUMode(HpACPI.GPUModeUltimate);
         }
 
         private void ButtonStandard_Click(object? sender, EventArgs e)
         {
-            gpuControl.SetGPUMode(AsusACPI.GPUModeStandard);
+            gpuControl.SetGPUMode(HpACPI.GPUModeStandard);
         }
 
         private void ButtonEco_Click(object? sender, EventArgs e)
         {
-            gpuControl.SetGPUMode(AsusACPI.GPUModeEco);
+            gpuControl.SetGPUMode(HpACPI.GPUModeEco);
         }
 
 
@@ -1733,21 +1733,21 @@ namespace GHelper
 
             switch (mode)
             {
-                case AsusACPI.PerformanceSilent:
+                case HpACPI.PerformanceSilent:
                     buttonSilent.Activated = true;
                     break;
-                case AsusACPI.PerformanceTurbo:
+                case HpACPI.PerformanceTurbo:
                     buttonTurbo.Activated = true;
                     break;
-                case AsusACPI.PerformanceBalanced:
+                case HpACPI.PerformanceBalanced:
                     buttonBalanced.Activated = true;
                     break;
                 default:
                     buttonFans.Activated = true;
                     buttonFans.BorderColor = Modes.GetBase(mode) switch
                     {
-                        AsusACPI.PerformanceSilent => colorEco,
-                        AsusACPI.PerformanceTurbo => colorTurbo,
+                        HpACPI.PerformanceSilent => colorEco,
+                        HpACPI.PerformanceTurbo => colorTurbo,
                         _ => colorStandard,
                     };
                     break;
@@ -1792,10 +1792,10 @@ namespace GHelper
             if (!connected) return;
 
             if (GPUMode != -1)
-                ButtonEnabled(buttonXGM, AppConfig.IsAMDiGPU() || GPUMode != AsusACPI.GPUModeEco);
+                ButtonEnabled(buttonXGM, AppConfig.IsAMDiGPU() || GPUMode != HpACPI.GPUModeEco);
 
 
-            int activated = Program.acpi.DeviceGet(AsusACPI.GPUXG);
+            int activated = Program.acpi.DeviceGet(HpACPI.GPUXG);
             Logger.WriteLine("XGM Activated flag: " + activated);
 
             buttonXGM.Activated = activated == 1;
@@ -1907,14 +1907,14 @@ namespace GHelper
 
             switch (GPUMode)
             {
-                case AsusACPI.GPUModeEco:
+                case HpACPI.GPUModeEco:
                     buttonOptimized.BorderColor = colorEco;
                     buttonEco.Activated = !GPUAuto;
                     buttonOptimized.Activated = GPUAuto;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeEco;
                     panelGPU.AccessibleName = Properties.Strings.GPUMode + " - " + (GPUAuto ? Properties.Strings.Optimized : Properties.Strings.EcoMode);
                     break;
-                case AsusACPI.GPUModeUltimate:
+                case HpACPI.GPUModeUltimate:
                     buttonUltimate.Activated = true;
                     labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeUltimate;
                     panelGPU.AccessibleName = Properties.Strings.GPUMode + " - " + Properties.Strings.UltimateMode;
@@ -1958,8 +1958,8 @@ namespace GHelper
 
             Icon newIcon = GPUMode switch
             {
-                AsusACPI.GPUModeEco => AppConfig.IsBWIcon() ? (!isDark ? Properties.Resources.dark_eco : Properties.Resources.light_eco) : Properties.Resources.eco,
-                AsusACPI.GPUModeUltimate => AppConfig.IsBWIcon() ? (!isDark ? Properties.Resources.dark_standard : Properties.Resources.light_standard) : Properties.Resources.ultimate,
+                HpACPI.GPUModeEco => AppConfig.IsBWIcon() ? (!isDark ? Properties.Resources.dark_eco : Properties.Resources.light_eco) : Properties.Resources.eco,
+                HpACPI.GPUModeUltimate => AppConfig.IsBWIcon() ? (!isDark ? Properties.Resources.dark_standard : Properties.Resources.light_standard) : Properties.Resources.ultimate,
                 _ => AppConfig.IsBWIcon() ? (!isDark ? Properties.Resources.dark_standard : Properties.Resources.light_standard) : Properties.Resources.standard,
             };
 
@@ -1970,17 +1970,17 @@ namespace GHelper
 
         private void ButtonSilent_Click(object? sender, EventArgs e)
         {
-            Program.modeControl.SetPerformanceMode(AsusACPI.PerformanceSilent);
+            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceSilent);
         }
 
         private void ButtonBalanced_Click(object? sender, EventArgs e)
         {
-            Program.modeControl.SetPerformanceMode(AsusACPI.PerformanceBalanced);
+            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceBalanced);
         }
 
         private void ButtonTurbo_Click(object? sender, EventArgs e)
         {
-            Program.modeControl.SetPerformanceMode(AsusACPI.PerformanceTurbo);
+            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceTurbo);
         }
 
 

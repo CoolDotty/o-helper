@@ -30,7 +30,7 @@ namespace GHelper.Battery
         public static void SetBatteryLimitFull()
         {
             chargeFull = true;
-            Program.acpi.DeviceSet(AsusACPI.BatteryLimit, 100, "BatteryLimit");
+            Program.acpi.DeviceSet(HpACPI.BatteryLimit, 100, "BatteryLimit");
             Program.settingsForm.VisualiseBatteryFull();
         }
 
@@ -77,7 +77,7 @@ namespace GHelper.Battery
 
             if (setLimit > 0) SetAsusChargeLimit(limit);
 
-            Program.acpi.DeviceSet(AsusACPI.BatteryLimit, limit, "BatteryLimit");
+            Program.acpi.DeviceSet(HpACPI.BatteryLimit, limit, "BatteryLimit");
 
             AppConfig.Set("charge_limit", limit);
             chargeFull = false;

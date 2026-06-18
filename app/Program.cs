@@ -21,7 +21,7 @@ namespace GHelper
     static class Program
     {
         public static NotifyIcon trayIcon;
-        public static AsusACPI acpi;
+        public static HpACPI acpi;
 
         public static SettingsForm settingsForm;
 
@@ -109,7 +109,7 @@ namespace GHelper
             AppConfig.Set("start_count", startCount);
             Logger.WriteLine("Start Count: " + startCount);
 
-            acpi = new AsusACPI();
+            acpi = new HpACPI();
 
             // ACPI hardware is optional — UI works without it
             if (!acpi.IsConnected() && AppConfig.IsASUS())
@@ -361,8 +361,8 @@ namespace GHelper
             if (SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online)
                 return PowerSource.Battery;
 
-            int chargerMode = acpi?.DeviceGet(AsusACPI.ChargerMode) ?? 0;
-            if (chargerMode > 0 && (chargerMode & AsusACPI.ChargerBarrel) == 0)
+            int chargerMode = acpi?.DeviceGet(HpACPI.ChargerMode) ?? 0;
+            if (chargerMode > 0 && (chargerMode & HpACPI.ChargerBarrel) == 0)
                 return PowerSource.USBC;
 
             return PowerSource.Barrel;
@@ -490,9 +490,9 @@ namespace GHelper
                     Logger.WriteLine($"------- Startup Battery Limit {limit} -------");
                     ProcessHelper.StartEnableService("ATKWMIACPIIO", false);
                     Logger.WriteLine($"Connecting to ACPI");
-                    acpi = new AsusACPI();
+                    acpi = new HpACPI();
                     Logger.WriteLine($"Setting Limit");
-                    acpi.DeviceSet(AsusACPI.BatteryLimit, limit, "Limit");
+                    acpi.DeviceSet(HpACPI.BatteryLimit, limit, "Limit");
                 }
             }
             catch (Exception ex)

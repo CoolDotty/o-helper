@@ -252,20 +252,20 @@ public static class AppConfig
         Remove(name + "_" + Modes.GetCurrent());
     }
 
-    public static string GgetParamName(AsusFan device, string paramName = "fan_profile")
+    public static string GgetParamName(HpFan device, string paramName = "fan_profile")
     {
         int mode = Modes.GetCurrent();
         string name;
 
         switch (device)
         {
-            case AsusFan.GPU:
+            case HpFan.GPU:
                 name = "gpu";
                 break;
-            case AsusFan.Mid:
+            case HpFan.Mid:
                 name = "mid";
                 break;
-            case AsusFan.XGM:
+            case HpFan.XGM:
                 name = "xgm";
                 break;
             default:
@@ -276,7 +276,7 @@ public static class AppConfig
         return paramName + "_" + name + "_" + mode;
     }
 
-    public static byte[] GetFanConfig(AsusFan device)
+    public static byte[] GetFanConfig(HpFan device)
     {
         string curveString = GetString(GgetParamName(device));
         byte[] curve = { };
@@ -287,7 +287,7 @@ public static class AppConfig
         return curve;
     }
 
-    public static void SetFanConfig(AsusFan device, byte[] curve)
+    public static void SetFanConfig(HpFan device, byte[] curve)
     {
         string bitCurve = BitConverter.ToString(curve);
         Set(GgetParamName(device), bitCurve);
@@ -301,25 +301,25 @@ public static class AppConfig
         return array;
     }
 
-    public static byte[] GetDefaultCurve(AsusFan device)
+    public static byte[] GetDefaultCurve(HpFan device)
     {
         int mode = Modes.GetCurrentBase();
         byte[] curve;
 
         switch (mode)
         {
-            case AsusACPI.PerformanceTurbo:
+            case HpACPI.PerformanceTurbo:
                 switch (device)
                 {
-                    case AsusFan.GPU:
+                    case HpFan.GPU:
                         return StringToBytes("1E-3F-44-48-4C-50-54-62-16-1F-26-2D-39-47-55-5F");
                     default:
                         return StringToBytes("1E-3F-44-48-4C-50-54-62-11-1A-22-29-34-43-51-5A");
                 }
-            case AsusACPI.PerformanceSilent:
+            case HpACPI.PerformanceSilent:
                 switch (device)
                 {
-                    case AsusFan.GPU:
+                    case HpFan.GPU:
                         return StringToBytes("1E-31-3B-42-47-50-5A-64-00-00-04-11-1B-23-28-2D");
                     default:
                         return StringToBytes("1E-31-3B-42-47-50-5A-64-00-00-03-0C-14-1C-22-29");
@@ -327,7 +327,7 @@ public static class AppConfig
             default:
                 switch (device)
                 {
-                    case AsusFan.GPU:
+                    case HpFan.GPU:
                         return StringToBytes("3A-3D-40-44-48-4D-51-62-0C-16-1D-1F-26-2D-34-4A");
                     default:
                         return StringToBytes("3A-3D-40-44-48-4D-51-62-08-11-16-1A-22-29-30-45");
@@ -691,6 +691,72 @@ public static class AppConfig
     public static bool IsASUS()
     {
         return ContainsModel("ROG") || ContainsModel("TUF") || ContainsModel("Vivobook") || ContainsModel("Zenbook");
+    }
+
+    // ============================================
+    // HP OMEN MODEL DETECTION
+    // ============================================
+
+    // Base HP Omen detection
+    public static bool IsOmen()
+    {
+        return ContainsModel("OMEN") || ContainsModel("Omen");
+    }
+
+    // OMEN Transcend series (thin-and-light, reduced thermal headroom)
+    public static bool IsOmenTranscend()
+    {
+        return ContainsModel("Transcend") || ContainsModel("14-fb") || ContainsModel("16-wf");
+    }
+
+    // OMEN Slim series (slim chassis, different fan curves)
+    public static bool IsOmenSlim()
+    {
+        return ContainsModel("Slim 16") || ContainsModel("Slim");
+    }
+
+    // OMEN MAX series (flagship tier, higher TDP)
+    public static bool IsOmenMax()
+    {
+        return ContainsModel("MAX") || ContainsModel("16-ah") || ContainsModel("16-ak");
+    }
+
+    // OMEN 16 standard series
+    public static bool IsOmen16()
+    {
+        return (IsOmen() && ContainsModel("16-")) && !IsOmenMax() && !IsOmenSlim();
+    }
+
+    // Check if this is an HP system (for feature gating)
+    public static bool IsHP()
+    {
+        return IsOmen() || ContainsModel("HP");
+    }
+
+    // Workaround gates for HP models
+    public static bool HasOmenLightBoost()
+    {
+        return IsOmen() && !Is("no_overdrive");
+    }
+
+    public static bool IsOmenFanControllable()
+    {
+        return IsOmen() && !NoWMI();
+    }
+
+    public static bool IsOmenAlwaysUltimate()
+    {
+        return IsOmenMax();
+    }
+
+    public static bool IsOmenSleepReset()
+    {
+        return IsOmenTranscend();
+    }
+
+    public static bool IsOmenChargeLimit6080()
+    {
+        return IsOmenTranscend();
     }
 
     public static bool IsBWIcon()

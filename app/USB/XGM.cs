@@ -135,7 +135,7 @@ namespace GHelper.USB
         {
             Task.Run(() =>
             {
-                if (AsusACPI.IsInvalidCurve(curve)) return;
+                if (HpACPI.IsInvalidCurve(curve)) return;
                 if (IsConnected()) Write([XGM_REPORT_ID, 0xd1, 0x01, .. curve]);
             });
         }

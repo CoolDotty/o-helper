@@ -40,9 +40,9 @@ namespace GHelper.Fan
             int[] defaultMax = GetDefaultMax();
 
             return new int[3] {
-                AppConfig.Get("fan_max_" + (int)AsusFan.CPU, defaultMax[(int)AsusFan.CPU]),
-                AppConfig.Get("fan_max_" + (int)AsusFan.GPU, defaultMax[(int)AsusFan.GPU]),
-                AppConfig.Get("fan_max_" + (int)AsusFan.Mid, defaultMax[(int)AsusFan.Mid])
+                AppConfig.Get("fan_max_" + (int)HpFan.CPU, defaultMax[(int)HpFan.CPU]),
+                AppConfig.Get("fan_max_" + (int)HpFan.GPU, defaultMax[(int)HpFan.GPU]),
+                AppConfig.Get("fan_max_" + (int)HpFan.Mid, defaultMax[(int)HpFan.Mid])
             };
         }
 
@@ -76,6 +76,12 @@ namespace GHelper.Fan
             if (AppConfig.ContainsModel("GA403")) return new int[3] { 68, 68, 80 };
             if (AppConfig.ContainsModel("GU605")) return new int[3] { 62, 62, 92 };
 
+            // HP OMEN models - fan curve defaults
+            if (AppConfig.IsOmenTranscend()) return new int[3] { 50, 50, DEFAULT_FAN_MAX };  // Thin-and-light: conservative fan limits
+            if (AppConfig.IsOmenSlim()) return new int[3] { 52, 52, DEFAULT_FAN_MAX };       // Slim chassis
+            if (AppConfig.IsOmenMax()) return new int[3] { 60, 60, 80 };                    // Flagship with mid fan
+            if (AppConfig.IsOmen16()) return new int[3] { 55, 55, DEFAULT_FAN_MAX };        // Standard OMEN 16
+
             return new int[3] { DEFAULT_FAN_MAX, DEFAULT_FAN_MAX, DEFAULT_FAN_MAX };
         }
 
@@ -87,9 +93,9 @@ namespace GHelper.Fan
             return new int[3] { DEFAULT_FAN_MIN, DEFAULT_FAN_MIN, DEFAULT_FAN_MIN };
         }
 
-        public static int GetFanMax(AsusFan device)
+        public static int GetFanMax(HpFan device)
         {
-            if (device == AsusFan.XGM) return XGM_FAN_MAX;
+            if (device == HpFan.XGM) return XGM_FAN_MAX;
 
             if (_fanMax[(int)device] < 0 || _fanMax[(int)device] > INADEQUATE_MAX)
                 SetFanMax(device, DEFAULT_FAN_MAX);
@@ -97,13 +103,13 @@ namespace GHelper.Fan
             return _fanMax[(int)device];
         }
 
-        public static int GetFanMin(AsusFan device)
+        public static int GetFanMin(HpFan device)
         {
-            if (device == AsusFan.XGM) return DEFAULT_FAN_MIN;
+            if (device == HpFan.XGM) return DEFAULT_FAN_MIN;
             return _fanMin[(int)device];
         }
 
-        public static void SetFanMax(AsusFan device, int value)
+        public static void SetFanMax(HpFan device, int value)
         {
             _fanMax[(int)device] = value;
             AppConfig.Set("fan_max_" + (int)device, value);
@@ -122,7 +128,7 @@ namespace GHelper.Fan
             }
         }
 
-        public static string FormatFan(AsusFan device, int value)
+        public static string FormatFan(HpFan device, int value)
         {
             if (value < 0) return null;
 
@@ -143,10 +149,10 @@ namespace GHelper.Fan
             for (int i = 0; i < FAN_COUNT; i++)
                 AppConfig.Remove("fan_max_" + i);
 
-            Program.acpi.DeviceSet(AsusACPI.PerformanceMode, AsusACPI.PerformanceTurbo, "ModeCalibration");
+            Program.acpi.DeviceSet(HpACPI.PerformanceMode, HpACPI.PerformanceTurbo, "ModeCalibration");
 
             for (int i = 0; i < FAN_COUNT; i++)
-                Program.acpi.SetFanCurve((AsusFan)i, new byte[] { 20, 30, 40, 50, 60, 70, 80, 90, 100, 100, 100, 100, 100, 100, 100, 100 });
+                Program.acpi.SetFanCurve((HpFan)i, new byte[] { 20, 30, 40, 50, 60, 70, 80, 90, 100, 100, 100, 100, 100, 100, 100, 100 });
 
         }
 
@@ -157,7 +163,7 @@ namespace GHelper.Fan
 
             for (int i = 0; i < FAN_COUNT; i++)
             {
-                fan = Program.acpi.GetFan((AsusFan)i);
+                fan = Program.acpi.GetFan((HpFan)i);
                 if (fan > measuredMax[i])
                 {
                     measuredMax[i] = fan;
@@ -168,8 +174,8 @@ namespace GHelper.Fan
             if (same) sameCount++;
             else sameCount = 0;
 
-            string label = "Measuring Max Speed - CPU: " + measuredMax[(int)AsusFan.CPU] * 100 + ", GPU: " + measuredMax[(int)AsusFan.GPU] * 100;
-            if (measuredMax[(int)AsusFan.Mid] > 10) label = label + ", Mid: " + measuredMax[(int)AsusFan.Mid] * 100;
+            string label = "Measuring Max Speed - CPU: " + measuredMax[(int)HpFan.CPU] * 100 + ", GPU: " + measuredMax[(int)HpFan.GPU] * 100;
+            if (measuredMax[(int)HpFan.Mid] > 10) label = label + ", Mid: " + measuredMax[(int)HpFan.Mid] * 100;
             label = label + " (" + sameCount + "s)";
 
             fansForm.LabelFansResult(label);
@@ -178,7 +184,7 @@ namespace GHelper.Fan
             {
                 for (int i = 0; i < FAN_COUNT; i++)
                 {
-                    if (measuredMax[i] > 30 && measuredMax[i] < INADEQUATE_MAX) SetFanMax((AsusFan)i, measuredMax[i]);
+                    if (measuredMax[i] > 30 && measuredMax[i] < INADEQUATE_MAX) SetFanMax((HpFan)i, measuredMax[i]);
                 }
 
                 sameCount = 0;
@@ -193,13 +199,13 @@ namespace GHelper.Fan
             timer.Enabled = false;
             modeControl.SetPerformanceMode();
 
-            string label = "Measured - CPU: " + AppConfig.Get("fan_max_" + (int)AsusFan.CPU) * 100;
+            string label = "Measured - CPU: " + AppConfig.Get("fan_max_" + (int)HpFan.CPU) * 100;
 
-            if (AppConfig.Get("fan_max_" + (int)AsusFan.GPU) > 0)
-                label = label + ", GPU: " + AppConfig.Get("fan_max_" + (int)AsusFan.GPU) * 100;
+            if (AppConfig.Get("fan_max_" + (int)HpFan.GPU) > 0)
+                label = label + ", GPU: " + AppConfig.Get("fan_max_" + (int)HpFan.GPU) * 100;
 
-            if (AppConfig.Get("fan_max_" + (int)AsusFan.Mid) > 0)
-                label = label + ", Mid: " + AppConfig.Get("fan_max_" + (int)AsusFan.Mid) * 100;
+            if (AppConfig.Get("fan_max_" + (int)HpFan.Mid) > 0)
+                label = label + ", Mid: " + AppConfig.Get("fan_max_" + (int)HpFan.Mid) * 100;
 
             fansForm.LabelFansResult(label);
             fansForm.InitAxis();

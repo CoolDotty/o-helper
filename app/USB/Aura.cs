@@ -997,10 +997,10 @@ namespace GHelper.USB
                 if (gpuMode < 0) gpuMode = GPUModeControl.gpuMode;
                 switch (gpuMode)
                 {
-                    case AsusACPI.GPUModeUltimate:
+                    case HpACPI.GPUModeUltimate:
                         color = colorUltimate;
                         break;
-                    case AsusACPI.GPUModeEco:
+                    case HpACPI.GPUModeEco:
                         color = colorEco;
                         break;
                     default:

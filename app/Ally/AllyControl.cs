@@ -350,9 +350,9 @@ namespace GHelper.Ally
             if (tdp == tdpCurrent) return;
             if (!autoTDP) return;
 
-            Program.acpi.DeviceSet(AsusACPI.PPT_APUA0, tdp, log);
-            Program.acpi.DeviceSet(AsusACPI.PPT_APUA3, tdp, null);
-            Program.acpi.DeviceSet(AsusACPI.PPT_APUC1, tdp, null);
+            Program.acpi.DeviceSet(HpACPI.PPT_APUA0, tdp, log);
+            Program.acpi.DeviceSet(HpACPI.PPT_APUA3, tdp, null);
+            Program.acpi.DeviceSet(HpACPI.PPT_APUC1, tdp, null);
 
             tdpCurrent = tdp;
         }

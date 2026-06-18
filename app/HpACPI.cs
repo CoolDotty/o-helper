@@ -3,7 +3,7 @@ using GHelper.USB;
 using System.Management;
 using System.Runtime.InteropServices;
 
-public enum AsusFan
+public enum HpFan
 {
     CPU = 0,
     GPU = 1,
@@ -11,14 +11,14 @@ public enum AsusFan
     XGM = 3
 }
 
-public enum AsusMode
+public enum HpMode
 {
     Balanced = 0,
     Turbo = 1,
     Silent = 2
 }
 
-public enum AsusGPU
+public enum HpGPU
 {
     Eco = 0,
     Standard = 1,
@@ -26,11 +26,19 @@ public enum AsusGPU
 }
 
 /// <summary>
-/// Stub implementation — all ACPI hardware calls are replaced with
-/// no-ops / default return values so the UI works identically without
-/// ASUS hardware.
+/// Stub implementation for HP OMEN hardware control.
+/// All ACPI/WMI hardware calls are replaced with no-ops / default return values
+/// so the UI works identically without actual HP hardware access.
+/// 
+/// When real HP WMI support is added, HP uses the root\WMI namespace with:
+///   HPBIOS_BIOSSetting → get/set individual BIOS options
+///   HPBIOS_BIOSSettingEnum → list available values for a setting
+///   HPBIOS_BIOSSettingInterface → apply settings
+/// 
+/// Unlike ASUS which uses magic device IDs (e.g., DeviceSet(0x00120075, value)),
+/// HP uses string-based setting names like "Performance Mode" → "Enabled".
 /// </summary>
-public class AsusACPI
+public class HpACPI
 {
 
     const string FILE_NAME = @"\\.\\ATKACPI";
@@ -253,7 +261,7 @@ public class AsusACPI
         return _connected;
     }
 
-    public AsusACPI()
+    public HpACPI()
     {
         _connected = true;
     }
@@ -322,7 +330,7 @@ public class AsusACPI
         return 1;
     }
 
-    public int GetFan(AsusFan device)
+    public int GetFan(HpFan device)
     {
         return -1;
     }
@@ -332,18 +340,18 @@ public class AsusACPI
         return false;
     }
 
-    public int SetFanRange(AsusFan device, byte[] curve)
+    public int SetFanRange(HpFan device, byte[] curve)
     {
         return 1;
     }
 
 
-    public int SetFanCurve(AsusFan device, byte[] curve)
+    public int SetFanCurve(HpFan device, byte[] curve)
     {
         return 1;
     }
 
-    public byte[] GetFanCurve(AsusFan device, int mode = 0)
+    public byte[] GetFanCurve(HpFan device, int mode = 0)
     {
         // Return empty/zero curve
         return new byte[16];

@@ -29,8 +29,8 @@ namespace GHelper.Gpu
                 return;
             }
 
-            int eco = Program.acpi.DeviceGet(AsusACPI.GPUEco);
-            int mux = Program.acpi.DeviceGet(AsusACPI.GPUMux);
+            int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
+            int mux = Program.acpi.DeviceGet(HpACPI.GPUMux);
 
             Logger.WriteLine("Eco flag : " + eco);
             Logger.WriteLine("Mux flag : " + mux);
@@ -41,7 +41,7 @@ namespace GHelper.Gpu
                 if (AppConfig.IsEcoBootFix())
                 {
                     HardwareControl.DisposeGpuControl();
-                    Task.Run(() => Program.acpi.DeviceSet(AsusACPI.GPUEco, eco, "GPUEco Force Fix"));
+                    Task.Run(() => Program.acpi.DeviceSet(HpACPI.GPUEco, eco, "GPUEco Force Fix"));
                 }
             }
 
@@ -49,19 +49,19 @@ namespace GHelper.Gpu
 
             if (mux == 0)
             {
-                gpuMode = AsusACPI.GPUModeUltimate;
+                gpuMode = HpACPI.GPUModeUltimate;
             }
             else
             {
                 if (eco == 1)
-                    gpuMode = AsusACPI.GPUModeEco;
+                    gpuMode = HpACPI.GPUModeEco;
                 else
-                    gpuMode = AsusACPI.GPUModeStandard;
+                    gpuMode = HpACPI.GPUModeStandard;
 
                 // GPU mode not supported
                 if (eco < 0 && mux < 0)
                 {
-                    if (gpuExists is null) gpuExists = Program.acpi.GetFan(AsusFan.GPU) >= 0;
+                    if (gpuExists is null) gpuExists = Program.acpi.GetFan(HpFan.GPU) >= 0;
                     settings.HideGPUModes((bool)gpuExists);
                 }
             }
@@ -92,17 +92,17 @@ namespace GHelper.Gpu
 
             int status;
 
-            if (CurrentGPU == AsusACPI.GPUModeUltimate)
+            if (CurrentGPU == HpACPI.GPUModeUltimate)
             {
                 DialogResult dialogResult = MessageBox.Show(Properties.Strings.AlertUltimateOff, Properties.Strings.AlertUltimateTitle, MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
                 {
-                    status = Program.acpi.DeviceSet(AsusACPI.GPUMux, 1, "GPUMux");
+                    status = Program.acpi.DeviceSet(HpACPI.GPUMux, 1, "GPUMux");
                     restart = true;
                     changed = true;
                 }
             }
-            else if (GPUMode == AsusACPI.GPUModeUltimate)
+            else if (GPUMode == HpACPI.GPUModeUltimate)
             {
                 DialogResult dialogResult = MessageBox.Show(Properties.Strings.AlertUltimateOn, Properties.Strings.AlertUltimateTitle, MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
@@ -110,7 +110,7 @@ namespace GHelper.Gpu
                     Program.acpi.SetGPUEco(0);
                     Thread.Sleep(500);
 
-                    int eco = Program.acpi.DeviceGet(AsusACPI.GPUEco);
+                    int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
                     Logger.WriteLine("Eco flag : " + eco);
                     if (eco == 1)
                     {
@@ -118,19 +118,19 @@ namespace GHelper.Gpu
                         return;
                     }
 
-                    status = Program.acpi.DeviceSet(AsusACPI.GPUMux, 0, "GPUMux");
+                    status = Program.acpi.DeviceSet(HpACPI.GPUMux, 0, "GPUMux");
                     restart = true;
                     changed = true;
                 }
 
             }
-            else if (GPUMode == AsusACPI.GPUModeEco)
+            else if (GPUMode == HpACPI.GPUModeEco)
             {
                 settings.VisualiseGPUMode(GPUMode);
                 SetGPUEco(1);
                 changed = true;
             }
-            else if (GPUMode == AsusACPI.GPUModeStandard)
+            else if (GPUMode == HpACPI.GPUModeStandard)
             {
                 settings.VisualiseGPUMode(GPUMode);
                 SetGPUEco(0);
@@ -239,26 +239,26 @@ namespace GHelper.Gpu
 
             if (!GpuAuto && !ForceGPU) return false;
 
-            int eco = Program.acpi.DeviceGet(AsusACPI.GPUEco);
-            int mux = Program.acpi.DeviceGet(AsusACPI.GPUMux);
+            int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
+            int mux = Program.acpi.DeviceGet(HpACPI.GPUMux);
 
             if (mux == 0)
             {
-                if (optimized) SetGPUMode(AsusACPI.GPUModeStandard, 1);
+                if (optimized) SetGPUMode(HpACPI.GPUModeStandard, 1);
                 return false;
             }
             else
             {
 
                 if (eco == 1)
-                    if ((GpuAuto && IsPlugged()) || (ForceGPU && GpuMode == AsusACPI.GPUModeStandard))
+                    if ((GpuAuto && IsPlugged()) || (ForceGPU && GpuMode == HpACPI.GPUModeStandard))
                     {
                         if (delay > 0) Thread.Sleep(delay);
                         SetGPUEco(0);
                         return true;
                     }
                 if (eco == 0)
-                    if ((GpuAuto && !IsPlugged()) || (ForceGPU && GpuMode == AsusACPI.GPUModeEco))
+                    if ((GpuAuto && !IsPlugged()) || (ForceGPU && GpuMode == HpACPI.GPUModeEco))
                     {
 
                         if (Program.acpi.IsXGConnected()) return false;
@@ -286,14 +286,14 @@ namespace GHelper.Gpu
             {
                 settings.LockGPUModes();
 
-                if (Program.acpi.DeviceGet(AsusACPI.GPUXG) == 1)
+                if (Program.acpi.DeviceGet(HpACPI.GPUXG) == 1)
                 {
                     XGM.Reset();
                     HardwareControl.KillGPUApps();
 
                     if (silent)
                     {
-                        Program.acpi.DeviceSet(AsusACPI.GPUXG, 0, "GPU XGM");
+                        Program.acpi.DeviceSet(HpACPI.GPUXG, 0, "GPU XGM");
                         await Task.Delay(TimeSpan.FromSeconds(15));
                     }
                     else
@@ -306,7 +306,7 @@ namespace GHelper.Gpu
                         
                         if (dialogResult == DialogResult.Yes)
                         {
-                            Program.acpi.DeviceSet(AsusACPI.GPUXG, 0, "GPU XGM");
+                            Program.acpi.DeviceSet(HpACPI.GPUXG, 0, "GPU XGM");
                             await Task.Delay(TimeSpan.FromSeconds(15));
                         }
                     }
@@ -315,16 +315,16 @@ namespace GHelper.Gpu
                 {
 
                     if (AppConfig.Is("xgm_special"))
-                        Program.acpi.DeviceSet(AsusACPI.GPUXG, 0x101, "GPU XGM");
+                        Program.acpi.DeviceSet(HpACPI.GPUXG, 0x101, "GPU XGM");
                     else
-                        Program.acpi.DeviceSet(AsusACPI.GPUXG, 1, "GPU XGM");
+                        Program.acpi.DeviceSet(HpACPI.GPUXG, 1, "GPU XGM");
 
                     XGM.Init();
 
                     await Task.Delay(TimeSpan.FromSeconds(15));
 
                     if (AppConfig.IsApplyFans())
-                        XGM.SetFan(AppConfig.GetFanConfig(AsusFan.XGM));
+                        XGM.SetFan(AppConfig.GetFanConfig(HpFan.XGM));
 
                     HardwareControl.RecreateGpuControl();
 
@@ -347,13 +347,13 @@ namespace GHelper.Gpu
 
         public void CaptureNvBootState()
         {
-            nvRestartPending = Program.acpi.DeviceGet(AsusACPI.GPUEco) == 1;
+            nvRestartPending = Program.acpi.DeviceGet(HpACPI.GPUEco) == 1;
         }
 
         public void StandardModeFix()
         {
             if (!AppConfig.IsStandardModeFix()) return;
-            if (Program.acpi.DeviceGet(AsusACPI.GPUMux) == 0) return; // Ultimate mode
+            if (Program.acpi.DeviceGet(HpACPI.GPUMux) == 0) return; // Ultimate mode
 
             Logger.WriteLine("Forcing Standard Mode on shutdown");
             Program.acpi.SetGPUEco(0);

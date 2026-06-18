@@ -98,7 +98,7 @@ namespace GHelper.Input
 
             if (!AsusService.IsAsusOptimizationRunning())
             {
-                Program.acpi.DeviceGet(AsusACPI.CameraShutter);
+                Program.acpi.DeviceGet(HpACPI.CameraShutter);
                 listener = new KeyboardListener(HandleEvent);
             }
             else
@@ -303,7 +303,7 @@ namespace GHelper.Input
                 return;
             }
 
-            Program.acpi.DeviceSet(AsusACPI.UniversalControl, up ? AsusACPI.Brightness_Up : AsusACPI.Brightness_Down, "Brightness");
+            Program.acpi.DeviceSet(HpACPI.UniversalControl, up ? HpACPI.Brightness_Up : HpACPI.Brightness_Down, "Brightness");
 
             if (isTUF)
             {
@@ -533,11 +533,11 @@ namespace GHelper.Input
                         break;
                     case Keys.F14:
                         Program.toast.RunToast(Properties.Strings.EcoMode);
-                        Program.settingsForm.gpuControl.SetGPUMode(AsusACPI.GPUModeEco);
+                        Program.settingsForm.gpuControl.SetGPUMode(HpACPI.GPUModeEco);
                         break;
                     case Keys.F15:
                         Program.toast.RunToast(Properties.Strings.StandardMode);
-                        Program.settingsForm.gpuControl.SetGPUMode(AsusACPI.GPUModeStandard);
+                        Program.settingsForm.gpuControl.SetGPUMode(HpACPI.GPUModeStandard);
                         break;
                 }
             }
@@ -684,7 +684,7 @@ namespace GHelper.Input
         static void MuteLED()
         {
             Thread.Sleep(500);
-            Program.acpi.DeviceSet(AsusACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLed");
+            Program.acpi.DeviceSet(HpACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLed");
         }
 
         static void ToggleTouchScreen()
@@ -702,14 +702,14 @@ namespace GHelper.Input
         {
             bool muteStatus = Audio.ToggleMicMute();
             Program.toast.RunToast(muteStatus ? Properties.Strings.Muted : Properties.Strings.Unmuted, muteStatus ? ToastIcon.MicrophoneMute : ToastIcon.Microphone);
-            if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(AsusACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
+            if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(HpACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
         }
 
         static void MuteLEDInit()
         {
             if (!AppConfig.IsVivoZenbook()) return;
-            if (Program.acpi.IsSupported(AsusACPI.MicMuteLed)) Program.acpi.DeviceSet(AsusACPI.MicMuteLed, Audio.IsMicMuted() ? 1 : 0, "MicmuteLedInit");
-            if (Program.acpi.IsSupported(AsusACPI.SoundMuteLed)) Program.acpi.DeviceSet(AsusACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLedInit");
+            if (Program.acpi.IsSupported(HpACPI.MicMuteLed)) Program.acpi.DeviceSet(HpACPI.MicMuteLed, Audio.IsMicMuted() ? 1 : 0, "MicmuteLedInit");
+            if (Program.acpi.IsSupported(HpACPI.SoundMuteLed)) Program.acpi.DeviceSet(HpACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLedInit");
         }
 
         static bool GetTouchpadState()
@@ -744,7 +744,7 @@ namespace GHelper.Input
         {
             if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastSleep) < 1000) return;
             lastSleep = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.KB_Sleep, "Sleep");
+            Program.acpi.DeviceSet(HpACPI.UniversalControl, HpACPI.KB_Sleep, "Sleep");
         }
 
         public static void ToggleArrowLock()
@@ -761,7 +761,7 @@ namespace GHelper.Input
             if (AppConfig.IsHardwareFnLock()) return true;
             if (_fnLock is null)
             {
-                var fnLockStatus = Program.acpi.DeviceGet(AsusACPI.FnLock);
+                var fnLockStatus = Program.acpi.DeviceGet(HpACPI.FnLock);
                 Logger.WriteLine("FnLock Support: " + fnLockStatus);
                 _fnLock = fnLockStatus >= 0;
             }
@@ -770,7 +770,7 @@ namespace GHelper.Input
 
         public static void HardwareFnLock(bool fnLock)
         {
-            Program.acpi.DeviceSet(AsusACPI.FnLock, fnLock ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
+            Program.acpi.DeviceSet(HpACPI.FnLock, fnLock ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
             AsusHid.WriteInput([AsusHid.INPUT_ID, 0xD0, 0x4E, fnLock ? (byte)0x00 : (byte)0x01], "USB FnLock");
         }
 
@@ -811,8 +811,8 @@ namespace GHelper.Input
             if (AppConfig.Is("disable_tablet")) return;
 
             bool touchpadState = GetTouchpadState();
-            bool tabletState = Program.acpi.DeviceGet(AsusACPI.TabletState) > 0;
-            int slateState = Program.acpi.DeviceGet(AsusACPI.SlateMode);
+            bool tabletState = Program.acpi.DeviceGet(HpACPI.TabletState) > 0;
+            int slateState = Program.acpi.DeviceGet(HpACPI.SlateMode);
 
             Logger.WriteLine($"Tablet: {tabletState} | SlateMode: {slateState} | Touchpad: {touchpadState}");
 
@@ -822,9 +822,9 @@ namespace GHelper.Input
 
         static int GetTentState()
         {
-            var tentState = Program.acpi.DeviceGet(AsusACPI.TentState);
+            var tentState = Program.acpi.DeviceGet(HpACPI.TentState);
             // TentState is sticky on some convertibles (e.g. ProArt PX13); cross-check TabletState.
-            if (tentState > 0 && Program.acpi.DeviceGet(AsusACPI.TabletState) == AsusACPI.Tablet_Notebook) tentState = 0;
+            if (tentState > 0 && Program.acpi.DeviceGet(HpACPI.TabletState) == HpACPI.Tablet_Notebook) tentState = 0;
             Logger.WriteLine($"Tent: {tentState}");
             return tentState;
         }
@@ -1011,7 +1011,7 @@ namespace GHelper.Input
                     ToggleArrowLock();
                     return;
                 case 136:    // FN + F12
-                    if (!AppConfig.IsHardwareHotkeys()) Program.acpi.DeviceSet(AsusACPI.UniversalControl, AsusACPI.Airplane, "Airplane");
+                    if (!AppConfig.IsHardwareHotkeys()) Program.acpi.DeviceSet(HpACPI.UniversalControl, HpACPI.Airplane, "Airplane");
                     return;
                 case 50:
                     // Sound Mute Event
@@ -1166,7 +1166,7 @@ namespace GHelper.Input
 
         public static void ToggleCamera()
         {
-            int cameraShutter = Program.acpi.DeviceGet(AsusACPI.CameraShutter);
+            int cameraShutter = Program.acpi.DeviceGet(HpACPI.CameraShutter);
             Logger.WriteLine("Camera Shutter status: " + cameraShutter);
 
             int state = cameraShutter & 1;
@@ -1175,7 +1175,7 @@ namespace GHelper.Input
             switch (feature)
             {
                 case 0x00000:
-                    Program.acpi.DeviceSet(AsusACPI.CameraShutter, state ^ 1,
+                    Program.acpi.DeviceSet(HpACPI.CameraShutter, state ^ 1,
                         state == 0 ? "CameraShutterOn" : "CameraShutterOff");
                     Program.toast.RunToast(state == 0 ? "Camera Off" : "Camera On");
                     break;
@@ -1186,7 +1186,7 @@ namespace GHelper.Input
                     SetCamera(state ^ 1);
                     break;
                 case 0x100000:
-                    Program.acpi.DeviceSet(AsusACPI.CameraShutter, 4 | state, "CameraShutter");
+                    Program.acpi.DeviceSet(HpACPI.CameraShutter, 4 | state, "CameraShutter");
                     Program.toast.RunToast(state == 0 ? "Camera On" : "Camera Off");
                     break;
                 default:
@@ -1203,7 +1203,7 @@ namespace GHelper.Input
             if (status == 2 && cameraStatus >= 0) status = cameraStatus > 0 ? 0 : 1;
 
             var result = ProcessHelper.RunCMD($"{asusPath}\\AsusHotkey.exe", $"-MFCameraCommand {status} 1 0", asusPath);
-            var cameraLedStatus = Program.acpi.DeviceGet(AsusACPI.CameraLed);
+            var cameraLedStatus = Program.acpi.DeviceGet(HpACPI.CameraLed);
             Logger.WriteLine("Camera LED: " + cameraLedStatus);
             AppConfig.Set("camera_status", cameraLedStatus);
             if (toast)
@@ -1233,10 +1233,10 @@ namespace GHelper.Input
             //Action
             Action<int> action = (b) =>
             {
-                if (b >= 0) Program.acpi.DeviceSet(AsusACPI.ScreenPadToggle, 1, "ScreenpadOn");
+                if (b >= 0) Program.acpi.DeviceSet(HpACPI.ScreenPadToggle, 1, "ScreenpadOn");
                 int[] brightnessValues = [0, 4, 9, 14, 21, 32, 48, 73, 111, 169, 255];
-                Program.acpi.DeviceSet(AsusACPI.ScreenPadBrightness, brightnessValues[Math.Min(brightnessValues.Length - 1, Math.Max(0, b / 10))], "Screenpad");
-                if (b < 0) Program.acpi.DeviceSet(AsusACPI.ScreenPadToggle, 0, "ScreenpadOff");
+                Program.acpi.DeviceSet(HpACPI.ScreenPadBrightness, brightnessValues[Math.Min(brightnessValues.Length - 1, Math.Max(0, b / 10))], "Screenpad");
+                if (b < 0) Program.acpi.DeviceSet(HpACPI.ScreenPadToggle, 0, "ScreenpadOff");
             };
 
             if (delay <= 0 || instant) //instant action
@@ -1292,7 +1292,7 @@ namespace GHelper.Input
 
         public static void SetStatusLED(bool status)
         {
-            Program.acpi.DeviceSet(AsusACPI.StatusLed, status ? 7 : 0, "StatusLED");
+            Program.acpi.DeviceSet(HpACPI.StatusLed, status ? 7 : 0, "StatusLED");
         }
 
         public static void InitStatusLed()

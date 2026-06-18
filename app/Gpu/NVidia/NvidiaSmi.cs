@@ -7,10 +7,18 @@ public static class NvidiaSmi
 
     public static int GetDefaultMaxGPUPower()
     {
+        // HP OMEN models - GPU TGP defaults based on chassis tier
+        if (AppConfig.IsOmenMax()) return 140;      // Flagship tier (RTX 4070/4080/4090)
+        if (AppConfig.IsOmenTranscend()) return 90; // Thin-and-light (RTX 5060: 90W TGP)
+        if (AppConfig.IsOmenSlim()) return 100;     // Slim chassis
+        if (AppConfig.IsOmen16()) return 115;       // Standard OMEN 16
+
+        // ASUS models
         if (AppConfig.ContainsModel("GU605") || AppConfig.ContainsModel("GA605")) return 125;
         if (AppConfig.ContainsModel("GA403")) return 90;
         if (AppConfig.ContainsModel("FA607")) return 140;
-        else return 175;
+
+        return 175;
     }
 
     public static int GetMaxGPUPower()
