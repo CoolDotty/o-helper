@@ -1,5 +1,5 @@
-﻿
-namespace GHelper.Peripherals.Mouse.Models
+
+namespace OHelper.Peripherals.Mouse.Models
 {
     public class ChakramX : AsusMouse
     {
@@ -98,7 +98,7 @@ namespace GHelper.Peripherals.Mouse.Models
         {
             if (!HasButtonBindings()) return;
             ButtonBindingsReady = false;
-            Logger.WriteLine(GetDisplayName() + ": ── Reading Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- Reading Button Bindings --");
 
             // Group 0: readable slots 0-5
             byte[]? r0 = QueryAllButtonBindings(0);
@@ -132,8 +132,8 @@ namespace GHelper.Peripherals.Mouse.Models
                 }
 
                 byte[] resp = slot < 6 ? r0 : r1;
-                // Group 0: slots 0-2 → raw pos 0-2, slots 3-5 → raw pos 5-7 (skip unmapped pos 3+4).
-                // Group 1: slots 10-13 → raw pos 2-5 (skip unmapped pos 0+1).
+                // Group 0: slots 0-2 ? raw pos 0-2, slots 3-5 ? raw pos 5-7 (skip unmapped pos 3+4).
+                // Group 1: slots 10-13 ? raw pos 2-5 (skip unmapped pos 0+1).
                 int rawPos = slot < 6
                     ? 5 + (slot < 3 ? slot : slot + 2) * 2
                     : 5 + (slot - 10 + 2) * 2;
@@ -148,7 +148,7 @@ namespace GHelper.Peripherals.Mouse.Models
             }
 
             ButtonBindingsReady = true;
-            Logger.WriteLine(GetDisplayName() + ": ── End Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- End Button Bindings --");
         }
 
         private static readonly IReadOnlyList<(string GroupLabel, IReadOnlyList<(ushort Code, string Name)> Items)>
@@ -193,14 +193,14 @@ namespace GHelper.Peripherals.Mouse.Models
 
         public override Dictionary<int, (ushort SourceCode, string Name)> ButtonSlots => new()
         {
-            // Group 0 — 8 positions, pos 3+4 are FF FF (unmapped), pos 5-7 are readable
+            // Group 0 � 8 positions, pos 3+4 are FF FF (unmapped), pos 5-7 are readable
             { 0, (0x01F0, "Left Click"   ) },  // raw pos 0
             { 1, (0x01F1, "Right Click"  ) },  // raw pos 1
             { 2, (0x01F2, "Scroll Click" ) },  // raw pos 2
             { 3, (0x01E6, "DPI Button"   ) },  // raw pos 5
             { 4, (0x01E8, "Scroll Up"    ) },  // raw pos 6
             { 5, (0x01E9, "Scroll Down"  ) },  // raw pos 7
-            // Joystick directions — write-only, not returned in any read response
+            // Joystick directions � write-only, not returned in any read response
             { 6, (0x01D0, "Joystick Up"  ) },
             { 7, (0x01D1, "Joystick Down") },
             { 8, (0x01D2, "Joystick Fwd" ) },

@@ -1,5 +1,5 @@
-using GHelper.UI;
-namespace GHelper
+using OHelper.UI;
+namespace OHelper
 {
     partial class Handheld
     {
@@ -56,38 +56,38 @@ namespace GHelper
             labelLS = new Label();
             trackLSMin = new RTrackBar();
             labelLSTitle = new Label();
-            buttonReset = new GHelper.UI.RButton();
+            buttonReset = new OHelper.UI.RButton();
             panelBindings = new Panel();
             panelBinding = new Panel();
             labelBinding = new Label();
             labelSecondary = new Label();
             labelPrimary = new Label();
-            comboSecondary = new GHelper.UI.RComboBox();
-            comboPrimary = new GHelper.UI.RComboBox();
+            comboSecondary = new OHelper.UI.RComboBox();
+            comboPrimary = new OHelper.UI.RComboBox();
             labelTurbo = new Label();
-            comboTurboPrimary = new GHelper.UI.RComboBox();
-            comboTurboSecondary = new GHelper.UI.RComboBox();
-            buttonView = new GHelper.UI.RButton();
-            buttonLS = new GHelper.UI.RButton();
-            buttonLT = new GHelper.UI.RButton();
-            buttonLB = new GHelper.UI.RButton();
-            buttonDPR = new GHelper.UI.RButton();
-            buttonDPL = new GHelper.UI.RButton();
-            buttonDPD = new GHelper.UI.RButton();
-            buttonDPU = new GHelper.UI.RButton();
-            buttonM2 = new GHelper.UI.RButton();
-            buttonM1 = new GHelper.UI.RButton();
-            buttonRS = new GHelper.UI.RButton();
-            buttonMenu = new GHelper.UI.RButton();
-            buttonRT = new GHelper.UI.RButton();
-            buttonRB = new GHelper.UI.RButton();
-            buttonB = new GHelper.UI.RButton();
-            buttonA = new GHelper.UI.RButton();
-            buttonY = new GHelper.UI.RButton();
-            buttonX = new GHelper.UI.RButton();
+            comboTurboPrimary = new OHelper.UI.RComboBox();
+            comboTurboSecondary = new OHelper.UI.RComboBox();
+            buttonView = new OHelper.UI.RButton();
+            buttonLS = new OHelper.UI.RButton();
+            buttonLT = new OHelper.UI.RButton();
+            buttonLB = new OHelper.UI.RButton();
+            buttonDPR = new OHelper.UI.RButton();
+            buttonDPL = new OHelper.UI.RButton();
+            buttonDPD = new OHelper.UI.RButton();
+            buttonDPU = new OHelper.UI.RButton();
+            buttonM2 = new OHelper.UI.RButton();
+            buttonM1 = new OHelper.UI.RButton();
+            buttonRS = new OHelper.UI.RButton();
+            buttonMenu = new OHelper.UI.RButton();
+            buttonRT = new OHelper.UI.RButton();
+            buttonRB = new OHelper.UI.RButton();
+            buttonB = new OHelper.UI.RButton();
+            buttonA = new OHelper.UI.RButton();
+            buttonY = new OHelper.UI.RButton();
+            buttonX = new OHelper.UI.RButton();
             pictureAlly = new PictureBox();
             panelVibra = new Panel();
-            checkController = new GHelper.UI.RCheckBox();
+            checkController = new OHelper.UI.RCheckBox();
             pictureBox5 = new PictureBox();
             labelVibra = new Label();
             labelVibraTitle = new Label();

@@ -1,8 +1,8 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class RComboBox : ComboBox
     {

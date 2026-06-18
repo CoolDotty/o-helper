@@ -1,8 +1,8 @@
-using GHelper.Helpers;
+using OHelper.Helpers;
 using System.Runtime.InteropServices;
-using static GHelper.Gpu.AMD.Adl2.NativeMethods;
+using static OHelper.Gpu.AMD.Adl2.NativeMethods;
 
-namespace GHelper.Gpu.AMD;
+namespace OHelper.Gpu.AMD;
 
 // Reference: https://github.com/GPUOpen-LibrariesAndSDKs/display-library/blob/master/Sample-Managed/Program.cs
 public class AmdGpuControl : IGpuControl

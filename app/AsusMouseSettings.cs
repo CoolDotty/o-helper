@@ -1,8 +1,8 @@
-ï»¿using GHelper.Peripherals;
-using GHelper.Peripherals.Mouse;
-using GHelper.UI;
+using OHelper.Peripherals;
+using OHelper.Peripherals.Mouse;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class AsusMouseSettings : RForm
     {
@@ -518,7 +518,7 @@ namespace GHelper
 
         private void SliderAngleAdjustment_ValueChanged(object? sender, EventArgs e)
         {
-            labelAngleAdjustmentValue.Text = sliderAngleAdjustment.Value.ToString() + "Â°";
+            labelAngleAdjustmentValue.Text = sliderAngleAdjustment.Value.ToString() + "°";
         }
 
         private void SliderAngleAdjustment_MouseUp(object? sender, EventArgs e)
@@ -1000,7 +1000,7 @@ namespace GHelper
             if (_updatingBindings || sender is not UI.RComboBox cmb || cmb.Tag is not int slot) return;
             if (cmb.SelectedItem is BindingSeparator)
             {
-                // Separator selected â€” step forward to first real item in group
+                // Separator selected — step forward to first real item in group
                 int next = cmb.SelectedIndex + 1;
                 if (next < cmb.Items.Count && cmb.Items[next] is BindingItem)
                     cmb.SelectedIndex = next;

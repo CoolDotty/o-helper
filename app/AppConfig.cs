@@ -1,5 +1,5 @@
-using GHelper.Helpers;
-using GHelper.Mode;
+using OHelper.Helpers;
+using OHelper.Mode;
 using Microsoft.Win32;
 using System.Management;
 using System.Text.Json;
@@ -27,10 +27,10 @@ public static class AppConfig
     static AppConfig()
     {
         string configName = "config.json";
-        string appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "GHelper");
+        string appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "OHelper");
         string startupConfig = Path.Combine(Application.StartupPath.Trim('\\'), configName);
 
-        fallbackConfigFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "GHelper", configName);
+        fallbackConfigFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "OHelper", configName);
 
         configFile = File.Exists(startupConfig) ? startupConfig
         : ProcessHelper.IsRunningAsSystem() && File.Exists(fallbackConfigFile) ? fallbackConfigFile
@@ -693,7 +693,6 @@ public static class AppConfig
         return ContainsModel("ROG") || ContainsModel("TUF") || ContainsModel("Vivobook") || ContainsModel("Zenbook");
     }
 
-    // ============================================
     // HP OMEN MODEL DETECTION
     // ============================================
 
@@ -707,6 +706,18 @@ public static class AppConfig
     public static bool IsOmenTranscend()
     {
         return ContainsModel("Transcend") || ContainsModel("14-fb") || ContainsModel("16-wf");
+    }
+
+    // OMEN Transcend 14 specifically (4-zone RGB, no numpad)
+    public static bool IsOmenTranscend14()
+    {
+        return IsOmenTranscend() && ContainsModel("14-fb");
+    }
+
+    // OMEN 4-zone RGB keyboards
+    public static bool IsOmen4ZoneRGB()
+    {
+        return IsOmenTranscend14();
     }
 
     // OMEN Slim series (slim chassis, different fan curves)

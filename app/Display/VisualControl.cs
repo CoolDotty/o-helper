@@ -1,9 +1,9 @@
-using GHelper.Helpers;
+using OHelper.Helpers;
 using Microsoft.Win32;
 using PawnIO;
 using System.Management;
 
-namespace GHelper.Display
+namespace OHelper.Display
 {
     public enum SplendidGamut : int
     {

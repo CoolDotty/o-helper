@@ -1,7 +1,7 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using System.IO.Compression;
 
-namespace GHelper.Display
+namespace OHelper.Display
 {
     public static class ColorProfileHelper
     {

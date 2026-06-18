@@ -1,22 +1,22 @@
-﻿using GHelper.Ally;
-using GHelper.AnimeMatrix;
-using GHelper.AutoUpdate;
-using GHelper.Battery;
-using GHelper.Display;
-using GHelper.Fan;
-using GHelper.Gpu;
-using GHelper.Helpers;
-using GHelper.Input;
-using GHelper.Mode;
-using GHelper.Peripherals;
-using GHelper.Peripherals.Mouse;
-using GHelper.Properties;
-using GHelper.UI;
-using GHelper.USB;
+using OHelper.Ally;
+using OHelper.AnimeMatrix;
+using OHelper.AutoUpdate;
+using OHelper.Battery;
+using OHelper.Display;
+using OHelper.Fan;
+using OHelper.Gpu;
+using OHelper.Helpers;
+using OHelper.Input;
+using OHelper.Mode;
+using OHelper.Peripherals;
+using OHelper.Peripherals.Mouse;
+using OHelper.Properties;
+using OHelper.UI;
+using OHelper.USB;
 using System.Diagnostics;
 using System.Timers;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class SettingsForm : RForm
     {
@@ -273,7 +273,7 @@ namespace GHelper
             buttonAutoTDP.Click += ButtonAutoTDP_Click;
             buttonAutoTDP.BorderColor = colorTurbo;
 
-            Text = "G-Helper " + (ProcessHelper.IsUserAdministrator() ? "—" : "-") + " " + AppConfig.GetModelShort();
+            Text = "O-Helper " + (ProcessHelper.IsUserAdministrator() ? "�" : "-") + " " + AppConfig.GetModelShort();
             TopMost = AppConfig.Is("topmost");
 
             //This will auto position the window again when it resizes. Might mess with position if people drag the window somewhere else.

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using HidSharp;
 
-namespace GHelper.AnimeMatrix.Communication.Platform
+namespace OHelper.AnimeMatrix.Communication.Platform
 {
     internal class WindowsUsbProvider : UsbProvider
     {

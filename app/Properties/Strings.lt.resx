@@ -60,45 +60,45 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -160,7 +160,7 @@
     <value>Programėlė jau paleista</value>
   </data>
   <data name="AppAlreadyRunningText" xml:space="preserve">
-    <value>G-Helper jau paleistas. Patikrinkite, ar sistemos juostelėje nėra piktogramos.</value>
+    <value>O-Helper jau paleistas. Patikrinkite, ar sistemos juostelėje nėra piktogramos.</value>
   </data>
   <data name="Apply" xml:space="preserve">
     <value>Taikyti</value>
@@ -656,8 +656,8 @@ Vis tiek norite tęsti?</value>
   <data name="OneZone" xml:space="preserve">
     <value>Viena zona</value>
   </data>
-  <data name="OpenGHelper" xml:space="preserve">
-    <value>Atidaryti G-Helper langą</value>
+  <data name="OpenOHelper" xml:space="preserve">
+    <value>Atidaryti O-Helper langą</value>
   </data>
   <data name="OptimalDisplayBrightness" xml:space="preserve">
     <value>Optimalus ekrano ryškumas</value>
@@ -714,7 +714,7 @@ Vis tiek norite tęsti?</value>
     <value>Atstatyti</value>
   </data>
   <data name="RestartGPU" xml:space="preserve">
-    <value>Kažkas naudoja dGPU ir neleidžia įjungti ekonomiško režimo. Norite leisti G-Helper bandyti iš naujo paleisti dGPU įrenginių tvarkytuvėje? (Tęskite savo rizika)</value>
+    <value>Kažkas naudoja dGPU ir neleidžia įjungti ekonomiško režimo. Norite leisti O-Helper bandyti iš naujo paleisti dGPU įrenginių tvarkytuvėje? (Tęskite savo rizika)</value>
   </data>
   <data name="RPM" xml:space="preserve">
     <value>aps.</value>

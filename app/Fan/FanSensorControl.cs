@@ -1,6 +1,6 @@
-﻿using GHelper.Mode;
+using OHelper.Mode;
 
-namespace GHelper.Fan
+namespace OHelper.Fan
 {
     public class FanSensorControl
     {

@@ -1,7 +1,7 @@
-﻿using GHelper.AnimeMatrix;
-using GHelper.UI;
+using OHelper.AnimeMatrix;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class Matrix : RForm
     {

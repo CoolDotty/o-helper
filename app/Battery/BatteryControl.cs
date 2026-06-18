@@ -1,8 +1,8 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using Microsoft.Win32;
 using System.Diagnostics;
 
-namespace GHelper.Battery
+namespace OHelper.Battery
 {
     public static class BatteryControl
     {

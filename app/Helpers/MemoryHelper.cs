@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public static class MemoryHelper
     {

@@ -1,4 +1,4 @@
-﻿namespace GHelper.Peripherals.Mouse.Models
+namespace OHelper.Peripherals.Mouse.Models
 {
     //P506
     public class StrixImpactII : AsusMouse

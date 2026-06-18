@@ -1,6 +1,6 @@
-﻿using GHelper.UI;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     partial class Updates
     {

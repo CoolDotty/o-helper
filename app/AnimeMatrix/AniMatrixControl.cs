@@ -1,11 +1,11 @@
-﻿using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Timers;
 
-namespace GHelper.AnimeMatrix
+namespace OHelper.AnimeMatrix
 {
 
     public class AniMatrixControl : NAudio.CoreAudioApi.Interfaces.IMMNotificationClient

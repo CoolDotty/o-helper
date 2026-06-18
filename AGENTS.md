@@ -1,4 +1,4 @@
-# G-Helper — Agent Guide
+# O-Helper — Agent Guide
 
 ## What This Is
 
@@ -10,11 +10,11 @@ G-Helper is a **lightweight Windows Forms (WinForms) tray application** written 
 |---------|---------|
 | `dev.bat` | Build debug + launch |
 | `prod.bat` | Publish single-file release + launch |
-| `dotnet build app/GHelper.sln` | Build only (Debug) |
-| `dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained` | Publish release EXE |
+| `dotnet build app/OHelper.sln` | Build only (Debug) |
+| `dotnet publish app/OHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained` | Publish release EXE |
 
 - **No test project** exists. No unit tests, no test framework.
-- **Build kills running GHelper processes** before building (see `.csproj` line 94 — only applies locally, not on CI).
+- **Build kills running OHelper processes** before building (see `.csproj` line 94 — only applies locally, not on CI).
 
 ## Project Structure
 
@@ -61,7 +61,7 @@ app/
 
 ### Configuration (`AppConfig.cs`)
 
-- JSON file stored at `%APPDATA%\GHelper\config.json` (fallback to startup dir and `%COMMON_APPDATA%\GHelper\config.json`)
+- JSON file stored at `%APPDATA%\OHelper\config.json` (fallback to startup dir and `%COMMON_APPDATA%\OHelper\config.json`)
 - **Debounced writes** — 2-second timer, atomic file replacement (`.tmp` → `.bak` → final)
 - **Robust recovery** — can reconstruct config from regex-scavenged key-value pairs if JSON is corrupt
 - Thread-safe via `configLock`
@@ -83,7 +83,7 @@ Three built-in modes + up to 20 custom:
 
 ### Custom UI Controls (`UI/`)
 
-All custom WinForms controls in the `GHelper.UI` namespace:
+All custom WinForms controls in the `OHelper.UI` namespace:
 - `RForm` — base form with dark/light theme, color constants, DWM titlebar
 - `RButton`, `RBadgeButton` — custom-painted buttons with border colors
 - `RComboBox` — themed combobox

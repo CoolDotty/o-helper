@@ -1,7 +1,7 @@
-﻿using GHelper.Properties;
-using GHelper.UI;
+using OHelper.Properties;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     partial class Extra
     {
@@ -480,7 +480,7 @@ namespace GHelper
             comboM4.ButtonColor = Color.FromArgb(255, 255, 255);
             comboM4.Dock = DockStyle.Top;
             comboM4.FormattingEnabled = true;
-            comboM4.Items.AddRange(new object[] { Strings.PerformanceMode, Strings.OpenGHelper, Strings.Custom });
+            comboM4.Items.AddRange(new object[] { Strings.PerformanceMode, Strings.OpenOHelper, Strings.Custom });
             comboM4.Location = new Point(205, 152);
             comboM4.Margin = new Padding(5, 3, 5, 3);
             comboM4.Name = "comboM4";

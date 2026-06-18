@@ -1,5 +1,5 @@
-﻿
-namespace GHelper.Peripherals
+
+namespace OHelper.Peripherals
 {
     public enum PeripheralType
     {

@@ -1,10 +1,10 @@
-﻿using GHelper.AnimeMatrix.Communication;
-using GHelper.AnimeMatrix.Communication.Platform;
-using GHelper.USB;
+using OHelper.AnimeMatrix.Communication;
+using OHelper.AnimeMatrix.Communication.Platform;
+using OHelper.USB;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace GHelper.Peripherals.Mouse
+namespace OHelper.Peripherals.Mouse
 {
     public enum PowerOffSetting
     {
@@ -614,7 +614,7 @@ namespace GHelper.Peripherals.Mouse
                         return null;
                     }
 
-                    // ↓ only change from original: added matchLength >= 4 guard
+                    // ? only change from original: added matchLength >= 4 guard
                     while (response[0] != packet[0] || response[1] != packet[1] || response[2] != packet[2]
                            || (matchLength >= 4 && response[3] != packet[3]))
                     {
@@ -1091,7 +1091,7 @@ namespace GHelper.Peripherals.Mouse
                 if (HasAngleTuning())
                     AngleAdjustmentDegrees = ParseAngleAdjustment(response);
 
-                Logger.WriteLine(GetDisplayName() + ": Angle Snapping enabled: " + AngleSnapping + ", Angle Adjustment: " + AngleAdjustmentDegrees + "°");
+                Logger.WriteLine(GetDisplayName() + ": Angle Snapping enabled: " + AngleSnapping + ", Angle Adjustment: " + AngleAdjustmentDegrees + "�");
             }
         }
 
@@ -2340,7 +2340,7 @@ namespace GHelper.Peripherals.Mouse
 
         public virtual bool HasButtonBindings() => true;
 
-        // Slots whose bindings cannot be read back from device — always written, never reliably read.
+        // Slots whose bindings cannot be read back from device � always written, never reliably read.
         public virtual HashSet<int> WriteOnlySlots => [];
 
         private string WriteOnlySlotConfigKey(int slot) =>
@@ -2357,7 +2357,7 @@ namespace GHelper.Peripherals.Mouse
             if (!HasButtonBindings()) return;
 
             ButtonBindingsReady = false;
-            Logger.WriteLine(GetDisplayName() + ": ── Reading Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- Reading Button Bindings --");
 
             byte[]? response = QueryAllButtonBindings();
             if (response is null)
@@ -2373,7 +2373,7 @@ namespace GHelper.Peripherals.Mouse
             // Validate packet structure: expect 0x12 0x05 header
             if (response.Length < 6 || response[1] != 0x12 || response[2] != 0x05)
             {
-                Logger.WriteLine(GetDisplayName() + ": Button bindings packet header mismatch — hiding bindings panel");
+                Logger.WriteLine(GetDisplayName() + ": Button bindings packet header mismatch � hiding bindings panel");
                 return;
             }
 
@@ -2398,7 +2398,7 @@ namespace GHelper.Peripherals.Mouse
             }
 
             ButtonBindingsReady = true;
-            Logger.WriteLine(GetDisplayName() + ": ── End Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- End Button Bindings --");
         }
 
         protected virtual byte[]? QueryAllButtonBindings(int group = 0)
@@ -2423,7 +2423,7 @@ namespace GHelper.Peripherals.Mouse
                 WriteForResponse(GetSetButtonBindingPacket(slotDef.SourceCode, slotDef.SourceCode));
                 ButtonBindings[slot] = slotDef.SourceCode;
                 Logger.WriteLine(GetDisplayName()
-                    + $": Slot {slot} ({slotDef.Name}) → default (0x{slotDef.SourceCode:X4})");
+                    + $": Slot {slot} ({slotDef.Name}) ? default (0x{slotDef.SourceCode:X4})");
             }
             FlushSettings();
         }
@@ -2436,7 +2436,7 @@ namespace GHelper.Peripherals.Mouse
             if (slot < 0 || !slots.TryGetValue(slot, out var slotDef))
             {
                 Logger.WriteLine(GetDisplayName()
-                    + $": SetButtonBinding: slot {slot} out of range (0–{slots.Count - 1}).");
+                    + $": SetButtonBinding: slot {slot} out of range (0�{slots.Count - 1}).");
                 return;
             }
 
@@ -2446,7 +2446,7 @@ namespace GHelper.Peripherals.Mouse
             FlushSettings();
 
             Logger.WriteLine(GetDisplayName()
-                + $": Slot {slot} ({slotDef.Name}) → {LabelForActionCode(actionCode)}"
+                + $": Slot {slot} ({slotDef.Name}) ? {LabelForActionCode(actionCode)}"
                 + $" (src=0x{sourceCode:X4}, dst=0x{actionCode:X4})");
 
             ButtonBindings[slot] = actionCode;

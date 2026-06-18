@@ -1,7 +1,7 @@
-﻿using GHelper.UI;
+using OHelper.UI;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace GHelper
+namespace OHelper
 {
     partial class Fans
     {

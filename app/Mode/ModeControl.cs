@@ -1,9 +1,9 @@
-using GHelper.Gpu.NVidia;
-using GHelper.Helpers;
-using GHelper.USB;
+using OHelper.Gpu.NVidia;
+using OHelper.Helpers;
+using OHelper.USB;
 using PawnIO;
 
-namespace GHelper.Mode
+namespace OHelper.Mode
 {
     public class ModeControl
     {

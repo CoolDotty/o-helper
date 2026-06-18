@@ -1,5 +1,5 @@
-﻿
-namespace GHelper.Peripherals.Mouse.Models
+
+namespace OHelper.Peripherals.Mouse.Models
 {
     //P511
     public class ChakramCore : AsusMouse

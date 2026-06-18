@@ -1,6 +1,6 @@
-﻿using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     internal class Audio
     {

@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class RTrackBar : TrackBar
     {

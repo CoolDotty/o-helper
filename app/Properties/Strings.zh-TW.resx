@@ -60,45 +60,45 @@
             : and then encoded with base64 encoding.
     -->
   <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
         <xsd:choice maxOccurs="unbounded">
           <xsd:element name="metadata">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
               </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string"/>
-              <xsd:attribute name="type" type="xsd:string"/>
-              <xsd:attribute name="mimetype" type="xsd:string"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="assembly">
             <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string"/>
-              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="data">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1"/>
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3"/>
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4"/>
-              <xsd:attribute ref="xml:space"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
             </xsd:complexType>
           </xsd:element>
           <xsd:element name="resheader">
             <xsd:complexType>
               <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
               </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required"/>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
             </xsd:complexType>
           </xsd:element>
         </xsd:choice>
@@ -160,7 +160,7 @@
     <value>程式正在執行</value>
   </data>
   <data name="AppAlreadyRunningText" xml:space="preserve">
-    <value>G-Helper 正在執行。 請檢查右下系統匣。</value>
+    <value>O-Helper 正在執行。 請檢查右下系統匣。</value>
   </data>
   <data name="Apply" xml:space="preserve">
     <value>套用</value>
@@ -382,7 +382,7 @@
     <value>節能模式</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
-    <value>「Nvidia控制面板」中的顯示模式未設置為自動切換時，透過G-Helper的節能模式禁用獨顯可能導致螢幕亮度控制出現問題直到下次重新開機後。
+    <value>「Nvidia控制面板」中的顯示模式未設置為自動切換時，透過O-Helper的節能模式禁用獨顯可能導致螢幕亮度控制出現問題直到下次重新開機後。
 
 是否繼續？</value>
   </data>
@@ -656,8 +656,8 @@
   <data name="OneZone" xml:space="preserve">
     <value>單區</value>
   </data>
-  <data name="OpenGHelper" xml:space="preserve">
-    <value>開啟G-Helper視窗</value>
+  <data name="OpenOHelper" xml:space="preserve">
+    <value>開啟O-Helper視窗</value>
   </data>
   <data name="OptimalDisplayBrightness" xml:space="preserve">
     <value>最佳顯示亮度</value>
@@ -714,7 +714,7 @@
     <value>重設</value>
   </data>
   <data name="RestartGPU" xml:space="preserve">
-    <value>有其他程式正在使用獨顯導致無法切換至節能模式. 是否讓 G-Helper 於裝置管理員重新啟動獨顯? (請自行評估風險)</value>
+    <value>有其他程式正在使用獨顯導致無法切換至節能模式. 是否讓 O-Helper 於裝置管理員重新啟動獨顯? (請自行評估風險)</value>
   </data>
   <data name="RPM" xml:space="preserve">
     <value>RPM</value>

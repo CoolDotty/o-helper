@@ -1,6 +1,6 @@
 using System.Drawing.Drawing2D;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class RCheckBox : CheckBox
     {

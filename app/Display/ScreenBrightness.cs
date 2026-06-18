@@ -1,4 +1,4 @@
-﻿namespace GHelper.Display
+namespace OHelper.Display
 {
     using System;
     using System.Diagnostics;

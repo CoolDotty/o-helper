@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class IconHelper
     {

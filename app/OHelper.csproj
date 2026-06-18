@@ -8,10 +8,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPublishable>True</IsPublishable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <StartupObject>GHelper.Program</StartupObject>
+    <StartupObject>OHelper.Program</StartupObject>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
     <Platforms>AnyCPU;x64</Platforms>
-    <AssemblyName>GHelper</AssemblyName>
+    <AssemblyName>OHelper</AssemblyName>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
@@ -84,18 +84,18 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Pawn\RyzenSMU.bin">
-      <LogicalName>GHelper.RyzenSMU.bin</LogicalName>
+      <LogicalName>OHelper.RyzenSMU.bin</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Include="Pawn\IntelMSR.bin">
-      <LogicalName>GHelper.IntelMSR.bin</LogicalName>
+      <LogicalName>OHelper.IntelMSR.bin</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
-	<Target Name="KillRunningGHelper" BeforeTargets="Build" Condition="'$(GITHUB_ACTIONS)'!='true' AND '$(PublishProtocol)'!=''">
-		<Exec Command="powershell -NoProfile -Command &quot;Get-Process -Name GHelper -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 500&quot;" />
+	<Target Name="KillRunningOHelper" BeforeTargets="Build" Condition="'$(GITHUB_ACTIONS)'!='true' AND '$(PublishProtocol)'!=''">
+		<Exec Command="powershell -NoProfile -Command &quot;Get-Process -Name OHelper -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Milliseconds 500&quot;" />
 	</Target>
 
 	<Target Name="ZipSingleExe" AfterTargets="Publish" Condition="'$(GITHUB_ACTIONS)'!='true'">
-		<Exec Command="powershell -NoProfile -Command &quot;$exe = '$(PublishDir)GHelper.exe'; for ($i = 0; $i -lt 30; $i++) { try { [IO.File]::Open($exe, 'Open', 'Read', 'None').Close(); break } catch { Start-Sleep -Milliseconds 200 } }; Compress-Archive -Path $exe -DestinationPath '$(PublishDir)GHelper.zip' -Force&quot;" />
+		<Exec Command="powershell -NoProfile -Command &quot;$exe = '$(PublishDir)OHelper.exe'; for ($i = 0; $i -lt 30; $i++) { try { [IO.File]::Open($exe, 'Open', 'Read', 'None').Close(); break } catch { Start-Sleep -Milliseconds 200 } }; Compress-Archive -Path $exe -DestinationPath '$(PublishDir)OHelper.zip' -Force&quot;" />
 	</Target>
 </Project>

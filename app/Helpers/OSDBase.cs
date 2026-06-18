@@ -1,7 +1,7 @@
-﻿using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
 
     public class OSDNativeForm : NativeWindow, IDisposable

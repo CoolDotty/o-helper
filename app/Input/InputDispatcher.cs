@@ -1,15 +1,15 @@
-using GHelper.Display;
-using GHelper.Helpers;
-using GHelper.Mode;
-using GHelper.Peripherals;
-using GHelper.Peripherals.Mouse;
-using GHelper.USB;
+using OHelper.Display;
+using OHelper.Helpers;
+using OHelper.Mode;
+using OHelper.Peripherals;
+using OHelper.Peripherals.Mouse;
+using OHelper.USB;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Management;
 using System.Text.RegularExpressions;
 
-namespace GHelper.Input
+namespace OHelper.Input
 {
 
     public class InputDispatcher
@@ -581,7 +581,7 @@ namespace GHelper.Input
             if (action is null || action.Length <= 1)
             {
                 if (name == "m4")
-                    action = "ghelper";
+                    action = "OHelper";
                 if (name == "fnf4")
                     action = "aura";
                 if (name == "fnf5")
@@ -629,7 +629,7 @@ namespace GHelper.Input
                 case "performance":
                     modeControl.CyclePerformanceMode(Control.ModifierKeys == Keys.Shift);
                     break;
-                case "ghelper":
+                case "OHelper":
                     try
                     {
                         Program.settingsForm.BeginInvoke(delegate

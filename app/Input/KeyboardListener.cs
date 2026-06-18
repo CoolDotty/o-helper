@@ -1,7 +1,7 @@
-using GHelper.USB;
+using OHelper.USB;
 using HidSharp;
 
-namespace GHelper.Input
+namespace OHelper.Input
 {
     public class KeyboardListener
     {

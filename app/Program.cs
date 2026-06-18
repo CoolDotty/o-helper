@@ -1,13 +1,13 @@
-using GHelper.Ally;
-using GHelper.Battery;
-using GHelper.Display;
-using GHelper.Gpu;
-using GHelper.Helpers;
-using GHelper.Input;
-using GHelper.Mode;
-using GHelper.Overlay;
-using GHelper.Peripherals;
-using GHelper.USB;
+using OHelper.Ally;
+using OHelper.Battery;
+using OHelper.Display;
+using OHelper.Gpu;
+using OHelper.Helpers;
+using OHelper.Input;
+using OHelper.Mode;
+using OHelper.Overlay;
+using OHelper.Peripherals;
+using OHelper.USB;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Globalization;
@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Text;
 using static NativeMethods;
 
-namespace GHelper
+namespace OHelper
 {
 
     static class Program
@@ -132,7 +132,7 @@ namespace GHelper
 
             trayIcon = new NotifyIcon
             {
-                Text = "G-Helper",
+                Text = "O-Helper",
                 Icon = Properties.Resources.standard,
                 Visible = true
             };

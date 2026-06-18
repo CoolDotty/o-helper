@@ -1,13 +1,13 @@
-﻿using GHelper.Display;
-using GHelper.Gpu.AMD;
-using GHelper.Helpers;
-using GHelper.Input;
-using GHelper.Mode;
-using GHelper.UI;
-using GHelper.USB;
+using OHelper.Display;
+using OHelper.Gpu.AMD;
+using OHelper.Helpers;
+using OHelper.Input;
+using OHelper.Mode;
+using OHelper.UI;
+using OHelper.USB;
 using System.Diagnostics;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class Extra : RForm
     {
@@ -38,7 +38,7 @@ namespace GHelper
               {"visual", Properties.Strings.VisualMode},
               {"touchscreen", Properties.Strings.ToggleTouchscreen },
               {"micmute", Properties.Strings.MuteMic},
-              {"ghelper", Properties.Strings.OpenGHelper},
+              {"OHelper", Properties.Strings.OpenOHelper},
               {"overlay", Properties.Strings.Overlay},
               {"custom", Properties.Strings.Custom}
             };
@@ -67,8 +67,8 @@ namespace GHelper
                     customActions.Remove("micmute");
                     break;
                 case "m4":
-                    customActions[""] = Properties.Strings.OpenGHelper;
-                    customActions.Remove("ghelper");
+                    customActions[""] = Properties.Strings.OpenOHelper;
+                    customActions.Remove("OHelper");
                     break;
                 case "fnf4":
                     customActions[""] = Properties.Strings.ToggleAura;

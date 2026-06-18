@@ -1,4 +1,4 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace GHelper.AutoUpdate
+namespace OHelper.AutoUpdate
 {
     public class AutoUpdateControl
     {
@@ -74,7 +74,7 @@ namespace GHelper.AutoUpdate
 
                 using (var httpClient = new HttpClient())
                 {
-                    httpClient.DefaultRequestHeaders.Add("User-Agent", "G-Helper App");
+                    httpClient.DefaultRequestHeaders.Add("User-Agent", "O-Helper App");
                     var json = await httpClient.GetStringAsync("https://api.github.com/repos/seerge/g-helper/releases/latest");
                     var config = JsonSerializer.Deserialize<JsonElement>(json);
                     var tag = config.GetProperty("tag_name").ToString().Replace("v", "");
@@ -99,7 +99,7 @@ namespace GHelper.AutoUpdate
                     {
                         versionUrl = url;
                         update = true;
-                        settings.SetVersionLabel(Properties.Strings.DownloadUpdate + $": {appVersion.Major}.{appVersion.Minor}.{appVersion.Build} → {tag}", true);
+                        settings.SetVersionLabel(Properties.Strings.DownloadUpdate + $": {appVersion.Major}.{appVersion.Minor}.{appVersion.Build} ? {tag}", true);
 
                         string[] args = Environment.GetCommandLineArgs();
                         if (force || args.Length > 1 && args[1] == "autoupdate")
@@ -151,14 +151,14 @@ namespace GHelper.AutoUpdate
 
             string exeLocation = Application.ExecutablePath;
             string exeDir = Path.GetDirectoryName(exeLocation);
-            //exeDir = "C:\\Program Files\\GHelper";
+            //exeDir = "C:\\Program Files\\\OHelper";
             string exeName = Path.GetFileName(exeLocation);
             string zipLocation = exeDir + "\\" + zipName;
 
             using (WebClient client = new WebClient())
             {
 
-                client.Headers.Add("User-Agent", "G-Helper App");
+                client.Headers.Add("User-Agent", "O-Helper App");
                 Logger.WriteLine(requestUri);
                 Logger.WriteLine(exeDir);
                 Logger.WriteLine(zipName);
@@ -182,7 +182,7 @@ namespace GHelper.AutoUpdate
                     return;
                 }
 
-                string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(exeDir)}'; Wait-Process -Name \"GHelper\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
+                string command = $"$ErrorActionPreference = \"Stop\"; Set-Location -Path '{EscapeString(exeDir)}'; Wait-Process -Name \"OHelper\"; Expand-Archive \"{zipName}\" -DestinationPath . -Force; Remove-Item \"{zipName}\" -Force; \".\\{exeName}\"; ";
                 Logger.WriteLine(command);
 
                 try

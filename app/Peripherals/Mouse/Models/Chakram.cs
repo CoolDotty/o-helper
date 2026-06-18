@@ -1,5 +1,5 @@
-﻿
-namespace GHelper.Peripherals.Mouse.Models
+
+namespace OHelper.Peripherals.Mouse.Models
 {
     //P704
     public class Chakram : AsusMouse

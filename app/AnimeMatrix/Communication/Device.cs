@@ -1,8 +1,8 @@
-﻿// Source thanks to https://github.com/vddCore/Starlight :)
+// Source thanks to https://github.com/vddCore/Starlight :)
 
-using GHelper.AnimeMatrix.Communication.Platform;
+using OHelper.AnimeMatrix.Communication.Platform;
 
-namespace GHelper.AnimeMatrix.Communication
+namespace OHelper.AnimeMatrix.Communication
 {
     public abstract class Device : IDisposable
     {

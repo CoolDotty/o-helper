@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class RChart : Chart
     {

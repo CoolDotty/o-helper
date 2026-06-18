@@ -1,7 +1,7 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 using System.Runtime.InteropServices;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class RForm : Form
     {

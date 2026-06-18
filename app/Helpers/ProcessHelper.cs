@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public static class ProcessHelper
     {
-        private const string ExitEventName = "Global\\GHelperApp-Exit";
+        private const string ExitEventName = "Global\\OHelperApp-Exit";
         private static EventWaitHandle? exitEvent;
         private static long lastAdmin;
 

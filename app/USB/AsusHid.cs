@@ -1,8 +1,8 @@
-﻿using HidSharp;
+using HidSharp;
 using HidSharp.Reports;
 using System.Text;
 
-namespace GHelper.USB;
+namespace OHelper.USB;
 public static class AsusHid
 {
     public const int ASUS_ID = 0x0b05;

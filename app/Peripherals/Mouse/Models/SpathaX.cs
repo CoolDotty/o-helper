@@ -1,5 +1,5 @@
-﻿
-namespace GHelper.Peripherals.Mouse.Models
+
+namespace OHelper.Peripherals.Mouse.Models
 {
     //SPATHA_WIRELESS
     public class SpathaX : AsusMouse
@@ -97,7 +97,7 @@ namespace GHelper.Peripherals.Mouse.Models
         {
             if (!HasButtonBindings()) return;
             ButtonBindingsReady = false;
-            Logger.WriteLine(GetDisplayName() + ": ── Reading Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- Reading Button Bindings --");
 
             // Group 0: readable slots 0-7
             byte[]? r0 = QueryAllButtonBindings(0);
@@ -123,8 +123,8 @@ namespace GHelper.Peripherals.Mouse.Models
             foreach (var (slot, def) in slots)
             {
                 byte[] resp = slot < 8 ? r0 : r1;
-                // Group 0: slots 0-7 → raw positions 0-7 (offset 5 + slot*2).
-                // Group 1: slots 8-13 → raw positions 0-5 (offset 5 + (slot-8)*2), no unmapped gap.
+                // Group 0: slots 0-7 ? raw positions 0-7 (offset 5 + slot*2).
+                // Group 1: slots 8-13 ? raw positions 0-5 (offset 5 + (slot-8)*2), no unmapped gap.
                 int rawPos = slot < 8
                     ? 5 + slot * 2
                     : 5 + (slot - 8) * 2;
@@ -139,7 +139,7 @@ namespace GHelper.Peripherals.Mouse.Models
             }
 
             ButtonBindingsReady = true;
-            Logger.WriteLine(GetDisplayName() + ": ── End Button Bindings ──");
+            Logger.WriteLine(GetDisplayName() + ": -- End Button Bindings --");
         }
 
         private static readonly IReadOnlyList<(string GroupLabel, IReadOnlyList<(ushort Code, string Name)> Items)>
@@ -174,7 +174,7 @@ namespace GHelper.Peripherals.Mouse.Models
 
         public override Dictionary<int, (ushort SourceCode, string Name)> ButtonSlots => new()
         {
-            // Group 0 — 8 standard slots
+            // Group 0 � 8 standard slots
             { 0, (0x01F0, "Left Click"   ) },
             { 1, (0x01F1, "Right Click"  ) },
             { 2, (0x01F2, "Scroll Click" ) },
@@ -183,7 +183,7 @@ namespace GHelper.Peripherals.Mouse.Models
             { 5, (0x01E6, "DPI Button"   ) },
             { 6, (0x01E8, "Scroll Up"    ) },
             { 7, (0x01E9, "Scroll Down"  ) },
-            // Group 1 — 6 side buttons (offset 5 + (slot-8)*2, no unmapped gap)
+            // Group 1 � 6 side buttons (offset 5 + (slot-8)*2, no unmapped gap)
             { 8, (0x01EA, "Side Button 1") },
             { 9, (0x01EB, "Side Button 2") },
             {10, (0x01EC, "Side Button 3") },

@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public static class AsusService
     {

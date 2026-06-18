@@ -1,4 +1,4 @@
-﻿namespace GHelper.Peripherals.Mouse.Models
+namespace OHelper.Peripherals.Mouse.Models
 {
     //P713_Wireless
     public class HarpeAceAimLabEdition : AsusMouse

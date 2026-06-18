@@ -1,11 +1,11 @@
-﻿using GHelper.UI;
-using GHelper.Helpers;
+using OHelper.UI;
+using OHelper.Helpers;
 using System.Diagnostics;
 using System.Management;
 using System.Net;
 using System.Text.Json;
 
-namespace GHelper
+namespace OHelper
 {
 
     public partial class Updates : RForm
@@ -13,8 +13,8 @@ namespace GHelper
         const int DRIVER_NOT_FOUND = 2;
         const int DRIVER_NEWER = 1;
 
-        const string SYMBOL_UPDATED = "•";
-        const string SYMBOL_NEW = "⬤";
+        const string SYMBOL_UPDATED = "�";
+        const string SYMBOL_NEW = "?";
 
         //static int rowCount = 0;
         static string bios;

@@ -1,4 +1,4 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using NvAPIWrapper.GPU;
 using NvAPIWrapper.Native;
 using NvAPIWrapper.Native.GPU;
@@ -7,7 +7,7 @@ using NvAPIWrapper.Native.Interfaces.GPU;
 using System.Diagnostics;
 using static NvAPIWrapper.Native.GPU.Structures.PerformanceStates20InfoV1;
 
-namespace GHelper.Gpu.NVidia;
+namespace OHelper.Gpu.NVidia;
 
 public class NvidiaGpuControl : IGpuControl
 {

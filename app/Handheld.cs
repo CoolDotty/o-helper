@@ -1,7 +1,7 @@
-﻿using GHelper.Ally;
-using GHelper.UI;
+using OHelper.Ally;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class Handheld : RForm
     {

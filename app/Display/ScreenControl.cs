@@ -1,8 +1,8 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using Microsoft.Win32;
 using System.Diagnostics;
 
-namespace GHelper.Display
+namespace OHelper.Display
 {
     public static class ScreenControl
     {

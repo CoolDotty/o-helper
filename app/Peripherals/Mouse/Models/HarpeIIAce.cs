@@ -1,4 +1,4 @@
-﻿namespace GHelper.Peripherals.Mouse.Models
+namespace OHelper.Peripherals.Mouse.Models
 {
     //P723 - ROG HARPE II ACE (USB Wired)
     public class HarpeIIAceWired : AsusMouse

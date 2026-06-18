@@ -1,6 +1,6 @@
-﻿using GHelper.UI;
+using OHelper.UI;
 
-namespace GHelper
+namespace OHelper
 {
     partial class SettingsForm
     {
@@ -2189,7 +2189,7 @@ namespace GHelper
             Padding = new Padding(11);
             ShowIcon = false;
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "G-Helper";
+            Text = "O-Helper";
             panelMatrix.ResumeLayout(false);
             panelMatrix.PerformLayout();
             panelMatrixAuto.ResumeLayout(false);

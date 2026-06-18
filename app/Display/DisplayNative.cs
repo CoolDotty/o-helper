@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace GHelper.Display
+namespace OHelper.Display
 {
     /// <summary>
     /// Single source of truth for all Win32 display-related types and P/Invoke declarations.

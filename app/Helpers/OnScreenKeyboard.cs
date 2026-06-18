@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public static class OnScreenKeyboard
     {
@@ -49,7 +49,7 @@ namespace GHelper.Helpers
                 StartTabTip();
                 Thread.Sleep(100);
             }
-            // on some devices starting TabTip don't show keyboard, on some does  ¯\_(ツ)_/¯
+            // on some devices starting TabTip don't show keyboard, on some does  �\_(?)_/�
             if (!IsOpen())
             {
                 ToggleVisibility();

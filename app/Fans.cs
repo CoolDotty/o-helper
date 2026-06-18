@@ -1,14 +1,14 @@
-using GHelper.Fan;
-using GHelper.Gpu.NVidia;
-using GHelper.Helpers;
-using GHelper.Mode;
-using GHelper.UI;
-using GHelper.USB;
+using OHelper.Fan;
+using OHelper.Gpu.NVidia;
+using OHelper.Helpers;
+using OHelper.Mode;
+using OHelper.UI;
+using OHelper.USB;
 using PawnIO;
 using System.Diagnostics;
 using System.Windows.Forms.DataVisualization.Charting;
 
-namespace GHelper
+namespace OHelper
 {
     public partial class Fans : RForm
     {

@@ -1,10 +1,10 @@
-using GHelper;
-using GHelper.Battery;
-using GHelper.Fan;
-using GHelper.Gpu;
-using GHelper.Gpu.AMD;
-using GHelper.Gpu.NVidia;
-using GHelper.Helpers;
+using OHelper;
+using OHelper.Battery;
+using OHelper.Fan;
+using OHelper.Gpu;
+using OHelper.Gpu.AMD;
+using OHelper.Gpu.NVidia;
+using OHelper.Helpers;
 using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;

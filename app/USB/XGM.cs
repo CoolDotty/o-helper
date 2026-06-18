@@ -1,10 +1,10 @@
-﻿// Reference : thanks to https://github.com/RomanYazvinsky/ for initial discovery of XGM payloads
+// Reference : thanks to https://github.com/RomanYazvinsky/ for initial discovery of XGM payloads
 
-using GHelper.Helpers;
+using OHelper.Helpers;
 using HidSharp;
 using System.Text;
 
-namespace GHelper.USB
+namespace OHelper.USB
 {
     public static class XGM
     {

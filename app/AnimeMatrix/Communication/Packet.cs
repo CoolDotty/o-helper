@@ -1,6 +1,6 @@
-﻿// Source thanks to https://github.com/vddCore/Starlight :)
+// Source thanks to https://github.com/vddCore/Starlight :)
 
-namespace GHelper.AnimeMatrix.Communication
+namespace OHelper.AnimeMatrix.Communication
 {
     public abstract class Packet
     {

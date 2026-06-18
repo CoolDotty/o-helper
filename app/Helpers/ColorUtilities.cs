@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public class ColorUtils
     {

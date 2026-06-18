@@ -1,9 +1,9 @@
-﻿using GHelper.Display;
-using GHelper.Display;
-using GHelper.Mode;
+using OHelper.Display;
+using OHelper.Display;
+using OHelper.Mode;
 using Microsoft.Win32;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     internal class ClamshellModeControl
     {

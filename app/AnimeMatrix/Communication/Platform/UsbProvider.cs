@@ -1,4 +1,4 @@
-namespace GHelper.AnimeMatrix.Communication.Platform
+namespace OHelper.AnimeMatrix.Communication.Platform
 {
     public abstract class UsbProvider : IDisposable
     {

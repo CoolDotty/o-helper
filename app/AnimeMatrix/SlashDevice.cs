@@ -1,10 +1,10 @@
-﻿using GHelper.AnimeMatrix.Communication;
+using OHelper.AnimeMatrix.Communication;
 using HidSharp.Reports;
 using System.Management;
 using System.Text;
 using DeviceList = HidSharp.DeviceList;
 
-namespace GHelper.AnimeMatrix
+namespace OHelper.AnimeMatrix
 {
     public enum SlashMode
     {

@@ -1,10 +1,10 @@
-﻿using GHelper.Display;
-using GHelper.Gpu.NVidia;
-using GHelper.Helpers;
-using GHelper.USB;
+using OHelper.Display;
+using OHelper.Gpu.NVidia;
+using OHelper.Helpers;
+using OHelper.USB;
 using System.Diagnostics;
 
-namespace GHelper.Gpu
+namespace OHelper.Gpu
 {
     public class GPUModeControl
     {

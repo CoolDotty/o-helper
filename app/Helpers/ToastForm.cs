@@ -1,7 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
 
     static class Drawing

@@ -1,7 +1,7 @@
-using GHelper.UI;
+using OHelper.UI;
 using System.Diagnostics;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public class DonateControl
     {

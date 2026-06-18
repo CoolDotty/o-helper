@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     public class CustomMenuRenderer : ToolStripProfessionalRenderer
     {
@@ -28,7 +28,7 @@ namespace GHelper.UI
                 : (e.Item.Owner?.ForeColor ?? SystemColors.MenuText);
 
             var rect = new Rectangle(0, 0, e.ImageRectangle.Right + e.ImageRectangle.X, e.Item.Height);
-            TextRenderer.DrawText(e.Graphics, "✓", e.Item.Font, rect, color,
+            TextRenderer.DrawText(e.Graphics, "?", e.Item.Font, rect, color,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
         }
 

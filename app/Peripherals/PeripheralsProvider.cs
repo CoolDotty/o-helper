@@ -1,9 +1,9 @@
-﻿using GHelper.Peripherals.Mouse;
-using GHelper.Peripherals.Mouse.Models;
+using OHelper.Peripherals.Mouse;
+using OHelper.Peripherals.Mouse.Models;
 using HidSharp;
 using System.Runtime.CompilerServices;
 
-namespace GHelper.Peripherals
+namespace OHelper.Peripherals
 {
     public class PeripheralsProvider
     {

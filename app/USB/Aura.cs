@@ -1,13 +1,13 @@
-﻿using GHelper.Gpu;
-using GHelper.Helpers;
-using GHelper.Input;
-using GHelper.Peripherals;
+using OHelper.Gpu;
+using OHelper.Helpers;
+using OHelper.Input;
+using OHelper.Peripherals;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using static GHelper.Helpers.DynamicLightingHelper;
+using static OHelper.Helpers.DynamicLightingHelper;
 
-namespace GHelper.USB
+namespace OHelper.USB
 {
     public class AuraPower
     {
@@ -101,6 +101,7 @@ namespace GHelper.USB
         }
 
         static bool isACPI = AppConfig.IsTUF() || AppConfig.IsVivoZenPro();
+        static bool isOmen = AppConfig.IsOmen();
 
         static bool isStrix => BacklightType == AuraBacklightType.MultiZone || BacklightType == AuraBacklightType.PerKey;
         public static bool IsBacklightDetected => BacklightType != AuraBacklightType.Unknown;
@@ -1038,13 +1039,13 @@ namespace GHelper.USB
                 }
                 else if (battery < battMid)
                 {
-                    // Low → Mid
+                    // Low ? Mid
                     float t = (battery - battLow) / (battMid - battLow);
                     color = ColorUtils.GetWeightedAverage(colorLow, colorMid, t);
                 }
                 else if (battery < battHigh)
                 {
-                    // Mid → High
+                    // Mid ? High
                     float t = (battery - battMid) / (battHigh - battMid);
                     color = ColorUtils.GetWeightedAverage(colorMid, colorHigh, t);
                 }

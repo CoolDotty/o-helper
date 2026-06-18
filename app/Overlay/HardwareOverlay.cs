@@ -1,4 +1,4 @@
-using GHelper.Helpers;
+using OHelper.Helpers;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
@@ -6,7 +6,7 @@ using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace GHelper.Overlay
+namespace OHelper.Overlay
 {
     public class HardwareOverlay : OSDNativeForm
     {

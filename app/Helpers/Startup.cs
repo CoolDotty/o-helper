@@ -1,4 +1,4 @@
-﻿using GHelper.Helpers;
+using OHelper.Helpers;
 using Microsoft.Win32.TaskScheduler;
 using System.Diagnostics;
 using System.Reflection;
@@ -7,7 +7,7 @@ using System.Security.Principal;
 public class Startup
 {
 
-    static string taskName = "GHelper";
+    static string taskName = "OHelper";
     static string chargeTaskName = taskName + "Charge";
     static string strExeFilePath = Application.ExecutablePath.Trim();
 
@@ -177,7 +177,7 @@ public class Startup
             catch (Exception e)
             {
                 if (ProcessHelper.IsUserAdministrator())
-                    MessageBox.Show("Can't create a start up task. Try running Task Scheduler by hand and manually deleting GHelper task if it exists there.", "Scheduler Error", MessageBoxButtons.OK);
+                    MessageBox.Show("Can't create a start up task. Try running Task Scheduler by hand and manually deleting OHelper task if it exists there.", "Scheduler Error", MessageBoxButtons.OK);
                 else
                     ProcessHelper.RunAsAdmin();
             }

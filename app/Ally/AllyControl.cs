@@ -1,13 +1,13 @@
-﻿using GHelper.Gpu.AMD;
-using GHelper.Helpers;
-using GHelper.Input;
-using GHelper.Mode;
-using GHelper.USB;
+using OHelper.Gpu.AMD;
+using OHelper.Helpers;
+using OHelper.Input;
+using OHelper.Mode;
+using OHelper.USB;
 using HidSharp;
 
 
 
-namespace GHelper.Ally
+namespace OHelper.Ally
 {
 
     public enum ControllerMode : int

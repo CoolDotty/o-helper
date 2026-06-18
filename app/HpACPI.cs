@@ -1,5 +1,5 @@
-﻿using GHelper;
-using GHelper.USB;
+using OHelper;
+using OHelper.USB;
 using System.Management;
 using System.Runtime.InteropServices;
 
@@ -31,12 +31,12 @@ public enum HpGPU
 /// so the UI works identically without actual HP hardware access.
 /// 
 /// When real HP WMI support is added, HP uses the root\WMI namespace with:
-///   HPBIOS_BIOSSetting → get/set individual BIOS options
-///   HPBIOS_BIOSSettingEnum → list available values for a setting
-///   HPBIOS_BIOSSettingInterface → apply settings
+///   HPBIOS_BIOSSetting ? get/set individual BIOS options
+///   HPBIOS_BIOSSettingEnum ? list available values for a setting
+///   HPBIOS_BIOSSettingInterface ? apply settings
 /// 
 /// Unlike ASUS which uses magic device IDs (e.g., DeviceSet(0x00120075, value)),
-/// HP uses string-based setting names like "Performance Mode" → "Enabled".
+/// HP uses string-based setting names like "Performance Mode" ? "Enabled".
 /// </summary>
 public class HpACPI
 {
@@ -253,7 +253,7 @@ public class HpACPI
     // still works only with asus optimization service on , if someone knows how to get ACPI events from asus without that - let me know
     public void RunListener()
     {
-        Logger.WriteLine("ACPI listener stub — no hardware");
+        Logger.WriteLine("ACPI listener stub � no hardware");
     }
 
     public bool IsConnected()

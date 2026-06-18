@@ -1,6 +1,6 @@
-﻿using Microsoft.Win32;
+using Microsoft.Win32;
 
-namespace GHelper.Helpers
+namespace OHelper.Helpers
 {
     public static class Keystone
     {
