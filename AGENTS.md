@@ -2,7 +2,7 @@
 
 ## What This Is
 
-G-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), being refactored from an ASUS Armoury Crate replacement into an **HP Omen controller**. The original ASUS ACPI/HID hardware communication has been **gutted** — all hardware calls are stubbed so the UI runs identically without ASUS hardware.
+O-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), being refactored from an ASUS Armoury Crate replacement into an **HP Omen controller**. The original ASUS ACPI/HID hardware communication has been **gutted** — all hardware calls are stubbed so the UI runs identically without ASUS hardware.
 
 ## Essential Commands
 
@@ -235,9 +235,9 @@ Mice are modeled as individual classes under `Peripherals/Mouse/Models/` with pe
 
 ## Conventions
 
-- **Namespace**: `GHelper.{Subfolder}` (e.g., `GHelper.Display`, `GHelper.Mode`)
+- **Namespace**: `OHelper.{Subfolder}` (e.g., `OHelper.Display`, `OHelper.Mode`)
 - **Naming**: PascalCase for methods/properties, `_camelCase` for private fields, hungarian notation for WinForms controls (`buttonSilent`, `panelGPU`, `comboMatrix`)
-- **Logging**: `Logger.WriteLine()` — writes to `%APPDATA%\GHelper\log.txt`, truncated to ~2000 lines, sampled cleanup (1% chance per write)
+- **Logging**: `Logger.WriteLine()` — writes to `%APPDATA%\OHelper\log.txt`, truncated to ~2000 lines, sampled cleanup (1% chance per write)
 - **Colors**: Defined as static `Color` constants in `RForm` (e.g., `colorEco`, `colorStandard`, `colorTurbo`, `colorCustom`, `colorGray`)
 - **String Resources**: All user-facing strings via `Properties.Strings.{Key}` — never hardcode displayed text
 - **Error handling**: Catch + log pattern throughout, minimal user-facing error messages
