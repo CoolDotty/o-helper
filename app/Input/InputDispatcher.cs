@@ -39,8 +39,6 @@ namespace OHelper.Input
 
         static ModeControl modeControl = Program.modeControl;
 
-        static bool isTUF = AppConfig.IsTUF();
-
         KeyboardListener listener;
         KeyboardHook hook = new KeyboardHook();
 
@@ -50,7 +48,6 @@ namespace OHelper.Input
             byte[] result = Program.acpi.DeviceInit();
             Debug.WriteLine($"Init: {BitConverter.ToString(result)}");
 
-            Program.acpi.SubscribeToEvents(WatcherEventArrived);
             //Task.Run(Program.acpi.RunListener);
 
             hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(KeyPressed);
@@ -291,9 +288,6 @@ namespace OHelper.Input
 
         static void SetBrightness(bool up, bool hotkey = false)
         {
-            int brightness = -1;
-
-            if (isTUF) brightness = ScreenBrightness.Get();
             if (AppConfig.SwappedBrightness() && !hotkey) up = !up;
 
             int step = AppConfig.Get("brightness_step", 10);
@@ -304,17 +298,6 @@ namespace OHelper.Input
             }
 
             Program.acpi.DeviceSet(HpACPI.UniversalControl, up ? HpACPI.Brightness_Up : HpACPI.Brightness_Down, "Brightness");
-
-            if (isTUF)
-            {
-                if (AppConfig.SwappedBrightness()) return;
-                if (!up && brightness <= 0) return;
-                if (up && brightness >= 100) return;
-
-                Thread.Sleep(100);
-                if (brightness == ScreenBrightness.Get())
-                    Program.toast.RunToast(ScreenBrightness.Adjust(up ? step : -step) + "%", up ? ToastIcon.BrightnessUp : ToastIcon.BrightnessDown);
-            }
 
         }
 
@@ -1319,18 +1302,6 @@ namespace OHelper.Input
             {
                 Logger.WriteLine($"Failed to run: {command} {ex.Message}");
             }
-        }
-
-        static void WatcherEventArrived(object sender, EventArrivedEventArgs e)
-        {
-            if (e.NewEvent is null) return;
-            int EventID = int.Parse(e.NewEvent["EventID"].ToString());
-            Logger.WriteLine("WMI event " + EventID);
-            if (AppConfig.NoWMI()) return;
-
-            if (EventID == 123) Program.OnChargerEvent();
-
-            HandleEvent(EventID);
         }
     }
 }

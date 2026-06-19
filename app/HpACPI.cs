@@ -1,6 +1,4 @@
 using OHelper;
-using OHelper.USB;
-using System.Management;
 using System.Runtime.InteropServices;
 
 public enum HpFan
@@ -41,7 +39,6 @@ public enum HpGPU
 public class HpACPI
 {
 
-    const string FILE_NAME = @"\\.\\ATKACPI";
     const uint CONTROL_CODE = 0x0022240C;
 
     const uint DSTS = 0x53545344;
@@ -82,7 +79,6 @@ public class HpACPI
     public const uint PowerSavingMode = 0x00090032;
 
     public const uint PerformanceMode = 0x00120075; // Performance modes
-    public const uint VivoBookMode = 0x00110019; // Vivobook performance modes
 
     public const uint GPUEcoROG = 0x00090020;
     public const uint GPUEcoVivo = 0x00090120;
@@ -135,13 +131,7 @@ public class HpACPI
 
     public const int APU_MEM = 0x000600C1;
 
-    public const int TUF_KB_BRIGHTNESS = 0x00050021;
-    public const int KBD_BACKLIGHT_OOBE = 0x0005002F;
-
-    public const int TUF_KB = 0x00100056;
-    public const int TUF_KB2 = 0x0010005a;
-
-    public const int TUF_KB_STATE = 0x00100057;
+    // (TUF/ASUS keyboard constants removed — Omen uses HID, not ACPI, for keyboard control)
 
     public const int MicMuteLed = 0x00040017;
     public const int SoundMuteLed = 0x0004001C;
@@ -281,11 +271,6 @@ public class HpACPI
     }
 
     public byte[] DeviceInit()
-    {
-        return new byte[16];
-    }
-
-    public byte[] DeviceWatchDog()
     {
         return new byte[16];
     }
@@ -488,27 +473,8 @@ public class HpACPI
         return new byte[outSize];
     }
 
-    public void TUFKeyboardBrightness(int brightness, string log = "TUF Backlight")
-    {
-    }
-
-    public void TUFKeyboardRGB(AuraMode mode, Color color, int speed, string? log = "TUF RGB")
-    {
-    }
-
-    const int ASUS_WMI_KEYBOARD_POWER_BOOT = 0x03 << 16;
-    const int ASUS_WMI_KEYBOARD_POWER_AWAKE = 0x0C << 16;
-    const int ASUS_WMI_KEYBOARD_POWER_SLEEP = 0x30 << 16;
-    const int ASUS_WMI_KEYBOARD_POWER_SHUTDOWN = 0xC0 << 16;
-    public void TUFKeyboardPower(bool awake = true, bool boot = false, bool sleep = false, bool shutdown = false)
-    {
-    }
-
-    private ManagementEventWatcher? watcher;
-
-    public void SubscribeToEvents(Action<object, EventArrivedEventArgs> EventHandler)
-    {
-    }
+    // TODO: Subscribe to HPBIOS_BIOSSettingEvent WMI events for power/thermal changes
+    //       (replaces ASUS ATKACPI event subscription)
 
 
 }

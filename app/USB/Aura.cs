@@ -100,7 +100,6 @@ namespace OHelper.USB
             set { rearMode = GetModes().ContainsKey(value) ? value : AuraMode.AuraStatic; }
         }
 
-        static bool isACPI = AppConfig.IsTUF() || AppConfig.IsVivoZenPro();
         static bool isOmen = AppConfig.IsOmen();
 
         static bool isStrix => BacklightType == AuraBacklightType.MultiZone || BacklightType == AuraBacklightType.PerKey;
@@ -165,7 +164,7 @@ namespace OHelper.USB
             modes[AuraMode.AuraStatic] = Properties.Strings.AuraStatic;
             modes[AuraMode.AuraBreathe] = Properties.Strings.AuraBreathe;
             modes[AuraMode.AuraColorCycle] = Properties.Strings.AuraColorCycle;
-            if (!isACPI) modes[AuraMode.AuraRainbow] = Properties.Strings.AuraRainbow;
+            modes[AuraMode.AuraRainbow] = Properties.Strings.AuraRainbow;
 
             if (perKey)
             {
@@ -253,7 +252,7 @@ namespace OHelper.USB
 
         public static bool HasSecondColor()
         {
-            return (mode == AuraMode.AuraBreathe || mode == AuraMode.GRADIENT) && (!isACPI || AppConfig.IsDynamicLightingOnly());
+            return (mode == AuraMode.AuraBreathe || mode == AuraMode.GRADIENT) && AppConfig.IsDynamicLightingOnly();
         }
 
         private static void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
@@ -298,8 +297,6 @@ namespace OHelper.USB
 
         private static void DetectBacklightType()
         {
-            if (isACPI) return;
-
             if (IsBacklightDetected)
             {
                 AsusHid.AuraProbe(false);
@@ -408,7 +405,6 @@ namespace OHelper.USB
 
         public static void DirectBrightness(int brightness, string log)
         {
-            if (isACPI) Program.acpi.TUFKeyboardBrightness(brightness, log);
             AsusHid.WriteInput([AsusHid.INPUT_ID, 0xBA, 0xC5, 0xC4, (byte)brightness], log);
         }
 
@@ -523,13 +519,6 @@ namespace OHelper.USB
             }
 
             AsusHid.Write(AuraPowerMessage(flags));
-
-            if (isACPI)
-                Program.acpi.TUFKeyboardPower(
-                    flags.AwakeKeyb,
-                    flags.BootKeyb,
-                    flags.SleepKeyb,
-                    flags.ShutdownKeyb);
 
         }
 
@@ -740,12 +729,6 @@ namespace OHelper.USB
 
             if (!backlight) return;
 
-            if (isACPI)
-            {
-                Program.acpi.TUFKeyboardRGB(0, color, 0, null);
-                return;
-            }
-
             if (AppConfig.IsNoDirectRGB())
             {
                 AsusHid.SetFeatureAura(AuraMessage(AuraMode.AuraStatic, color, color, 0xeb));
@@ -911,9 +894,6 @@ namespace OHelper.USB
             AsusHid.Write(new List<byte[]> { AuraMessage(Mode, _Color1, _Color2, _speed), MESSAGE_SET, MESSAGE_APPLY }, "Aura", AsusHid.MAIN_AURA_PIDS);
             XGM.LightMode(Mode, _Color1, _Color2, _speed);
 
-            if (isACPI)
-                Program.acpi.TUFKeyboardRGB(Mode, Color1, _speed);
-
             ApplyRearLight();
 
         }
@@ -1010,7 +990,6 @@ namespace OHelper.USB
                 }
 
                 PeripheralsProvider.StreamMouseColor(color);
-                if (isACPI) Program.acpi.TUFKeyboardRGB(AuraMode.AuraStatic, color, 0xeb, $"TUF RGB GPU {gpuMode}");
                 AsusHid.Write(new List<byte[]> { AuraMessage(AuraMode.AuraStatic, color, color, 0xeb), MESSAGE_APPLY, MESSAGE_SET });
 
             }
@@ -1057,7 +1036,6 @@ namespace OHelper.USB
                 if (AppConfig.IsAlly()) color = ColorDim(color);
                 PeripheralsProvider.StreamMouseColor(color);
                 AsusHid.Write(new List<byte[]> { AuraMessage(AuraMode.AuraStatic, color, color, 0xeb), MESSAGE_APPLY, MESSAGE_SET });
-                if (isACPI) Program.acpi.TUFKeyboardRGB(AuraMode.AuraStatic, color, 0xeb);
             }
 
             public static void ApplyAmbient(bool init = false)
