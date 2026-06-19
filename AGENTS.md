@@ -2,18 +2,19 @@
 
 ## What This Is
 
-O-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), being refactored from an ASUS Armoury Crate replacement into an **HP Omen controller**. The original ASUS ACPI/HID hardware communication has been **gutted** — all hardware calls are stubbed so the UI runs identically without ASUS hardware.
+O-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), being refactored from an ASUS Armoury Crate replacement into an **HP Omen controller**. The original ASUS ACPI/HID hardware communication has been replaced with real HP WMI BIOS communication via `hpqBIntM`/`hpqBDataIn` in `root\wmi`.
 
 ## Essential Commands
 
 | Command | Purpose |
 |---------|---------|
-| `dev.bat` | Build debug + launch |
-| `prod.bat` | Publish single-file release + launch |
+| `dev.bat` | Build debug + launch (elevated) |
+| `prod.bat` | Publish single-file release + launch (elevated) |
 | `dotnet build app/OHelper.sln` | Build only (Debug) |
 | `dotnet publish app/OHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained` | Publish release EXE |
 
 - **No test project** exists. No unit tests, no test framework.
+- **Admin elevation required** — `dev.bat`/`prod.bat` launch with `Start-Process -Verb RunAs`. WMI `root\wmi` + `EnablePrivileges=true` needs admin. Without elevation, every call returns "Access denied".
 - **Build kills running OHelper processes** before building (see `.csproj` line 94 — only applies locally, not on CI).
 
 ## Project Structure
@@ -21,7 +22,7 @@ O-Helper is a **lightweight Windows Forms (WinForms) tray application** written 
 ```
 app/
 ├── Program.cs             # Entry point — sets up singletons, tray icon, event subs
-├── HpACPI.cs              # STUBBED — all HP WMI methods return defaults, no HW access
+├── HpACPI.cs              # WMI BIOS interface — hpqBIntM/hpqBDataIn in root\wmi
 ├── AppConfig.cs           # JSON config store (debounced write, atomic file ops)
 ├── HardwareControl.cs     # Static class — sensor polling, native battery API, fan/GpuControl refs
 ├── NativeMethods.cs       # P/Invoke helpers (idle time, screen off, lock, error lookup)
@@ -43,14 +44,14 @@ app/
 1. Parse CLI args (supports `charge`, `cpu`, `gpu`, `services`, etc.)
 2. Set up localization from `config.json`
 3. Create **global static singletons**: `settingsForm`, `modeControl`, `gpuControl`, `allyControl`, `clamshellControl`, `toast`, `hardwareOverlay`, `acpi`, `trayIcon`, `inputDispatcher`
-4. Initialize ACPI — stub connects always, no longer blocks startup on non-ASUS hardware
+4. Initialize HpACPI — connects to `root\wmi` via `hpqBIntM`, probes `SystemGetData`, starts heartbeat timer
 5. Set up tray icon, context menu, input dispatcher (keyboard hook), XGM, aura, matrix
 6. Subscribe to system events: `PowerModeChanged`, `SessionSwitch`, `DisplaySettingsChanged`, power setting notifications
 7. Start sensor refresh timers
 
 ### Global Singletons (accessed via `Program.*`)
 
-- `Program.acpi` — `HpACPI` instance, **all methods stubbed** (DeviceSet/DeviceGet/GetFan/SendWmiSetting/etc. return defaults)
+- `Program.acpi` — `HpACPI` instance, WMI BIOS transport via `hpqBIntM`/`hpqBDataIn` (reads/writes real firmware, graceful no-op fallback on failure)
 - `Program.modeControl` — `ModeControl`, performance/power/fan/UV mode application
 - `Program.gpuControl` — `GPUModeControl`, GPU eco/standard/ultimate switching
 - `Program.settingsForm` — `SettingsForm`, main UI window
@@ -94,17 +95,53 @@ All custom WinForms controls in the `OHelper.UI` namespace:
 
 Labels use `Properties.Strings.{Key}` — resources are in `.resx` files. Localization is handled via standard .NET satellite assemblies (Crowdin-managed).
 
-## Stubbed Hardware Layer
+## WMI Hardware Layer
 
-The following files are modified to safely no-op on non-ASUS hardware:
+`HpACPI.cs` communicates with HP firmware via WMI:
 
-| File | What was changed |
-|------|-----------------|
-| `AsusACPI.cs` → renamed to `HpACPI.cs` | All ACPI methods stubbed — `DeviceGet()` returns -1, `DeviceSet()` returns 1, `GetFan()` returns -1, `IsSupported()` returns false, `IsConnected()` returns true, etc. |
-| `AnimeMatrix/.../WindowsUsbProvider.cs` | No longer throws on missing HID devices; all IO methods null-guard the stream |
-| `Program.cs` | ACPI connection check no longer blocks startup |
+- **Namespace**: `root\wmi`
+- **Classes**: `hpqBIntM` (methods), `hpqBDataIn` (input data)
+- **Instance**: `ACPI\PNP0C14\0_0`
+- **Signature**: `SECU` (`0x53454355`)
+- **Method dispatch**: `hpqBIOSInt4` (out ≤4), `hpqBIOSInt128` (out ≤128), `hpqBIOSInt1024`, `hpqBIOSInt4096` — always use `returnDataSize ≥ 4` (HP firmware has no `hpqBIOSInt0`)
+- **Admin required**: `dev.bat`/`prod.bat` launch with UAC elevation; `root\wmi` + `EnablePrivileges=true` needs admin
 
-All other files (`AsusHid.cs`, `Aura.cs`, `AnimeMatrixDevice.cs`, `Peripherals/*`) already have try-catch guards that prevent crashes when hardware isn't found.
+### Reliability
+- **60-second heartbeat**: sends `SystemGetData` (0x20008/0x28) to prevent WMI silence on 2023+ models
+- **Graceful degradation**: auto-disables WMI after 5 consecutive transport failures, re-enables on success
+- **Error throttling**: rate-limits repeated error logs (30s interval)
+- **Legacy fallback**: auto-switches WMI connection on exception (BIOS F.15+ compatibility)
+- **ReturnCode semantics**: 0=success, 5=NotSupported (firmware rejected command, not a transport failure — does not count toward disable threshold)
+
+### WMI Command Map
+
+| Feature | DeviceID | WMI (command, commandType) |
+|---------|----------|----------------------------|
+| Performance Mode Set | `PerformanceMode` | `0x20008 / 0x1A`, payload `{0xFF, modeByte, 0x01, 0x00}` |
+| Battery Care | `BatteryLimit` | `0x20008 / 0x24`, payload `{enabled, 0, 0, 0}` |
+| Overdrive Get/Set | `ScreenOverdrive` | `0x20008 / 0x35` (get), `/ 0x36` (set) |
+| GPU Mode Get | `GPUEco/GPUMux` | `0x00001 / 0x52`, null input |
+| GPU Mode Set | `GPUEco/GPUMux` | `0x00002 / 0x52`, payload `{mode, 0, 0, 0}` |
+| GPU Power Get | `GPU_BASE/GPU_POWER` | `0x20008 / 0x21`, 4 bytes out |
+| GPU Power Set | `PPT_GPUC0` | `0x20008 / 0x22`, payload `{tgp, ppab, 0x01, 0x00}` |
+| System Design Data | — | `0x20008 / 0x28`, 128 bytes out |
+| Fan RPM | `GetFan()` | `0x20008 / 0x38` (direct RPM), fallback `0x20008 / 0x45` (status blob) |
+| Fan Target Blob | `DevsCPUFanCurve` | `0x20008 / 0x46`, 128-byte blob (bytes 0,1 = CPU/GPU RPM÷100) |
+| CPU/GPU Temp | `Temp_CPU/Temp_GPU` | `0x20008 / 0x23`, input `{0x01,...}`/`{0x02,...}` |
+| Power Limits | `PPT_*` | `0x20008 / 0x41`, payload `{0xFF, 0xFF, 0xFF, value}` |
+
+### Mode Byte Mapping
+
+| Mode Value | Mode Byte | Firmware Name |
+|------------|-----------|---------------|
+| `PerformanceBalanced` (0) | `0x30` | Default/Balanced |
+| `PerformanceTurbo` (1) | `0x31` | Performance |
+| `PerformanceSilent` (2) | `0x50` | Cool/Quiet |
+| `PerformanceManual` (4) | `0x04` | Unleashed/Extreme |
+
+### Still No-Op (no confirmed WMI commandType)
+
+`UniversalControl`, `MicMuteLed`, `SoundMuteLed` (HID-driven), `ScreenMiniled`, `ScreenFHD`, `ScreenHDRControl` (model-specific), `SlateMode`, `TabletState`, `TentState`, `FnLock`, `CameraShutter`, `BootSound` (ASUS-only sensors). These can be filled in when commandTypes are identified via `omen-bios-sniffer.ps1` or OmenCore expands coverage.
 
 ## Model Differentiation Architecture
 
@@ -149,17 +186,9 @@ Key accessors: `GetModel()`, `GetModelShort()`, `ContainsModel("pattern")` (case
 
 ### HP WMI Interface (`HpACPI.cs`)
 
-`AsusACPI.cs` renamed to `HpACPI.cs` — all methods remain **stubbed** (return defaults, no HW access).
+See **WMI Hardware Layer** section above for full details. `HpACPI.cs` uses the `hpqBIntM`/`hpqBDataIn` WMI interface with numeric `(command, commandType)` pairs — not `HPBIOS_BIOSSetting` string-based settings. The `DeviceSet(uint, int, string?)` / `DeviceGet(uint)` API is preserved for backward compatibility; internally, device IDs are mapped to WMI command pairs.
 
-When real hardware support is added, HP uses the `root\WMI` namespace with HP-specific BIOS setting methods:
-
-```
-HPBIOS_BIOSSetting → get/set individual BIOS options
-HPBIOS_BIOSSettingEnum → list available values for a setting
-HPBIOS_BIOSSettingInterface → apply settings
-```
-
-Where ASUS used `DeviceSet(0x00120075, value)`, Omen would set a WMI BIOS setting like `"Performance Mode" → "Enabled"`. No ACPI constant selection needed — HP uses string-based setting names, not magic device IDs.
+**RPM dead zone**: 1–1299 RPM snaps to 0 (firmware instability below 1300 RPM, confirmed by both OmenCore and omen-helper).
 
 ### Per-Model Fan Max Values (`Fan/FanSensorControl.cs`)
 

@@ -1,4 +1,5 @@
 using OHelper;
+using System.Management;
 using System.Runtime.InteropServices;
 
 public enum HpFan
@@ -23,22 +24,44 @@ public enum HpGPU
     Ultimate = 2
 }
 
-/// <summary>
-/// Stub implementation for HP OMEN hardware control.
-/// All ACPI/WMI hardware calls are replaced with no-ops / default return values
-/// so the UI works identically without actual HP hardware access.
-/// 
-/// When real HP WMI support is added, HP uses the root\WMI namespace with:
-///   HPBIOS_BIOSSetting ? get/set individual BIOS options
-///   HPBIOS_BIOSSettingEnum ? list available values for a setting
-///   HPBIOS_BIOSSettingInterface ? apply settings
-/// 
-/// Unlike ASUS which uses magic device IDs (e.g., DeviceSet(0x00120075, value)),
-/// HP uses string-based setting names like "Performance Mode" ? "Enabled".
-/// </summary>
+public enum HpBiosCommand : uint
+{
+    Default = 0x20008,
+    Keyboard = 0x20009,
+    Legacy = 0x00001,
+    GpuMode = 0x00002,
+}
+
+public enum HpBiosCommandType : int
+{
+    FanGetCount = 0x10,
+    PerformanceMode = 0x1A,
+    FanSetLevel = 0x2E,
+    FanGetLevel = 0x2D,
+    FanGetLevelV2 = 0x37,
+    FanGetRpm = 0x38,
+    FanMaxGet = 0x26,
+    FanMaxSet = 0x27,
+    SystemGetData = 0x28,
+    GpuGetPower = 0x21,
+    GpuSetPower = 0x22,
+    TempGet = 0x23,
+    BatteryCare = 0x24,
+    OverdriveGet = 0x35,
+    OverdriveSet = 0x36,
+    MaxFanRead = 0x38,
+    MaxFanWrite = 0x39,
+    SystemDesignData = 0x40,
+    Tpptdp = 0x41,
+    StatusRead = 0x45,
+    StatusWrite = 0x46,
+    GpuModeGet = 0x52,
+    GpuModeSet = 0x52,
+    IdleSet = 0x31,
+}
+
 public class HpACPI
 {
-
     const uint CONTROL_CODE = 0x0022240C;
 
     const uint DSTS = 0x53545344;
@@ -78,7 +101,7 @@ public class HpACPI
     public const uint StatusMode = 0x00090031;
     public const uint PowerSavingMode = 0x00090032;
 
-    public const uint PerformanceMode = 0x00120075; // Performance modes
+    public const uint PerformanceMode = 0x00120075;
 
     public const uint GPUEcoROG = 0x00090020;
     public const uint GPUEcoVivo = 0x00090120;
@@ -98,7 +121,7 @@ public class HpACPI
     public const uint ScreenHDRControl = 0x00050071;
 
     public const uint ScreenOptimalBrightness = 0x0005002A;
-    public const uint ScreenInit = 0x00050011; // ?
+    public const uint ScreenInit = 0x00050011;
 
     public const uint DevsCPUFan = 0x00110022;
     public const uint DevsGPUFan = 0x00110023;
@@ -111,27 +134,25 @@ public class HpACPI
     public const int Temp_CPU = 0x00120094;
     public const int Temp_GPU = 0x00120097;
 
-    public const int PPT_APUA0 = 0x001200A0;  // sPPT (slow boost limit) / PL2
-    public const int PPT_EDCA1 = 0x001200A1;  // CPU EDC
-    public const int PPT_TDCA2 = 0x001200A2;  // CPU TDC
-    public const int PPT_APUA3 = 0x001200A3;  // SPL (sustained limit) / PL1
+    public const int PPT_APUA0 = 0x001200A0;
+    public const int PPT_EDCA1 = 0x001200A1;
+    public const int PPT_TDCA2 = 0x001200A2;
+    public const int PPT_APUA3 = 0x001200A3;
 
-    public const int PPT_CPUB0 = 0x001200B0;  // CPU PPT on 2022 (PPT_LIMIT_APU)
-    public const int PPT_CPUB1 = 0x001200B1;  // Total PPT on 2022 (PPT_LIMIT_SLOW)
+    public const int PPT_CPUB0 = 0x001200B0;
+    public const int PPT_CPUB1 = 0x001200B1;
 
-    public const int PPT_GPUC0 = 0x001200C0;  // NVIDIA GPU Boost
-    public const int PPT_APUC1 = 0x001200C1;  // fPPT (fast boost limit)
-    public const int PPT_GPUC2 = 0x001200C2;  // NVIDIA GPU Temp Target (75.. 87 C) 
+    public const int PPT_GPUC0 = 0x001200C0;
+    public const int PPT_APUC1 = 0x001200C1;
+    public const int PPT_GPUC2 = 0x001200C2;
 
-    public const uint CORES_CPU = 0x001200D2; // Intel E-core and P-core configuration in a format 0x0[E]0[P]
-    public const uint CORES_MAX = 0x001200D3; // Maximum Intel E-core and P-core availability
+    public const uint CORES_CPU = 0x001200D2;
+    public const uint CORES_MAX = 0x001200D3;
 
-    public const uint GPU_BASE  = 0x00120099;  // Base part GPU TGP
-    public const uint GPU_POWER = 0x00120098;  // Additonal part of GPU TGP
+    public const uint GPU_BASE = 0x00120099;
+    public const uint GPU_POWER = 0x00120098;
 
     public const int APU_MEM = 0x000600C1;
-
-    // (TUF/ASUS keyboard constants removed — Omen uses HID, not ACPI, for keyboard control)
 
     public const int MicMuteLed = 0x00040017;
     public const int SoundMuteLed = 0x0004001C;
@@ -228,22 +249,36 @@ public class HpACPI
     private const uint FILE_SHARE_WRITE = 2;
 
     private IntPtr handle;
-
-    // Event handling attempt
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr CreateEvent(IntPtr lpEventAttributes, bool bManualReset, bool bInitialState, string lpName);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool WaitForSingleObject(IntPtr hHandle, int dwMilliseconds);
-
     private IntPtr eventHandle;
     private bool _connected = false;
 
-    // still works only with asus optimization service on , if someone knows how to get ACPI events from asus without that - let me know
+    #region WMI BIOS Interface
+
+    private const string WMI_NAMESPACE = @"\\.\root\wmi";
+    private const string WMI_DATA_CLASS = "hpqBDataIn";
+    private const string WMI_METHODS_CLASS = "hpqBIntM";
+    private const string WMI_INSTANCE_NAME = @"ACPI\PNP0C14\0_0";
+    private static readonly byte[] WMI_SIGN = { 0x53, 0x45, 0x43, 0x55 };
+
+    private ManagementScope _wmiScope;
+    private ManagementClass _wmiDataClass;
+    private ManagementObject _wmiMethodsObject;
+    private bool _wmiInitialized;
+    private bool _wmiDisabled;
+    private bool _useLegacyWmi;
+    private int _consecutiveFailures;
+    private const int MAX_CONSECUTIVE_FAILURES = 5;
+    private DateTime _lastErrorLog = DateTime.MinValue;
+    private static readonly TimeSpan ERROR_LOG_INTERVAL = TimeSpan.FromSeconds(30);
+
+    private System.Timers.Timer _heartbeatTimer;
+    private const int HEARTBEAT_INTERVAL_MS = 60000;
+
+    #endregion
+
     public void RunListener()
     {
-        Logger.WriteLine("ACPI listener stub � no hardware");
+        Logger.WriteLine("ACPI listener stub - no hardware");
     }
 
     public bool IsConnected()
@@ -251,10 +286,254 @@ public class HpACPI
         return _connected;
     }
 
+    public bool IsWmiReady() => _wmiInitialized && !_wmiDisabled;
+
     public HpACPI()
     {
         _connected = true;
+        try
+        {
+            InitializeWmi();
+            StartHeartbeat();
+            Logger.WriteLine("HpACPI: WMI BIOS interface initialized");
+
+            var probe = ExecuteBiosCommand((uint)HpBiosCommand.Default, (int)HpBiosCommandType.SystemGetData, null, 128);
+            Logger.WriteLine($"HpACPI: WMI probe SystemGetData: success={probe.Success} rc={probe.ReturnCode} len={probe.Data.Length}");
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: WMI init failed, running without hardware: {ex.Message}");
+        }
     }
+
+    #region WMI Core
+
+    private void InitializeWmi()
+    {
+        if (_wmiInitialized) return;
+
+        try
+        {
+            _wmiScope = new ManagementScope(WMI_NAMESPACE, new ConnectionOptions
+            {
+                EnablePrivileges = true,
+                Impersonation = ImpersonationLevel.Impersonate
+            });
+            _wmiScope.Connect();
+
+            _wmiDataClass = new ManagementClass(_wmiScope, new ManagementPath(WMI_DATA_CLASS), null);
+
+            using (var instances = new ManagementClass(_wmiScope, new ManagementPath(WMI_METHODS_CLASS), null).GetInstances())
+            {
+                foreach (ManagementObject instance in instances)
+                {
+                    string instanceName = Convert.ToString(instance["InstanceName"]);
+                    if (string.Equals(instanceName, WMI_INSTANCE_NAME, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _wmiMethodsObject = instance;
+                        break;
+                    }
+                    instance.Dispose();
+                }
+            }
+
+            if (_wmiMethodsObject == null)
+            {
+                Logger.WriteLine("HpACPI: hpqBIntM instance not found");
+                return;
+            }
+
+            _wmiInitialized = true;
+            _wmiDisabled = false;
+            _consecutiveFailures = 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: WMI connection failed: {ex.Message}");
+        }
+    }
+
+    private void InitializeLegacyWmi()
+    {
+        if (_useLegacyWmi) return;
+
+        try
+        {
+            var scope = new ManagementScope(@"\\.\root\wmi", new ConnectionOptions
+            {
+                EnablePrivileges = true,
+                Impersonation = ImpersonationLevel.Impersonate
+            });
+            scope.Connect();
+
+            var dataClass = new ManagementClass(scope, new ManagementPath(WMI_DATA_CLASS), null);
+
+            using (var instances = new ManagementClass(scope, new ManagementPath(WMI_METHODS_CLASS), null).GetInstances())
+            {
+                foreach (ManagementObject instance in instances)
+                {
+                    string instanceName = Convert.ToString(instance["InstanceName"]);
+                    if (string.Equals(instanceName, WMI_INSTANCE_NAME, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _wmiMethodsObject?.Dispose();
+                        _wmiMethodsObject = instance;
+                        break;
+                    }
+                    instance.Dispose();
+                }
+            }
+
+            if (_wmiMethodsObject != null)
+            {
+                _wmiDataClass?.Dispose();
+                _wmiDataClass = dataClass;
+                _wmiScope = scope;
+                _useLegacyWmi = true;
+                Logger.WriteLine("HpACPI: Switched to legacy WMI fallback");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: Legacy WMI fallback also failed: {ex.Message}");
+        }
+    }
+
+    public WmiBiosResult ExecuteBiosCommand(uint command, int commandType, byte[] inputData, int returnDataSize)
+    {
+        if (_wmiDisabled)
+            return WmiBiosResult.Failure(returnDataSize);
+
+        if (!_wmiInitialized)
+        {
+            InitializeWmi();
+            if (!_wmiInitialized)
+                return WmiBiosResult.Failure(returnDataSize);
+        }
+
+        lock (this)
+        {
+            try
+            {
+                using (ManagementObject input = _wmiDataClass.CreateInstance())
+                {
+                    input["Sign"] = WMI_SIGN;
+                    input["Command"] = (uint)command;
+                    input["CommandType"] = (uint)commandType;
+                    input["Size"] = (uint)(inputData?.Length ?? 0);
+                    input["hpqBData"] = inputData ?? Array.Empty<byte>();
+
+                    string methodName = GetWmiMethodName(returnDataSize);
+                    ManagementBaseObject inParams = _wmiMethodsObject.GetMethodParameters(methodName);
+                    inParams["InData"] = input;
+
+                    ManagementBaseObject outParams = _wmiMethodsObject.InvokeMethod(methodName, inParams, null);
+                    ManagementBaseObject outData = outParams?["OutData"] as ManagementBaseObject;
+
+                    if (outData == null)
+                    {
+                        OnCommandFailure("Missing OutData");
+                        return WmiBiosResult.Failure(returnDataSize);
+                    }
+
+                    int returnCode = Convert.ToInt32(outData["rwReturnCode"]);
+                    byte[] returnData = CopyReturnData(outData["Data"] as byte[], returnDataSize);
+
+                    OnCommandSuccess();
+                    return new WmiBiosResult(true, returnCode, returnData);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (!_useLegacyWmi)
+                {
+                    InitializeLegacyWmi();
+                    if (_useLegacyWmi)
+                        return ExecuteBiosCommand(command, commandType, inputData, returnDataSize);
+                }
+                OnCommandFailure(ex.Message);
+                return WmiBiosResult.Failure(returnDataSize);
+            }
+        }
+    }
+
+    private void OnCommandSuccess()
+    {
+        _consecutiveFailures = 0;
+        if (_wmiDisabled)
+        {
+            _wmiDisabled = false;
+            Logger.WriteLine("HpACPI: WMI re-enabled after successful command");
+        }
+    }
+
+    private void OnCommandFailure(string reason)
+    {
+        _consecutiveFailures++;
+        if (_consecutiveFailures >= MAX_CONSECUTIVE_FAILURES && !_wmiDisabled)
+        {
+            _wmiDisabled = true;
+            Logger.WriteLine($"HpACPI: WMI disabled after {MAX_CONSECUTIVE_FAILURES} consecutive transport failures");
+            return;
+        }
+
+        if (DateTime.Now - _lastErrorLog > ERROR_LOG_INTERVAL)
+        {
+            _lastErrorLog = DateTime.Now;
+            Logger.WriteLine($"HpACPI: WMI transport error ({_consecutiveFailures}/{MAX_CONSECUTIVE_FAILURES}): {reason}");
+        }
+    }
+
+    private static string GetWmiMethodName(int returnDataSize)
+    {
+        if (returnDataSize <= 0) return "hpqBIOSInt0";
+        if (returnDataSize <= 4) return "hpqBIOSInt4";
+        if (returnDataSize <= 128) return "hpqBIOSInt128";
+        if (returnDataSize <= 1024) return "hpqBIOSInt1024";
+        return "hpqBIOSInt4096";
+    }
+
+    private static byte[] CopyReturnData(byte[] source, int returnDataSize)
+    {
+        if (returnDataSize <= 0) return Array.Empty<byte>();
+        byte[] result = new byte[returnDataSize];
+        if (source == null || source.Length == 0) return result;
+        Array.Copy(source, result, Math.Min(source.Length, result.Length));
+        return result;
+    }
+
+    #endregion
+
+    #region Heartbeat
+
+    private void StartHeartbeat()
+    {
+        if (!_wmiInitialized) return;
+        if (_heartbeatTimer != null) return;
+
+        _heartbeatTimer = new System.Timers.Timer(HEARTBEAT_INTERVAL_MS)
+        {
+            AutoReset = true,
+            Enabled = false
+        };
+        _heartbeatTimer.Elapsed += (s, e) =>
+        {
+            try
+            {
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    (int)HpBiosCommandType.SystemGetData,
+                    null,
+                    128);
+                Logger.WriteLine($"HpACPI heartbeat: success={result.Success} rc={result.ReturnCode}");
+            }
+            catch { }
+        };
+        _heartbeatTimer.Start();
+    }
+
+    #endregion
+
+    #region DeviceSet/DeviceGet — WMI-mapped implementations
 
     public void Control(uint dwIoControlCode, byte[] lpInBuffer, byte[] lpOutBuffer)
     {
@@ -262,8 +541,16 @@ public class HpACPI
 
     public void Close()
     {
-    }
+        _heartbeatTimer?.Dispose();
+        _heartbeatTimer = null;
 
+        _wmiInitialized = false;
+        try { _wmiMethodsObject?.Dispose(); } catch { }
+        try { _wmiDataClass?.Dispose(); } catch { }
+        _wmiMethodsObject = null;
+        _wmiDataClass = null;
+        _wmiScope = null;
+    }
 
     protected byte[] CallMethod(uint MethodID, byte[] args)
     {
@@ -277,46 +564,422 @@ public class HpACPI
 
     public int DeviceSet(uint DeviceID, int Status, string? logName)
     {
+        if (logName != null)
+            Logger.WriteLine($"HpACPI DeviceSet: {logName} (ID=0x{DeviceID:X}, Status={Status})");
+
+        if (DeviceID == PerformanceMode)
+            return SetPerformanceMode(Status);
+
+        if (DeviceID == BatteryLimit)
+            return SetBatteryCare(Status != 0);
+
+        if (DeviceID == ScreenOverdrive)
+            return SetOverdrive(Status != 0);
+
+        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo)
+            return SetGPUEco(Status);
+
+        if (DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
+            return SetGpuMode(Status == GPUModeUltimate ? 1 : 0);
+
+        if (DeviceID == GPUXG)
+            return SetGpuXg(Status);
+
+        if (DeviceID == StatusMode)
+            return 1;
+
+        if (DeviceID == UniversalControl)
+            return 1;
+
+        if (DeviceID == MicMuteLed || DeviceID == SoundMuteLed)
+            return 1;
+
+        if (DeviceID == ScreenMiniled1 || DeviceID == ScreenMiniled2 || DeviceID == ScreenFHD
+            || DeviceID == ScreenHDRControl || DeviceID == ScreenOptimalBrightness)
+            return 1;
+
+        if (DeviceID == PPT_APUA0 || DeviceID == PPT_APUA3 || DeviceID == PPT_APUC1
+            || DeviceID == PPT_CPUB0 || DeviceID == PPT_CPUB1)
+            return SetPowerLimit(DeviceID, Status);
+
+        if (DeviceID == PPT_GPUC0 || DeviceID == PPT_GPUC2)
+            return SetGpuPowerLimit(DeviceID, Status);
+
+        if (DeviceID == GPU_POWER || DeviceID == GPU_BASE)
+            return SetGpuPowerLimit(DeviceID, Status);
+
+        if (DeviceID == BootSound)
+            return 1;
+
+        if (DeviceID == CameraShutter || DeviceID == StatusLed
+            || DeviceID == ScreenPadToggle || DeviceID == ScreenPadBrightness || DeviceID == ScreenInit)
+            return 1;
+
+        Logger.WriteLine($"HpACPI: Unmapped DeviceSet 0x{DeviceID:X} = {Status}");
         return 1;
     }
-
 
     public int DeviceSet(uint DeviceID, byte[] Params, string? logName)
     {
+        if (logName != null)
+            Logger.WriteLine($"HpACPI DeviceSet(buf): {logName} (ID=0x{DeviceID:X}, Len={Params?.Length ?? 0})");
+
+        if (DeviceID == CPU_Fan || DeviceID == GPU_Fan || DeviceID == Mid_Fan)
+            return 1;
+
+        if (DeviceID == DevsCPUFanCurve || DeviceID == DevsGPUFanCurve || DeviceID == DevsMidFanCurve)
+        {
+            if (Params != null && Params.Length >= 2)
+                return SetFanTargetBlob(Params[0], Params[1]);
+            return 1;
+        }
+
+        if (DeviceID == StatusMode)
+        {
+            if (Params != null && Params.Length >= 2)
+            {
+                int modeByte = Params[1];
+                var result = ExecuteBiosCommand((uint)HpBiosCommand.Default, (int)HpBiosCommandType.PerformanceMode,
+                    new byte[] { 0xFF, (byte)modeByte, 0x01, 0x00 }, 4);
+                return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            }
+            return 1;
+        }
+
+        if (DeviceID == FanHysteresis)
+            return 1;
+
+        Logger.WriteLine($"HpACPI: Unmapped DeviceSet(buf) 0x{DeviceID:X}");
         return 1;
     }
 
-
     public int DeviceGet(uint DeviceID)
     {
+        if (DeviceID == ChargerMode)
+            return GetChargerMode();
+
+        if (DeviceID == ScreenOverdrive)
+            return GetOverdrive() ? 1 : 0;
+
+        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo)
+            return GetGpuEcoMode();
+
+        if (DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
+            return GetGpuMuxMode();
+
+        if (DeviceID == GPUXG)
+            return IsXGConnected() ? 1 : 0;
+
+        if (DeviceID == Temp_CPU)
+            return GetCpuTemp();
+
+        if (DeviceID == Temp_GPU)
+            return GetGpuTemp();
+
+        if (DeviceID == GPU_BASE)
+            return GetGpuBasePower();
+
+        if (DeviceID == ScreenMiniled1 || DeviceID == ScreenMiniled2)
+            return 0;
+
+        if (DeviceID == ScreenFHD || DeviceID == ScreenHDRControl || DeviceID == ScreenOptimalBrightness)
+            return 0;
+
+        if (DeviceID == BootSound)
+            return 0;
+
+        if (DeviceID == FnLock)
+            return 0;
+
+        if (DeviceID == SlateMode || DeviceID == TabletState || DeviceID == TentState)
+            return Tablet_Notebook;
+
+        if (DeviceID == CameraShutter || DeviceID == CameraLed || DeviceID == StatusLed)
+            return 0;
+
+        Logger.WriteLine($"HpACPI: Unmapped DeviceGet 0x{DeviceID:X}");
         return -1;
     }
 
     public byte[] DeviceGetBuffer(uint DeviceID, uint Status = 0)
     {
+        if (DeviceID == DevsCPUFanCurve || DeviceID == DevsGPUFanCurve || DeviceID == DevsMidFanCurve)
+            return GetFanCurve(DeviceID == DevsCPUFanCurve ? HpFan.CPU : DeviceID == DevsGPUFanCurve ? HpFan.GPU : HpFan.Mid);
+
         return new byte[16];
     }
 
+    #endregion
+
+    #region Performance Mode
+
+    private int SetPerformanceMode(int modeValue)
+    {
+        byte modeByte;
+        switch (modeValue)
+        {
+            case PerformanceBalanced:
+                modeByte = 0x30;
+                break;
+            case PerformanceTurbo:
+                modeByte = 0x31;
+                break;
+            case PerformanceSilent:
+                modeByte = 0x50;
+                break;
+            case PerformanceManual:
+                modeByte = 0x04;
+                break;
+            default:
+                modeByte = (byte)modeValue;
+                break;
+        }
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.PerformanceMode,
+            new byte[] { 0xFF, modeByte, 0x01, 0x00 },
+            4);
+
+        Logger.WriteLine($"HpACPI SetPerformanceMode: mode={modeValue} byte=0x{modeByte:X2} success={result.Success} rc={result.ReturnCode}");
+
+        if (!result.Success || result.ReturnCode != 0)
+        {
+            var retry = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.PerformanceMode,
+                new byte[] { 0xFF, modeByte, 0x00, 0x00 },
+                0);
+            Logger.WriteLine($"HpACPI SetPerformanceMode retry: success={retry.Success} rc={retry.ReturnCode}");
+            return retry.Success && retry.ReturnCode == 0 ? 1 : 0;
+        }
+
+        return 1;
+    }
+
+    #endregion
+
+    #region Battery
 
     public decimal? GetBatteryDischarge()
     {
         return null;
     }
 
+    private int SetBatteryCare(bool enabled)
+    {
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.BatteryCare,
+            new byte[] { enabled ? (byte)1 : (byte)0, 0, 0, 0 },
+            4);
+        Logger.WriteLine($"HpACPI SetBatteryCare: enabled={enabled} success={result.Success} rc={result.ReturnCode}");
+        return result.Success && result.ReturnCode == 0 ? 1 : 0;
+    }
+
+    private int GetChargerMode()
+    {
+        if (!IsWmiReady()) return ChargerBarrel;
+
+        try
+        {
+            var designData = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.SystemGetData,
+                null,
+                128);
+
+            if (designData.Success && designData.ReturnCode == 0 && designData.Data.Length >= 8)
+            {
+                return ChargerBarrel;
+            }
+        }
+        catch { }
+
+        return ChargerBarrel;
+    }
+
+    #endregion
+
+    #region Display
+
+    private bool _overdriveSupportedCached = false;
+    private bool _overdriveSupportedValue = false;
+
+    public bool IsOverdriveSupported()
+    {
+        if (_overdriveSupportedCached) return _overdriveSupportedValue;
+        if (!IsWmiReady()) return false;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.OverdriveGet,
+                null,
+                4);
+
+            if (result.Success && result.ReturnCode == 0)
+            {
+                _overdriveSupportedValue = true;
+            }
+            else
+            {
+                _overdriveSupportedValue = false;
+            }
+        }
+        catch
+        {
+            _overdriveSupportedValue = false;
+        }
+
+        _overdriveSupportedCached = true;
+        return _overdriveSupportedValue;
+    }
+
+    private bool GetOverdrive()
+    {
+        if (!IsWmiReady()) return false;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.OverdriveGet,
+            null,
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            return result.Data[0] != 0;
+
+        return false;
+    }
+
+    private int SetOverdrive(bool enabled)
+    {
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.OverdriveSet,
+            new byte[] { enabled ? (byte)1 : (byte)0, 0, 0, 0 },
+            4);
+        return result.Success && result.ReturnCode == 0 ? 1 : 0;
+    }
+
+    #endregion
+
+    #region GPU Mode
+
+    public int SetGPUEco(int eco)
+    {
+        return SetGpuMode(eco == GPUModeEco ? 0 : 1);
+    }
 
     public int SetVivoMode(int mode)
     {
         return 1;
     }
 
-    public int SetGPUEco(int eco)
+    private int GetGpuEcoMode()
     {
-        // Pretend success without changing hardware
+        if (!IsWmiReady()) return GPUModeStandard;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Legacy,
+            (int)HpBiosCommandType.GpuModeGet,
+            null,
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+        {
+            int mode = result.Data[0];
+            return mode == 0 ? GPUModeEco : GPUModeStandard;
+        }
+
+        return GPUModeStandard;
+    }
+
+    private int GetGpuMuxMode()
+    {
+        if (!IsWmiReady()) return GPUModeStandard;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Legacy,
+            (int)HpBiosCommandType.GpuModeGet,
+            null,
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+        {
+            int mode = result.Data[0];
+            if (mode == 0) return GPUModeEco;
+            if (mode == 1) return GPUModeUltimate;
+            return GPUModeStandard;
+        }
+
+        return GPUModeStandard;
+    }
+
+    private int SetGpuMode(int mode)
+    {
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.GpuMode,
+            (int)HpBiosCommandType.GpuModeSet,
+            new byte[] { (byte)mode, 0, 0, 0 },
+            4);
+        return result.Success && result.ReturnCode == 0 ? 1 : 0;
+    }
+
+    private int SetGpuXg(int status)
+    {
         return 1;
     }
 
+    #endregion
+
+    #region Fan Control
+
     public int GetFan(HpFan device)
     {
+        if (!IsWmiReady()) return -1;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.FanGetRpm,
+                new byte[4],
+                128);
+
+            if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 4)
+            {
+                int fanIndex = device == HpFan.GPU ? 1 : 0;
+                int offset = fanIndex * 2;
+                int rpm = result.Data[offset] | (result.Data[offset + 1] << 8);
+                if (rpm == 0 && fanIndex + 2 < result.Data.Length)
+                {
+                    rpm = result.Data[fanIndex + 2] | (result.Data[fanIndex + 3] << 8);
+                }
+                if (rpm > 8000) rpm = 0;
+                return rpm;
+            }
+        }
+        catch { }
+
+        try
+        {
+            var statusResult = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.StatusRead,
+                new byte[4],
+                128);
+
+            if (statusResult.Success && statusResult.ReturnCode == 0 && statusResult.Data.Length >= 2)
+            {
+                int fanIndex = device == HpFan.GPU ? 1 : 0;
+                int rpm = statusResult.Data[fanIndex] * 100;
+                return rpm;
+            }
+        }
+        catch { }
+
         return -1;
     }
 
@@ -327,18 +990,71 @@ public class HpACPI
 
     public int SetFanRange(HpFan device, byte[] curve)
     {
-        return 1;
+        return SetFanCurve(device, curve);
     }
-
 
     public int SetFanCurve(HpFan device, byte[] curve)
     {
+        if (!IsWmiReady()) return 1;
+
+        try
+        {
+            byte[][] fanCurves = new byte[4][];
+            for (int i = 0; i < 4; i++)
+                fanCurves[i] = new byte[128];
+
+            if (curve != null && curve.Length >= 16)
+            {
+                int maxRpm = 55;
+                if (curve.Length >= 16)
+                {
+                    int cpuRpm = 0;
+                    int gpuRpm = 0;
+                    for (int i = 7; i >= 0; i--)
+                    {
+                        if (curve[i + 8] > 0)
+                        {
+                            cpuRpm = (int)(curve[i + 8] / 100.0 * maxRpm);
+                            gpuRpm = cpuRpm;
+                            break;
+                        }
+                    }
+
+                    fanCurves[(int)device][0] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(cpuRpm * 100) / 100));
+                    fanCurves[(int)device][1] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(gpuRpm * 100) / 100));
+                }
+
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    (int)HpBiosCommandType.StatusWrite,
+                    fanCurves[(int)device],
+                    4);
+
+                return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            }
+        }
+        catch { }
+
         return 1;
+    }
+
+    private int SetFanTargetBlob(byte cpuFanLevel, byte gpuFanLevel)
+    {
+        byte[] blob = new byte[128];
+        blob[0] = (byte)Math.Max(0, Math.Min(65, (int)cpuFanLevel));
+        blob[1] = (byte)Math.Max(0, Math.Min(65, (int)gpuFanLevel));
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.StatusWrite,
+            blob,
+            4);
+
+        return result.Success && result.ReturnCode == 0 ? 1 : 0;
     }
 
     public byte[] GetFanCurve(HpFan device, int mode = 0)
     {
-        // Return empty/zero curve
         return new byte[16];
     }
 
@@ -362,6 +1078,285 @@ public class HpACPI
         return 1;
     }
 
+    private static int NormalizeRpm(int rpm)
+    {
+        int clamped = Math.Max(0, Math.Min(6500, rpm));
+        int quantized = (int)(Math.Round(clamped / 100.0) * 100.0);
+        if (quantized > 0 && quantized < 1300)
+            return 0;
+        return quantized;
+    }
+
+    #endregion
+
+    #region Temperature
+
+    private int GetCpuTemp()
+    {
+        if (!IsWmiReady()) return -1;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.TempGet,
+            new byte[] { 0x01, 0, 0, 0 },
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            return result.Data[0];
+
+        return -1;
+    }
+
+    private int GetGpuTemp()
+    {
+        if (!IsWmiReady()) return -1;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.TempGet,
+            new byte[] { 0x02, 0, 0, 0 },
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            return result.Data[0];
+
+        return -1;
+    }
+
+    #endregion
+
+    #region Power Limits
+
+    private int SetPowerLimit(uint deviceId, int value)
+    {
+        if (!IsWmiReady()) return 0;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.Tpptdp,
+                new byte[] { 0xFF, 0xFF, 0xFF, (byte)value },
+                4);
+            return result.Success && result.ReturnCode == 0 ? 1 : 0;
+        }
+        catch { }
+
+        return 0;
+    }
+
+    private int SetGpuPowerLimit(uint deviceId, int value)
+    {
+        if (!IsWmiReady()) return 0;
+
+        try
+        {
+            bool customTgp = value > 0;
+            bool ppab = value > 0;
+
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.GpuSetPower,
+                new byte[] { customTgp ? (byte)1 : (byte)0, ppab ? (byte)1 : (byte)0, 0x01, 0x00 },
+                0);
+            return result.Success && result.ReturnCode == 0 ? 1 : 0;
+        }
+        catch { }
+
+        return 0;
+    }
+
+    private int GetGpuBasePower()
+    {
+        if (!IsWmiReady()) return -1;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.GpuGetPower,
+            new byte[4],
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 2)
+            return result.Data[0]; // customTgp flag
+
+        return -1;
+    }
+
+    #endregion
+
+    #region Capability Detection
+
+    public bool IsXGConnected()
+    {
+        return false;
+    }
+
+    public bool IsAllAmdPPT()
+    {
+        if (_allAMD is null) _allAMD = false;
+        return (bool)_allAMD;
+    }
+
+    public void SetAPUMem(int memory = 4)
+    {
+    }
+
+    public int GetAPUMem()
+    {
+        return -1;
+    }
+
+    public (int, int) GetCores(bool max = false)
+    {
+        return (-1, -1);
+    }
+
+    public void SetCores(int eCores, int pCores)
+    {
+    }
+
+    public bool IsNVidiaGPU()
+    {
+        if (!IsWmiReady()) return false;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.GpuGetPower,
+                new byte[4],
+                4);
+
+            return result.Success && result.ReturnCode == 0;
+        }
+        catch { }
+
+        return false;
+    }
+
+    public bool IsSupported(uint DeviceID)
+    {
+        if (!_supportCache.TryGetValue(DeviceID, out bool supported))
+        {
+            supported = ProbeSupport(DeviceID);
+            _supportCache[DeviceID] = supported;
+        }
+        return supported;
+    }
+
+    private bool ProbeSupport(uint deviceId)
+    {
+        if (!IsWmiReady()) return false;
+
+        if (deviceId == ScreenOverdrive)
+            return IsOverdriveSupported();
+
+        if (deviceId == DevsCPUFanCurve || deviceId == DevsGPUFanCurve || deviceId == DevsMidFanCurve)
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.FanGetCount,
+                new byte[4],
+                4);
+            return result.Success && result.ReturnCode == 0;
+        }
+
+        if (deviceId == GPUEco || deviceId == GPUEcoROG || deviceId == GPUEcoVivo
+            || deviceId == GPUMux || deviceId == GPUMuxROG || deviceId == GPUMuxVivo)
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Legacy,
+                (int)HpBiosCommandType.GpuModeGet,
+                null,
+                4);
+            return result.Success && result.ReturnCode == 0;
+        }
+
+        if (deviceId == GPU_POWER || deviceId == GPU_BASE)
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.GpuGetPower,
+                new byte[4],
+                4);
+            return result.Success && result.ReturnCode == 0;
+        }
+
+        if (deviceId == PPT_GPUC0 || deviceId == PPT_GPUC2)
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.GpuGetPower,
+                new byte[4],
+                4);
+            return result.Success && result.ReturnCode == 0;
+        }
+
+        if (deviceId == MicMuteLed || deviceId == SoundMuteLed)
+            return false;
+
+        if (deviceId == PPT_APUA0 || deviceId == PPT_APUA3 || deviceId == PPT_APUC1
+            || deviceId == PPT_CPUB0 || deviceId == PPT_CPUB1)
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.Tpptdp,
+                new byte[] { 0xFF, 0xFF, 0xFF, 0 },
+                4);
+            return result.Success && result.ReturnCode == 0;
+        }
+
+        return false;
+    }
+
+    public string ScanRange()
+    {
+        if (!IsWmiReady()) return string.Empty;
+
+        var sb = new System.Text.StringBuilder();
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.SystemDesignData,
+                null,
+                128);
+
+            if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 8)
+            {
+                sb.AppendLine($"SystemDesignData: {BitConverter.ToString(result.Data[..Math.Min(16, result.Data.Length)])}");
+            }
+        }
+        catch { }
+
+        try
+        {
+            for (int cmdType = 0x10; cmdType <= 0x50; cmdType++)
+            {
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    cmdType,
+                    new byte[4],
+                    4);
+                if (result.Success && result.ReturnCode == 0)
+                    sb.AppendLine($"CMD 0x{cmdType:X2}: OK ({BitConverter.ToString(result.Data)})");
+            }
+        }
+        catch { }
+
+        return sb.ToString();
+    }
+
+    private byte[] DeviceGetLarge(uint DeviceID, int extraIn = 8, int outSize = 40)
+    {
+        return new byte[outSize];
+    }
+
+    #endregion
+
+    #region Fan Curve Utility
+
     public static byte[] FixFanCurve(byte[] curve)
     {
         if (curve.Length != 16) throw new Exception("Incorrect curve");
@@ -371,7 +1366,7 @@ public class HpACPI
 
         for (int i = 0; i < 8; i++)
         {
-            if (curve[i] <= old) curve[i] = (byte)Math.Min(100, old + 6); // preventing 2 points in same spot from default asus profiles
+            if (curve[i] <= old) curve[i] = (byte)Math.Min(100, old + 6);
             points[curve[i]] = curve[i + 8];
             old = curve[i];
         }
@@ -411,70 +1406,31 @@ public class HpACPI
         }
 
         return curve;
-
     }
 
-    public bool IsXGConnected()
-    {
-        return false;
-    }
+    #endregion
 
-    public bool IsAllAmdPPT()
-    {
-        if (_allAMD is null) _allAMD = false;
-        return (bool)_allAMD;
-    }
+    #region WmiBiosResult
 
-    public bool IsOverdriveSupported()
+    public readonly struct WmiBiosResult
     {
-        return false;
-    }
-
-    public bool IsSupported(uint DeviceID)
-    {
-        if (!_supportCache.TryGetValue(DeviceID, out bool supported))
+        public WmiBiosResult(bool success, int returnCode, byte[] data)
         {
-            supported = false;
-            _supportCache[DeviceID] = supported;
+            Success = success;
+            ReturnCode = returnCode;
+            Data = data ?? Array.Empty<byte>();
         }
-        return supported;
+
+        public bool Success { get; }
+        public int ReturnCode { get; }
+        public byte[] Data { get; }
+
+        public static WmiBiosResult Failure(int returnDataSize)
+        {
+            return new WmiBiosResult(false, -1,
+                returnDataSize > 0 ? new byte[returnDataSize] : Array.Empty<byte>());
+        }
     }
 
-    public bool IsNVidiaGPU()
-    {
-        return false;
-    }
-
-    public void SetAPUMem(int memory = 4)
-    {
-    }
-
-    public int GetAPUMem()
-    {
-        return -1;
-    }
-
-    public (int, int) GetCores(bool max = false)
-    {
-        return (-1, -1);
-    }
-
-    public void SetCores(int eCores, int pCores)
-    {
-    }
-
-    public string ScanRange()
-    {
-        return string.Empty;
-    }
-
-    private byte[] DeviceGetLarge(uint DeviceID, int extraIn = 8, int outSize = 40)
-    {
-        return new byte[outSize];
-    }
-
-    // TODO: Subscribe to HPBIOS_BIOSSettingEvent WMI events for power/thermal changes
-    //       (replaces ASUS ATKACPI event subscription)
-
-
+    #endregion
 }
