@@ -77,7 +77,7 @@ namespace OHelper.Fan
             if (AppConfig.ContainsModel("GU605")) return new int[3] { 62, 62, 92 };
 
             // HP OMEN models - fan curve defaults
-            if (AppConfig.IsOmenTranscend()) return new int[3] { 50, 50, DEFAULT_FAN_MAX };  // Thin-and-light: conservative fan limits
+            if (AppConfig.IsOmenTranscend()) return new int[3] { 65, 65, DEFAULT_FAN_MAX };  // Thin-and-light: conservative fan limits (updated to 6500 RPM max)
             if (AppConfig.IsOmenSlim()) return new int[3] { 52, 52, DEFAULT_FAN_MAX };       // Slim chassis
             if (AppConfig.IsOmenMax()) return new int[3] { 60, 60, 80 };                    // Flagship with mid fan
             if (AppConfig.IsOmen16()) return new int[3] { 55, 55, DEFAULT_FAN_MAX };        // Standard OMEN 16

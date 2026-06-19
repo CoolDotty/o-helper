@@ -32,6 +32,7 @@ namespace OHelper
         const int tempMax = 110;
 
         const int fansMax = 100;
+        const int fansMaxRpm = 6500; // Updated to match Transcend 14 6500 RPM max
 
         NvidiaGpuControl? nvControl = null;
         ModeControl modeControl = Program.modeControl;

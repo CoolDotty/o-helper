@@ -1630,7 +1630,6 @@ namespace OHelper
 
             string cpuFan = "";
             string gpuFan = "";
-            string midFan = "";
 
             string battery = "";
             string charge = "";
@@ -1659,7 +1658,6 @@ namespace OHelper
 
             if (HardwareControl.cpuFan is not null) cpuFan = Strings.FanSpeed + ": " + HardwareControl.cpuFan;
             if (HardwareControl.gpuFan is not null) gpuFan = Strings.FanSpeed + ": " + HardwareControl.gpuFan;
-            if (HardwareControl.midFan is not null) midFan = Strings.FanSpeed + ": " + HardwareControl.midFan;
 
             string trayTip = "CPU" + cpuTemp + " " + cpuFan;
             if (gpuTemp.Length > 0) trayTip += "\nGPU" + gpuTemp + " " + gpuFan;
@@ -1671,11 +1669,6 @@ namespace OHelper
                     labelCPUFan.Text = "CPU" + cpuTemp + "  " + cpuFan;
                     labelGPUFan.Text = "GPU" + gpuTemp + "  " + gpuFan;
 
-                    if (HardwareControl.gpuFan is not null && AppConfig.NoGpu())
-                        labelMidFan.Text = "GPU" + gpuTemp + " " + gpuFan;
-
-                    if (HardwareControl.midFan is not null) 
-                        labelMidFan.Text = "Mid " + midFan;
                     
                     labelBattery.Text = battery;
                     if (!batteryMouseOver && !batteryFullMouseOver) labelCharge.Text = charge;
@@ -1747,7 +1740,7 @@ namespace OHelper
                 case HpACPI.PerformanceBalanced:
                     buttonBalanced.Activated = true;
                     break;
-                case HpACPI.PerformanceUnleashed:
+                case HpACPI.PerformanceManual:
                     buttonUnleashed.Activated = true;
                     break;
                 default:
@@ -1756,7 +1749,7 @@ namespace OHelper
                     {
                         HpACPI.PerformanceSilent => colorEco,
                         HpACPI.PerformanceTurbo => colorTurbo,
-                        HpACPI.PerformanceUnleashed => colorCustom,
+                        HpACPI.PerformanceManual => colorCustom,
                         _ => colorStandard,
                     };
                     break;
@@ -1998,7 +1991,7 @@ namespace OHelper
 
         private void ButtonUnleashed_Click(object? sender, EventArgs e)
         {
-            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceUnleashed);
+            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceManual);
         }
 
 

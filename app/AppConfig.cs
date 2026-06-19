@@ -362,9 +362,50 @@ public static class AppConfig
         int mode = Modes.GetCurrentBase();
         byte[] curve;
 
+        // Check if this is a Transcend model that should use the specific curves from the issue
+        if (IsOmenTranscend())
+        {
+            switch (mode)
+            {
+                case HpACPI.PerformanceBalanced:
+                    switch (device)
+                    {
+                        case HpFan.GPU:
+                            return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                        default:
+                            return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                    }
+                case HpACPI.PerformanceTurbo:
+                    switch (device)
+                    {
+                        case HpFan.GPU:
+                            return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
+                        default:
+                            return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
+                    }
+                case HpACPI.PerformanceManual:
+                    switch (device)
+                    {
+                        case HpFan.GPU:
+                            return StringToBytes("1E-32-3A-41-48-4E-55-64-1C-26-30-3A-46-52-5C-64");
+                        default:
+                            return StringToBytes("1E-32-3A-41-48-4E-55-64-1C-26-30-3A-46-52-5C-64");
+                    }
+                default:
+                    // Fallback to balanced for unknown cases
+                    switch (device)
+                    {
+                        case HpFan.GPU:
+                            return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                        default:
+                            return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                    }
+            }
+        }
+
         switch (mode)
         {
-            case HpACPI.PerformanceUnleashed:
+            case HpACPI.PerformanceManual:
                 switch (device)
                 {
                     case HpFan.GPU:

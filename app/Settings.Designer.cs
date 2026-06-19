@@ -92,7 +92,6 @@ namespace OHelper
             buttonMiniled = new RButton();
             buttonFHD = new RButton();
             panelScreenTitle = new Panel();
-            labelMidFan = new Label();
             pictureScreen = new PictureBox();
             labelSreen = new Label();
             panelKeyboard = new Panel();
@@ -1257,7 +1256,6 @@ namespace OHelper
             // 
             // panelScreenTitle
             // 
-            panelScreenTitle.Controls.Add(labelMidFan);
             panelScreenTitle.Controls.Add(pictureScreen);
             panelScreenTitle.Controls.Add(labelSreen);
             panelScreenTitle.Dock = DockStyle.Top;
@@ -1266,17 +1264,6 @@ namespace OHelper
             panelScreenTitle.Name = "panelScreenTitle";
             panelScreenTitle.Size = new Size(787, 40);
             panelScreenTitle.TabIndex = 25;
-            // 
-            // labelMidFan
-            // 
-            labelMidFan.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            labelMidFan.Location = new Point(500, 0);
-            labelMidFan.Margin = new Padding(8, 0, 8, 0);
-            labelMidFan.Name = "labelMidFan";
-            labelMidFan.Size = new Size(285, 35);
-            labelMidFan.TabIndex = 28;
-            labelMidFan.Text = "         ";
-            labelMidFan.TextAlign = ContentAlignment.TopRight;
             // 
             // pictureScreen
             // 
@@ -2344,7 +2331,6 @@ namespace OHelper
         private Label labelPerf;
         private Label labelCPUFan;
         private Panel panelScreenTitle;
-        private Label labelMidFan;
         private PictureBox pictureScreen;
         private Label labelSreen;
         private Panel panelKeyboardTitle;
