@@ -209,7 +209,6 @@ public class HpACPI
     public const int PCoreMax = 16;
     public const int ECoreMax = 16;
 
-    private bool? _allAMD = null;
     private readonly Dictionary<uint, bool> _supportCache = new();
 
     public static uint GPUEco => AppConfig.IsVivoZenPro() ? GPUEcoVivo : GPUEcoROG;
@@ -299,6 +298,8 @@ public class HpACPI
 
             var probe = ExecuteBiosCommand((uint)HpBiosCommand.Default, (int)HpBiosCommandType.SystemGetData, null, 128);
             Logger.WriteLine($"HpACPI: WMI probe SystemGetData: success={probe.Success} rc={probe.ReturnCode} len={probe.Data.Length}");
+
+            DetectCapabilities();
         }
         catch (Exception ex)
         {
@@ -668,7 +669,9 @@ public class HpACPI
             return GetGpuMuxMode();
 
         if (DeviceID == GPUXG)
+#pragma warning disable CS0618
             return IsXGConnected() ? 1 : 0;
+#pragma warning restore CS0618
 
         if (DeviceID == Temp_CPU)
             return GetCpuTemp();
@@ -1186,6 +1189,95 @@ public class HpACPI
 
     #region Capability Detection
 
+    private SystemDesignDataInfo? _systemDesignData;
+    private bool? _isNvidiaGpu;
+    private bool? _isAllAmd;
+    private bool _capabilityDetectionComplete;
+
+    public SystemDesignDataInfo GetSystemDesignData()
+    {
+        if (_systemDesignData != null) return _systemDesignData;
+
+        if (!IsWmiReady()) return SystemDesignDataInfo.Empty;
+
+        try
+        {
+            for (int attempt = 0; attempt < 3; attempt++)
+            {
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    (int)HpBiosCommandType.SystemDesignData,
+                    null,
+                    128);
+
+                if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 9)
+                {
+                    _systemDesignData = SystemDesignDataInfo.FromRaw(result.Data[7], true);
+                    Logger.WriteLine($"HpACPI: SystemDesignData byte[7]=0x{_systemDesignData.RawGpuModeSwitch:X2} slots={_systemDesignData.GraphicsModeSlots} switching={_systemDesignData.SupportsGraphicsSwitching}");
+                    return _systemDesignData;
+                }
+
+                Thread.Sleep(100);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: SystemDesignData read failed: {ex.Message}");
+        }
+
+        _systemDesignData = SystemDesignDataInfo.Empty;
+        return _systemDesignData;
+    }
+
+    public void DetectCapabilities()
+    {
+        if (_capabilityDetectionComplete) return;
+        _capabilityDetectionComplete = true;
+
+        Logger.WriteLine("HpACPI: Starting capability detection...");
+
+        var sdd = GetSystemDesignData();
+        Logger.WriteLine($"HpACPI: Graphics switching supported: {sdd.SupportsGraphicsSwitching} (slots: {sdd.GraphicsModeSlots})");
+
+        DetectGpuVendor();
+        Logger.WriteLine($"HpACPI: NVIDIA GPU: {IsNVidiaGPU()}, All-AMD PPT: {IsAllAmdPPT()}");
+
+        Logger.WriteLine($"HpACPI: Overdrive supported: {IsOverdriveSupported()}");
+
+        var modelCaps = AppConfig.GetModelCapabilities();
+        Logger.WriteLine($"HpACPI: Model capabilities loaded: {modelCaps.ModelName} (ProductId: {modelCaps.ProductId}, Family: {modelCaps.Family})");
+    }
+
+    private void DetectGpuVendor()
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
+            bool hasNvidia = false;
+            bool hasAmd = false;
+
+            foreach (var obj in searcher.Get())
+            {
+                string name = obj["Name"]?.ToString() ?? "";
+                if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase))
+                    hasNvidia = true;
+                else if (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) ||
+                         name.Contains("Radeon", StringComparison.OrdinalIgnoreCase))
+                    hasAmd = true;
+            }
+
+            _isNvidiaGpu = hasNvidia;
+            _isAllAmd = !hasNvidia && hasAmd;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: GPU vendor detection failed: {ex.Message}");
+            _isNvidiaGpu = false;
+            _isAllAmd = false;
+        }
+    }
+
+    [Obsolete("XG Mobile is an ASUS ROG proprietary eGPU dock. Use AppConfig.GetModelCapabilities() instead.")]
     public bool IsXGConnected()
     {
         return false;
@@ -1193,8 +1285,9 @@ public class HpACPI
 
     public bool IsAllAmdPPT()
     {
-        if (_allAMD is null) _allAMD = false;
-        return (bool)_allAMD;
+        if (_isAllAmd.HasValue) return _isAllAmd.Value;
+        DetectGpuVendor();
+        return _isAllAmd ?? false;
     }
 
     public void SetAPUMem(int memory = 4)
@@ -1217,21 +1310,9 @@ public class HpACPI
 
     public bool IsNVidiaGPU()
     {
-        if (!IsWmiReady()) return false;
-
-        try
-        {
-            var result = ExecuteBiosCommand(
-                (uint)HpBiosCommand.Default,
-                (int)HpBiosCommandType.GpuGetPower,
-                new byte[4],
-                4);
-
-            return result.Success && result.ReturnCode == 0;
-        }
-        catch { }
-
-        return false;
+        if (_isNvidiaGpu.HasValue) return _isNvidiaGpu.Value;
+        DetectGpuVendor();
+        return _isNvidiaGpu ?? false;
     }
 
     public bool IsSupported(uint DeviceID)

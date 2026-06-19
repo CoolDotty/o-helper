@@ -261,7 +261,9 @@ namespace OHelper.Gpu
                     if ((GpuAuto && !IsPlugged()) || (ForceGPU && GpuMode == HpACPI.GPUModeEco))
                     {
 
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
                         if (Program.acpi.IsXGConnected()) return false;
+#pragma warning restore CS0618
                         if (HardwareControl.IsUsedGPU())
                         {
                             DialogResult dialogResult = MessageBox.Show(Properties.Strings.AlertDGPU, Properties.Strings.AlertDGPUTitle, MessageBoxButtons.YesNo);

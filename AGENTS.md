@@ -23,12 +23,15 @@ O-Helper is a **lightweight Windows Forms (WinForms) tray application** written 
 app/
 ├── Program.cs             # Entry point — sets up singletons, tray icon, event subs
 ├── HpACPI.cs              # WMI BIOS interface — hpqBIntM/hpqBDataIn in root\wmi
-├── AppConfig.cs           # JSON config store (debounced write, atomic file ops)
+├── AppConfig.cs           # JSON config store (debounced write, atomic file ops, model detection)
 ├── HardwareControl.cs     # Static class — sensor polling, native battery API, fan/GpuControl refs
 ├── NativeMethods.cs       # P/Invoke helpers (idle time, screen off, lock, error lookup)
 ├── Settings.cs            # Main SettingsForm (partial class + .Designer.cs)
 ├── Fans.cs / Fans.Designer.cs   # Fan curve editor form
 ├── Extra.cs / Extra.Designer.cs  # Services/extra settings form
+├── Hardware/              # Capability detection infrastructure
+│   ├── SystemDesignDataInfo.cs   # BIOS type-40 blob parsing, GPU mode support flags
+│   └── ModelCapabilityDatabase.cs # Per-ProductID model feature flags (30+ OMEN models)
 ├── Overlay/              # Hardware overlay (FPS, temps, usage) with ETW FPS monitor
 ├── USB/                  # HID device access (Omen keyboard RGB, accessories) — safe-falls if no HW
 ├── Peripherals/          # HP Omen mouse/keyboard detection — safe-falls if no HW
@@ -44,7 +47,7 @@ app/
 1. Parse CLI args (supports `charge`, `cpu`, `gpu`, `services`, etc.)
 2. Set up localization from `config.json`
 3. Create **global static singletons**: `settingsForm`, `modeControl`, `gpuControl`, `allyControl`, `clamshellControl`, `toast`, `hardwareOverlay`, `acpi`, `trayIcon`, `inputDispatcher`
-4. Initialize HpACPI — connects to `root\wmi` via `hpqBIntM`, probes `SystemGetData`, starts heartbeat timer
+4. Initialize HpACPI — connects to `root\wmi` via `hpqBIntM`, probes `SystemGetData`, reads `SystemDesignData` (type 40), runs `DetectCapabilities()` (GPU vendor, overdrive, model DB), starts heartbeat timer
 5. Set up tray icon, context menu, input dispatcher (keyboard hook), XGM, aura, matrix
 6. Subscribe to system events: `PowerModeChanged`, `SessionSwitch`, `DisplaySettingsChanged`, power setting notifications
 7. Start sensor refresh timers
@@ -125,6 +128,7 @@ Labels use `Properties.Strings.{Key}` — resources are in `.resx` files. Locali
 | GPU Power Get | `GPU_BASE/GPU_POWER` | `0x20008 / 0x21`, 4 bytes out |
 | GPU Power Set | `PPT_GPUC0` | `0x20008 / 0x22`, payload `{tgp, ppab, 0x01, 0x00}` |
 | System Design Data | — | `0x20008 / 0x28`, 128 bytes out |
+| System Design Data (type 40) | — | `0x20008 / 0x40`, 128 bytes out — byte[7] = GPU mode support flags |
 | Fan RPM | `GetFan()` | `0x20008 / 0x38` (direct RPM), fallback `0x20008 / 0x45` (status blob) |
 | Fan Target Blob | `DevsCPUFanCurve` | `0x20008 / 0x46`, 128-byte blob (bytes 0,1 = CPU/GPU RPM÷100) |
 | CPU/GPU Temp | `Temp_CPU/Temp_GPU` | `0x20008 / 0x23`, input `{0x01,...}`/`{0x02,...}` |
@@ -149,18 +153,37 @@ Hardware quirks, different laptop series, and one-off BIOS workarounds are handl
 
 ### Model Detection (`AppConfig.cs`)
 
-Two WMI queries at startup, cached in `Lazy<string>`:
+Three WMI queries at startup, cached in `Lazy<string>`:
 
 | Source | Field | Example |
 |--------|-------|---------|
 | `Win32_ComputerSystem` | `Model` | `"HP OMEN 16-am2020ca"` |
 | `Win32_BIOS` | `SMBIOSBIOSVersion` | `"F.12"` |
+| `Win32_BaseBoard` | `Product` | `"8E41"` |
 
-Key accessors: `GetModel()`, `GetModelShort()`, `ContainsModel("pattern")` (case-insensitive substring match).
+Key accessors: `GetModel()`, `GetModelShort()`, `GetProductId()`, `ContainsModel("pattern")` (case-insensitive substring match), `GetModelCapabilities()` (returns `ModelCapabilities` from database), `GetModelFamily()` (returns `OmenModelFamily` enum).
 
 ### Boolean Gate Pattern (Centralized Quirks)
 
-~20+ methods in `AppConfig.cs` return `true`/`false` based on `ContainsModel()`. No interfaces, no strategy pattern — just if/else branching.
+~20+ methods in `AppConfig.cs` return `true`/`false` based on `ContainsModel()`. No interfaces, no strategy pattern — just if/else branching. These are **coarse, fast** checks based on model string.
+
+For **precise, per-ProductId** feature flags, use `AppConfig.GetModelCapabilities()` which returns a `ModelCapabilities` object from the `ModelCapabilityDatabase` (see `Hardware/ModelCapabilityDatabase.cs`).
+
+### Capability Detection (`HpACPI.cs`)
+
+`DetectCapabilities()` runs during `HpACPI` construction:
+
+1. **SystemDesignData (type 40)** — Reads 128-byte BIOS blob, parses byte[7] as `GraphicsModeSupportSlot` flags (Integrated/Hybrid/Dedicated/Optimus). Access via `Program.acpi.GetSystemDesignData()`.
+2. **GPU Vendor Detection** — `Win32_VideoController` WMI query for NVIDIA/AMD/Intel. Results cached in `_isNvidiaGpu` / `_isAllAmd`.
+3. **Overdrive Probe** — WMI 0x35 command success check (existing, pre-warmed by `DetectCapabilities()`).
+4. **Model Database Lookup** — `AppConfig.GetModelCapabilities()` resolves ProductId → per-model feature flags.
+
+| Gate Method | Detection Source | Previous |
+|-------------|-----------------|----------|
+| `IsOverdriveSupported()` | WMI 0x35 probe (unchanged) | WMI 0x35 probe |
+| `IsNVidiaGPU()` | `Win32_VideoController` WHERE Name LIKE '%NVIDIA%' | GpuGetPower WMI success |
+| `IsAllAmdPPT()` | `Win32_VideoController` (no NVIDIA + has AMD) | Always `false` |
+| `IsXGConnected()` | `[Obsolete]` — always returns `false` (ASUS-only) | Always `false` |
 
 **Family Gates** (select ACPI/WMI constants, available features, UI visibility):
 
@@ -229,15 +252,16 @@ Users can override model detection or force behavior via config flags checked wi
 | `no_gpu` | Disable GPU mode switching (mux) |
 | `gpu_mode_force_set` | Force GPU mode instead of toggling |
 | `no_brightness` | Disable brightness control |
-| `force_family` | Override family detection ("omen", "omen_slim", "omen_max", "transcend") — useful for demo/clearance units with weird model strings |
+| `force_family` | Override family detection ("omen", "omen_slim", "omen_max", "transcend", "victus", "desktop") — overrides `ModelCapabilityDatabase` lookup |
 
 ### Adding a New Model
 
-1. Add `ContainsModel("NEW")` calls in the appropriate `AppConfig.cs` gate methods
-2. If a new quirk, add a new boolean method in `AppConfig.cs` and branch in the relevant feature file
-3. If new fan limits, add an entry in `FanSensorControl.cs`
-4. If new GPU power defaults, add an entry in `NvidiaSmi.cs`
-5. If existing config flags don't cover it, consider adding a new one as an escape hatch
+1. Add an entry to `ModelCapabilityDatabase` in `Hardware/ModelCapabilityDatabase.cs` with the ProductId and feature flags
+2. If coarse model-string matching is needed, add `ContainsModel("NEW")` calls in the appropriate `AppConfig.cs` gate methods
+3. If a new quirk, add a new boolean method in `AppConfig.cs` and branch in the relevant feature file
+4. If new fan limits, add an entry in `FanSensorControl.cs`
+5. If new GPU power defaults, add an entry in `NvidiaSmi.cs`
+6. If existing config flags don't cover it, consider adding a new one as an escape hatch
 
 ### Static Everything
 Almost all core services are **static classes** or accessed via static references on `Program`. There's no dependency injection. This works for single-instance tray apps but makes testing impossible.

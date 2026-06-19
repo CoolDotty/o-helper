@@ -1140,7 +1140,9 @@ namespace OHelper
             }
 
             // XG Mobile Fan check
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
             if (Program.acpi.IsXGConnected() || XGM.IsConnected())
+#pragma warning restore CS0618
             {
                 AppConfig.Set("xgm_fan", 1);
                 chartCount++;

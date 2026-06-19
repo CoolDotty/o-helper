@@ -230,7 +230,9 @@ namespace OHelper.Mode
                 if (AppConfig.Is("xgm_fan"))
                 {
                     XGM.SetFan(AppConfig.GetFanConfig(HpFan.XGM));
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
                     xgmFan = Program.acpi.IsXGConnected();
+#pragma warning restore CS0618
                 }
 
                 int cpuResult = Program.acpi.SetFanCurve(HpFan.CPU, AppConfig.GetFanConfig(HpFan.CPU));

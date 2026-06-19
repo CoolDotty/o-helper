@@ -1791,11 +1791,13 @@ namespace OHelper
 
             if (!connected) return;
 
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
             if (GPUMode != -1)
                 ButtonEnabled(buttonXGM, AppConfig.IsAMDiGPU() || GPUMode != HpACPI.GPUModeEco);
 
 
             int activated = Program.acpi.DeviceGet(HpACPI.GPUXG);
+#pragma warning restore CS0618
             Logger.WriteLine("XGM Activated flag: " + activated);
 
             buttonXGM.Activated = activated == 1;
@@ -1881,7 +1883,9 @@ namespace OHelper
             {
                 tableGPU.Visible = false;
                 labelGPU.Text = "GPU";
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
                 if (Program.acpi.IsXGConnected())
+#pragma warning restore CS0618
                 {
                     tableAMD.Controls.Add(buttonXGM, 1, 0);
                     VisualizeXGM();

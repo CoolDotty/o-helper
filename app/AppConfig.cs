@@ -129,6 +129,9 @@ public static class AppConfig
     private static readonly Lazy<(string Bios, string ModelShort)> _biosData =
         new Lazy<(string, string)>(LoadBios, LazyThreadSafetyMode.ExecutionAndPublication);
 
+    private static readonly Lazy<string> _productId =
+        new Lazy<string>(LoadProductId, LazyThreadSafetyMode.ExecutionAndPublication);
+
     private static string LoadModel()
     {
         try
@@ -168,7 +171,60 @@ public static class AppConfig
         return (string.Empty, string.Empty);
     }
 
+    private static string LoadProductId()
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_BaseBoard");
+            foreach (var obj in searcher.Get())
+            {
+                using (obj)
+                {
+                    string product = obj["Product"]?.ToString() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(product))
+                        return product;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"AppConfig: ProductId detection failed: {ex.Message}");
+        }
+        return string.Empty;
+    }
+
     public static string GetModel() => _model.Value;
+
+    public static string GetProductId() => _productId.Value;
+
+    public static ModelCapabilities GetModelCapabilities()
+    {
+        string? forceFamily = Exists("force_family") ? GetString("force_family") : null;
+        if (!string.IsNullOrEmpty(forceFamily))
+        {
+            var forcedFamily = forceFamily.ToLowerInvariant() switch
+            {
+                "omen" => OmenModelFamily.OMEN16,
+                "omen_slim" => OmenModelFamily.OMEN16,
+                "omen_max" => OmenModelFamily.OMEN2024Plus,
+                "transcend" => OmenModelFamily.Transcend,
+                "victus" => OmenModelFamily.Victus,
+                "desktop" => OmenModelFamily.Desktop,
+                _ => OmenModelFamily.Unknown
+            };
+
+            if (forcedFamily != OmenModelFamily.Unknown)
+                return ModelCapabilityDatabase.GetCapabilitiesByFamily(forcedFamily);
+        }
+
+        var caps = ModelCapabilityDatabase.GetPreferredCapabilities(GetProductId(), GetModel());
+        return caps ?? ModelCapabilityDatabase.GetCapabilities(GetProductId());
+    }
+
+    public static OmenModelFamily GetModelFamily()
+    {
+        return GetModelCapabilities().Family;
+    }
 
     public static (string, string) GetBiosAndModel() => (_biosData.Value.Bios, _biosData.Value.ModelShort);
 
@@ -752,7 +808,9 @@ public static class AppConfig
 
     public static bool IsOmenFanControllable()
     {
-        return IsOmen() && !NoWMI();
+        if (!IsOmen()) return false;
+        var caps = GetModelCapabilities();
+        return caps.SupportsFanControlWmi || caps.SupportsFanControlEc;
     }
 
     public static bool IsOmenAlwaysUltimate()
