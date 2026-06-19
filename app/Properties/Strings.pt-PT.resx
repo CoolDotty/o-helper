@@ -379,7 +379,7 @@
     <value>Desativar o dGPU para poupar energia</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Económico</value>
+    <value>Só iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Desativar a dGPU por ativar o modo Eco enquanto o Modo de Ecrã no Painel de Controlo da NVIDIA não está definido para Optimus pode causar problemas com os controlos do brilho do painel até ao próximo reinício.
@@ -462,10 +462,10 @@ Quer prosseguir?</value>
     <value>Modo da GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Só iGPU</value>
+    <value>Só integrada</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Híbrido</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Exclusivamente dGPU</value>
@@ -741,7 +741,7 @@ Quer prosseguir?</value>
     <value>Desligar</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Silencioso</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Hibernação</value>
@@ -750,7 +750,7 @@ Quer prosseguir?</value>
     <value>Liga o dGPU para uso padrão</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Padrão</value>
+    <value>Híbrido</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Iniciar</value>
@@ -792,7 +792,7 @@ Quer prosseguir?</value>
     <value>Ecrã Tátil</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Desempenho</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Desligado</value>
@@ -963,5 +963,11 @@ Recomendado se ocorrerem bloqueios aleatórios ou hardware que não responde.</v
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Solto</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

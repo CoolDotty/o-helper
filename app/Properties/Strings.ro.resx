@@ -379,7 +379,7 @@
     <value>Dezactivează dGPU pentru a economisi bateria</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>Doar iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Dezactivarea dGPU pentru a utiliza modul Eco, în timp ce Display Mode în NVIDIA Control Panel nu este setat la modul Optimus, poate cauza probleme cu controalele de luminozitate până la următoarea repornire. 
@@ -462,10 +462,10 @@
     <value>Modul GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Doar iGPU</value>
+    <value>Doar integrată</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hibrid</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>exclusiv dGPU</value>
@@ -741,7 +741,7 @@
     <value>Oprire</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Silențios</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Somn</value>
@@ -750,7 +750,7 @@
     <value>Activează dGPU pentru uz standard</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Standard</value>
+    <value>Hibrid</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Start</value>
@@ -792,7 +792,7 @@
     <value>Touchscreen</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Performanță</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Dezactivat</value>
@@ -963,5 +963,11 @@ Recomandat dacă întâmpinați blocaje aleatorii sau hardware care nu răspunde
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Dezlănțuit</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

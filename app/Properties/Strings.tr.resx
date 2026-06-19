@@ -379,7 +379,7 @@
     <value>Pil tasarrufu için dGPU devre dışı bırakılır</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eko</value>
+    <value>Sadece iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>NVIDIA Denetim Masası'ndaki Görüntü Modu Optimus olarak ayarlı değilken Eko moduna geçilerek harici GPU'nun devre dışı bırakılması, bir sonraki yeniden başlatmaya kadar parlaklık ayarlarında sorunlara neden olabilir. 
@@ -462,10 +462,10 @@ Yine de devam etmek istiyor musunuz?</value>
     <value>GPU Modu</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Sadece iGPU</value>
+    <value>Yalnızca tümleşik</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hibrit</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Ayrıcalıklı dGPU</value>
@@ -741,7 +741,7 @@ Yine de devam etmek istiyor musunuz?</value>
     <value>Kapanış</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Sessiz</value>
+    <value>Eko</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Uyku</value>
@@ -750,7 +750,7 @@ Yine de devam etmek istiyor musunuz?</value>
     <value>Standart kullanım için dGPU etkinleştirilir</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Standart</value>
+    <value>Hibrit</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Başlat</value>
@@ -792,7 +792,7 @@ Yine de devam etmek istiyor musunuz?</value>
     <value>Dokunmatik ekran</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Performans</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Kapatıldı</value>
@@ -963,5 +963,11 @@ Rastgele takılmalar veya yanıt vermeyen donanım yaşıyorsanız önerilir.</v
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Serbest</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eko</value>
   </data>
 </root>

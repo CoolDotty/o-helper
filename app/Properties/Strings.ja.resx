@@ -379,7 +379,7 @@
     <value>バッテリー節約のためにdGPUを無効にします</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>エコ</value>
+    <value>iGPU のみ</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>NVIDIA Control Panel の ディスプレイモード が Optimus に設定されていない場合、エコモードに入って dGPU を無効にすると、次回再起動するまで明るさコントロールに問題が生じる可能性があります。 
@@ -462,10 +462,10 @@
     <value>GPUモード</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>iGPU のみ</value>
+    <value>統合のみ</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>ハイブリッド</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>dGPU 専用</value>
@@ -741,7 +741,7 @@
     <value>シャットダウン</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>サイレント</value>
+    <value>エコ</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>スリープ</value>
@@ -750,7 +750,7 @@
     <value>標準的な使用のために dGPU を有効にします</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>標準</value>
+    <value>ハイブリッド</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>スタート</value>
@@ -792,7 +792,7 @@
     <value>タッチスクリーン</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>ターボ</value>
+    <value>パフォーマンス</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>無効</value>
@@ -963,5 +963,11 @@ GPU が有効化されたときに自動的に再起動します</value>
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>アンリーシュド</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>エコ</value>
   </data>
 </root>

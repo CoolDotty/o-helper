@@ -379,7 +379,7 @@
     <value>Vypne dGPU pro úsporu baterie</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>Pouze iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Vypnutí dGPU přepnutím do režimu Eco, když není režim zobrazení v ovládacím panelu NVIDIA nastaven na Optimus, může způsobit potíže s ovládáním jasu až do dalšího restartu.  
@@ -459,10 +459,10 @@ Chcete přesto pokračovat?</value>
     <value>Režim GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>jen iGPU</value>
+    <value>Jen integrovaná</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hybridní</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Výhradně dGPU</value>
@@ -738,7 +738,7 @@ Chcete přesto pokračovat?</value>
     <value>Vypínání</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Tichý</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Spánek</value>
@@ -747,7 +747,7 @@ Chcete přesto pokračovat?</value>
     <value>Zapne dGPU pro běžné použití</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Standardní</value>
+    <value>Hybridní</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Spustit</value>
@@ -789,7 +789,7 @@ Chcete přesto pokračovat?</value>
     <value>Dotykový displej</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Výkon</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Vypnuto</value>
@@ -954,5 +954,11 @@ a automaticky je spustí, jakmile je GPU zapnuté</value>
   <data name="DisablePCIeASPMTooltip" xml:space="preserve">
     <value>Zabraňuje zařízením PCIe vstoupit do nízkoenergetických nečinných stavů.
 Doporučeno, pokud zaznamenáváte náhodné zaseknutí nebo nereagující hardware.</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Neomezený</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

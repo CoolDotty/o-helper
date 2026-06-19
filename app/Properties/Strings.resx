@@ -379,7 +379,7 @@
     <value>Disables dGPU to save battery</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>iGPU Only</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Disabling the dGPU by going into Eco mode while Display Mode in NVIDIA Control Panel is not set to Optimus might cause problems with brightness controls until after the next reboot. 
@@ -462,10 +462,10 @@ Do you still want to continue?</value>
     <value>GPU Mode</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>iGPU only</value>
+    <value>Integrated only</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hybrid</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>dGPU exclusive</value>
@@ -741,7 +741,7 @@ Do you still want to continue?</value>
     <value>Shutdown</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Silent</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Sleep</value>
@@ -750,7 +750,7 @@ Do you still want to continue?</value>
     <value>Enables dGPU for standard use</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Standard</value>
+    <value>Hybrid</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Start</value>
@@ -792,7 +792,10 @@ Do you still want to continue?</value>
     <value>Touchscreen</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Performance</value>
+  </data>
+  <data name="Performance" xml:space="preserve">
+    <value>Performance</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Turned off</value>
@@ -808,6 +811,12 @@ Do you still want to continue?</value>
   </data>
   <data name="UndervoltingRisky" xml:space="preserve">
     <value>Undervolting is an experimental and risky feature. If applied values are too low for your hardware, it can become unstable, shut down or cause data corruption. If you want to try - start from small values first, click Apply and test what works for you.</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Unleashed</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
   <data name="Unmuted" xml:space="preserve">
     <value>Unmuted</value>

@@ -379,7 +379,7 @@
     <value>배터리 절약을 위해 dGPU 비활성화</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>iGPU만</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>NVIDIA 제어판에서 디스플레이 모드가 Optimus로 설정되지 않은 상태에서 Eco 모드로 전환하여 dGPU를 비활성화하면 다시 시작하기 전까지 밝기 조절에 문제가 발생할 수 있습니다.
@@ -462,10 +462,10 @@
     <value>GPU 모드</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>iGPU만 사용</value>
+    <value>통합만</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>하이브리드</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>dGPU만 사용</value>
@@ -741,7 +741,7 @@
     <value>종료</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>조용</value>
+    <value>에코</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>절전</value>
@@ -750,7 +750,7 @@
     <value>표준 모드에서 dGPU 켜기</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>표준</value>
+    <value>하이브리드</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>시작</value>
@@ -792,7 +792,7 @@
     <value>터치스크린</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>터보</value>
+    <value>성능</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>꺼짐</value>
@@ -963,5 +963,11 @@ GPU가 활성화될 때 자동으로 다시 시작합니다</value>
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>언리쉬드</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>에코</value>
   </data>
 </root>

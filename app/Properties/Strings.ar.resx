@@ -379,7 +379,7 @@
     <value>تعطيلُ كرتِ الشاشةِ المنفصلِ لتوفيرِ البطاريةِ</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>توفير الطاقة</value>
+    <value>iGPU فقط</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>تعطيل كرت الشاشة المنفصل عن طريق وضع التوفير بينما وضع العرض في لوحة تحكم NVIDIA غير مضبوط على Optimus قد يسبب مشاكل في التحكم بالسطوع حتى إعادة التشغيل القادمة.
@@ -462,10 +462,10 @@
     <value>وضع وحدة معالجة الرسومات</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>وحدة معالجة الرسومات المدمجة فقط</value>
+    <value>مدمج فقط</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>وحدة معالجة الرسومات المدمجة + المنفصلة</value>
+    <value>هجين</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>وحدة معالجة الرسومات المنفصلة حصرًا</value>
@@ -741,7 +741,7 @@
     <value>إيقاف التشغيل</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>هادئ</value>
+    <value>إيكو</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>سكون</value>
@@ -750,7 +750,7 @@
     <value>تفعيلُ وحدةِ معالجةِ الرسوماتِ المنفصلةِ للاستخدامِ القياسيِّ</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>قياسي</value>
+    <value>هجين</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>بدء</value>
@@ -792,7 +792,7 @@
     <value>شاشة اللمس</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>توربو</value>
+    <value>الأداء</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>تم إيقافها</value>
@@ -963,5 +963,11 @@
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>غير مقيد</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>إيكو</value>
   </data>
 </root>

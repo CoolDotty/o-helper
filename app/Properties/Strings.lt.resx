@@ -379,7 +379,7 @@
     <value>Išjungiamas dGPU (tausojama baterija)</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Ekonomiškas</value>
+    <value>Tik iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Jei ekrano režimas NVIDIA valdymo skyde yra nenustatytas į Optimus, kai dGPU yra išjungtas perjungus į ekonominį režimą, gali kilti problemų su ryškumo valdymu iki kito paleidimo iš naujo. 
@@ -462,10 +462,10 @@ Vis tiek norite tęsti?</value>
     <value>GPU režimas</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Tik iGPU</value>
+    <value>Tik integruota</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hibridinė</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Tik dGPU</value>
@@ -741,7 +741,7 @@ Vis tiek norite tęsti?</value>
     <value>Išjungus</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Tylus</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Miegant</value>
@@ -750,7 +750,7 @@ Vis tiek norite tęsti?</value>
     <value>Įjungiamas dGPU (įprastam naudojimui)</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Įprastas</value>
+    <value>Hibridinė</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Paleisti</value>
@@ -792,7 +792,7 @@ Vis tiek norite tęsti?</value>
     <value>Jutiklinis ekranas</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Našumas</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Išjungta</value>
@@ -963,5 +963,11 @@ Rekomenduojama, jei pastebėjote atsitiktinius užstrigimus ar nereaguojančią 
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value> neišleistas</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

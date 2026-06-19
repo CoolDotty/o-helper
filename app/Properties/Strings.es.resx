@@ -379,7 +379,7 @@
     <value>Deshabilita la dGPU para ahorrar batería</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>Solo iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Deshabilitar la dGPU cambiando a modo Eco mientras el Modo de Pantalla en el Panel de Control de NVIDIA no está configurado en Optimus puede causar problemas con el control del brillo hasta después del próximo reinicio.
@@ -462,10 +462,10 @@
     <value>Modo de GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Sólo iGPU</value>
+    <value>Solo integrada</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Híbrido</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Exclusivo dGPU</value>
@@ -741,7 +741,7 @@
     <value>Al apagar</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Silencio</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>En suspensión</value>
@@ -750,7 +750,7 @@
     <value>Habilita la dGPU para uso estándar</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Estándar</value>
+    <value>Híbrido</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Iniciar</value>
@@ -792,7 +792,7 @@
     <value>Pantalla táctil</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Rendimiento</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Apagado</value>
@@ -963,5 +963,11 @@ Recomendado si experimenta cuelgues aleatorios o hardware que no responde.</valu
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Libre</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

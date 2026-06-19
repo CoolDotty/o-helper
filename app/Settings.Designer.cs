@@ -60,6 +60,7 @@ namespace OHelper
             buttonSilent = new RButton();
             buttonBalanced = new RButton();
             buttonTurbo = new RButton();
+            buttonUnleashed = new RButton();
             buttonFans = new RButton();
             panelCPUTitle = new Panel();
             picturePerf = new PictureBox();
@@ -607,14 +608,17 @@ namespace OHelper
             tablePerf.Controls.Add(buttonSilent, 0, 0);
             tablePerf.Controls.Add(buttonBalanced, 1, 0);
             tablePerf.Controls.Add(buttonTurbo, 2, 0);
-            tablePerf.Controls.Add(buttonFans, 3, 0);
+            tablePerf.Controls.Add(buttonUnleashed, 3, 0);
+            tablePerf.SetColumnSpan(buttonFans, 4);
+            tablePerf.Controls.Add(buttonFans, 0, 1);
             tablePerf.Dock = DockStyle.Top;
             tablePerf.Location = new Point(20, 60);
             tablePerf.Margin = new Padding(8, 4, 8, 4);
             tablePerf.Name = "tablePerf";
-            tablePerf.RowCount = 1;
+            tablePerf.RowCount = 2;
             tablePerf.RowStyles.Add(new RowStyle(SizeType.Absolute, 128F));
-            tablePerf.Size = new Size(787, 128);
+            tablePerf.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            tablePerf.Size = new Size(787, 180);
             tablePerf.TabIndex = 29;
             // 
             // buttonSilent
@@ -628,7 +632,7 @@ namespace OHelper
             buttonSilent.FlatAppearance.BorderSize = 0;
             buttonSilent.FlatStyle = FlatStyle.Flat;
             buttonSilent.ForeColor = SystemColors.ControlText;
-            buttonSilent.Image = Properties.Resources.icons8_bicycle_48__1_;
+            buttonSilent.Image = Properties.Resources.icons8_leaf_48;
             buttonSilent.ImageAlign = ContentAlignment.BottomCenter;
             buttonSilent.Location = new Point(4, 4);
             buttonSilent.Margin = new Padding(4);
@@ -650,7 +654,7 @@ namespace OHelper
             buttonBalanced.FlatAppearance.BorderSize = 0;
             buttonBalanced.FlatStyle = FlatStyle.Flat;
             buttonBalanced.ForeColor = SystemColors.ControlText;
-            buttonBalanced.Image = Properties.Resources.icons8_fiat_500_48;
+            buttonBalanced.Image = Properties.Resources.icons8_spa_flower_48;
             buttonBalanced.ImageAlign = ContentAlignment.BottomCenter;
             buttonBalanced.Location = new Point(200, 4);
             buttonBalanced.Margin = new Padding(4);
@@ -672,7 +676,7 @@ namespace OHelper
             buttonTurbo.FlatAppearance.BorderSize = 0;
             buttonTurbo.FlatStyle = FlatStyle.Flat;
             buttonTurbo.ForeColor = SystemColors.ControlText;
-            buttonTurbo.Image = Properties.Resources.icons8_rocket_48;
+            buttonTurbo.Image = Properties.Resources.icons8_game_controller_48;
             buttonTurbo.ImageAlign = ContentAlignment.BottomCenter;
             buttonTurbo.Location = new Point(396, 4);
             buttonTurbo.Margin = new Padding(4);
@@ -680,29 +684,53 @@ namespace OHelper
             buttonTurbo.Secondary = false;
             buttonTurbo.Size = new Size(188, 120);
             buttonTurbo.TabIndex = 2;
-            buttonTurbo.Text = "&Turbo";
+            buttonTurbo.Text = "&Performance";
             buttonTurbo.TextImageRelation = TextImageRelation.ImageAboveText;
             buttonTurbo.UseVisualStyleBackColor = false;
+            // 
+            // buttonUnleashed
+            // 
+            buttonUnleashed.Activated = false;
+            buttonUnleashed.BackColor = SystemColors.ControlLightLight;
+            buttonUnleashed.BorderColor = Color.Transparent;
+            buttonUnleashed.BorderRadius = 5;
+            buttonUnleashed.Dock = DockStyle.Fill;
+            buttonUnleashed.FlatAppearance.BorderSize = 0;
+            buttonUnleashed.FlatStyle = FlatStyle.Flat;
+            buttonUnleashed.ForeColor = SystemColors.ControlText;
+            buttonUnleashed.Image = Properties.Resources.icons8_voltage_32;
+            buttonUnleashed.ImageAlign = ContentAlignment.BottomCenter;
+            buttonUnleashed.Location = new Point(500, 4);
+            buttonUnleashed.Margin = new Padding(4);
+            buttonUnleashed.Name = "buttonUnleashed";
+            buttonUnleashed.Secondary = false;
+            buttonUnleashed.Size = new Size(188, 120);
+            buttonUnleashed.TabIndex = 4;
+            buttonUnleashed.Text = "&Unleashed";
+            buttonUnleashed.TextImageRelation = TextImageRelation.ImageAboveText;
+            buttonUnleashed.UseVisualStyleBackColor = false;
             // 
             // buttonFans
             // 
             buttonFans.Activated = false;
+            buttonFans.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             buttonFans.BackColor = SystemColors.ControlLight;
             buttonFans.BorderColor = Color.Transparent;
-            buttonFans.BorderRadius = 5;
-            buttonFans.Dock = DockStyle.Fill;
+            buttonFans.BorderRadius = 2;
+            buttonFans.Dock = DockStyle.Left;
             buttonFans.FlatAppearance.BorderSize = 0;
             buttonFans.FlatStyle = FlatStyle.Flat;
-            buttonFans.Image = Properties.Resources.icons8_fan_48;
-            buttonFans.ImageAlign = ContentAlignment.BottomCenter;
-            buttonFans.Location = new Point(592, 4);
-            buttonFans.Margin = new Padding(4);
+            buttonFans.Image = Properties.Resources.icons8_fan_32;
+            buttonFans.ImageAlign = ContentAlignment.MiddleRight;
+            buttonFans.Location = new Point(4, 132);
+            buttonFans.Margin = new Padding(2);
             buttonFans.Name = "buttonFans";
+            buttonFans.Padding = new Padding(2);
             buttonFans.Secondary = true;
-            buttonFans.Size = new Size(191, 120);
+            buttonFans.Size = new Size(320, 40);
             buttonFans.TabIndex = 3;
             buttonFans.Text = "&Fans + Power";
-            buttonFans.TextImageRelation = TextImageRelation.ImageAboveText;
+            buttonFans.TextImageRelation = TextImageRelation.ImageBeforeText;
             buttonFans.UseVisualStyleBackColor = false;
             // 
             // panelCPUTitle
@@ -930,7 +958,7 @@ namespace OHelper
             buttonEco.FlatAppearance.BorderSize = 0;
             buttonEco.FlatStyle = FlatStyle.Flat;
             buttonEco.ForeColor = SystemColors.ControlText;
-            buttonEco.Image = Properties.Resources.icons8_leaf_48;
+            buttonEco.Image = Properties.Resources.icons8_bicycle_48__1_;
             buttonEco.ImageAlign = ContentAlignment.BottomCenter;
             buttonEco.Location = new Point(4, 4);
             buttonEco.Margin = new Padding(4);
@@ -952,7 +980,7 @@ namespace OHelper
             buttonStandard.FlatAppearance.BorderSize = 0;
             buttonStandard.FlatStyle = FlatStyle.Flat;
             buttonStandard.ForeColor = SystemColors.ControlText;
-            buttonStandard.Image = Properties.Resources.icons8_spa_flower_48;
+            buttonStandard.Image = Properties.Resources.icons8_fiat_500_48;
             buttonStandard.ImageAlign = ContentAlignment.BottomCenter;
             buttonStandard.Location = new Point(396, 4);
             buttonStandard.Margin = new Padding(4);
@@ -1019,7 +1047,7 @@ namespace OHelper
             buttonUltimate.FlatAppearance.BorderSize = 0;
             buttonUltimate.FlatStyle = FlatStyle.Flat;
             buttonUltimate.ForeColor = SystemColors.ControlText;
-            buttonUltimate.Image = Properties.Resources.icons8_game_controller_48;
+            buttonUltimate.Image = Properties.Resources.icons8_rocket_48;
             buttonUltimate.ImageAlign = ContentAlignment.BottomCenter;
             buttonUltimate.Location = new Point(592, 4);
             buttonUltimate.Margin = new Padding(4);
@@ -2304,6 +2332,7 @@ namespace OHelper
         private RButton buttonMiniled;
         private RButton buttonMatrix;
         private RButton buttonKeyboardColor;
+        private RButton buttonUnleashed;
         private RButton buttonFans;
         private Slider sliderBattery;
         private Panel panelGPUTitle;

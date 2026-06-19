@@ -379,7 +379,7 @@
     <value>禁用獨顯以節省電池電量</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>節能模式</value>
+    <value>僅內顯</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>「Nvidia控制面板」中的顯示模式未設置為自動切換時，透過O-Helper的節能模式禁用獨顯可能導致螢幕亮度控制出現問題直到下次重新開機後。
@@ -462,10 +462,10 @@
     <value>GPU 模式</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>僅限內顯</value>
+    <value>僅內顯</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>內顯 + 獨顯</value>
+    <value>混合</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>獨立顯卡</value>
@@ -741,7 +741,7 @@
     <value>關機時</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>靜音</value>
+    <value>節能</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>睡眠時</value>
@@ -750,7 +750,7 @@
     <value>自動切換獨立顯卡以及整合式顯卡 (MS-Hybrid)</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>標準模式</value>
+    <value>混合</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>啟動</value>
@@ -792,7 +792,7 @@
     <value>觸控螢幕</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>極速</value>
+    <value>效能</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>已關閉</value>
@@ -963,5 +963,11 @@
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>僅遊戲時顯示OSD</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>解放</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>節能</value>
   </data>
 </root>

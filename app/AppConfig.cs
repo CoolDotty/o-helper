@@ -364,29 +364,37 @@ public static class AppConfig
 
         switch (mode)
         {
+            case HpACPI.PerformanceUnleashed:
+                switch (device)
+                {
+                    case HpFan.GPU:
+                        return StringToBytes("1E-32-3A-41-48-4E-55-64-1C-26-30-3A-46-52-5C-64");
+                    default:
+                        return StringToBytes("1E-32-3A-41-48-4E-55-64-1C-26-30-3A-46-52-5C-64");
+                }
             case HpACPI.PerformanceTurbo:
                 switch (device)
                 {
                     case HpFan.GPU:
-                        return StringToBytes("1E-3F-44-48-4C-50-54-62-16-1F-26-2D-39-47-55-5F");
+                        return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
                     default:
-                        return StringToBytes("1E-3F-44-48-4C-50-54-62-11-1A-22-29-34-43-51-5A");
+                        return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
                 }
             case HpACPI.PerformanceSilent:
                 switch (device)
                 {
                     case HpFan.GPU:
-                        return StringToBytes("1E-31-3B-42-47-50-5A-64-00-00-04-11-1B-23-28-2D");
+                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
                     default:
-                        return StringToBytes("1E-31-3B-42-47-50-5A-64-00-00-03-0C-14-1C-22-29");
+                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
                 }
             default:
                 switch (device)
                 {
                     case HpFan.GPU:
-                        return StringToBytes("3A-3D-40-44-48-4D-51-62-0C-16-1D-1F-26-2D-34-4A");
+                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
                     default:
-                        return StringToBytes("3A-3D-40-44-48-4D-51-62-08-11-16-1A-22-29-30-45");
+                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
                 }
         }
     }

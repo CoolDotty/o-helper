@@ -331,8 +331,8 @@ public static class ModelCapabilityDatabase
             FanZoneCount = 1,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
-            HasFourZoneRgb = false,
-            HasPerKeyRgb = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = false,
             Notes = "Transcend uses different WMI interface - may require OGH proxy for fan control"
         });
 
@@ -365,8 +365,8 @@ public static class ModelCapabilityDatabase
             FanZoneCount = 1,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
-            HasFourZoneRgb = false,
-            HasPerKeyRgb = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = false,
             SupportsUndervolt = false,
             UserVerified = false,
             Notes = "Transcend 14 board family (8C58). Prefer WMI BIOS paths; direct legacy EC writes are unverified."
@@ -386,11 +386,32 @@ public static class ModelCapabilityDatabase
             FanZoneCount = 1,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
-            HasFourZoneRgb = false,
-            HasPerKeyRgb = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = false,
             SupportsUndervolt = false,
             UserVerified = false,
             Notes = "Transcend 14-fb1xxx. Windows field report confirms WMI V1 behavior; use WMI BIOS paths, avoid legacy EC writes or custom curves."
+        });
+
+        AddModel(new ModelCapabilities
+        {
+            ProductId = "8F2A",
+            ModelName = "OMEN Transcend 14 (2025) fb2xxx",
+            ModelNamePattern = "14-fb2",
+            ModelYear = 2025,
+            Family = OmenModelFamily.Transcend,
+            SupportsFanControlWmi = true,
+            SupportsFanControlEc = false,
+            SupportsFanCurves = false,
+            SupportsIndependentFanCurves = false,
+            FanZoneCount = 1,
+            HasMuxSwitch = true,
+            SupportsGpuPowerBoost = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = false,
+            SupportsUndervolt = false,
+            UserVerified = false,
+            Notes = "Transcend 14 (2025). 4-zone RGB keyboard, no per-key. WMI BIOS paths."
         });
 
         // HP Victus

@@ -916,7 +916,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Eco.
+        ///   Looks up a localized string similar to iGPU Only.
         /// </summary>
         internal static string EcoMode {
             get {
@@ -1161,7 +1161,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to iGPU only.
+        ///   Looks up a localized string similar to Integrated only.
         /// </summary>
         internal static string GPUModeEco {
             get {
@@ -1170,7 +1170,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to iGPU + dGPU.
+        ///   Looks up a localized string similar to Hybrid.
         /// </summary>
         internal static string GPUModeStandard {
             get {
@@ -2088,7 +2088,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Silent.
+        ///   Looks up a localized string similar to Eco.
         /// </summary>
         internal static string Silent {
             get {
@@ -2268,7 +2268,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Standard.
+        ///   Looks up a localized string similar to Hybrid.
         /// </summary>
         internal static string StandardMode {
             get {
@@ -2403,7 +2403,7 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Turbo.
+        ///   Looks up a localized string similar to Performance.
         /// </summary>
         internal static string Turbo {
             get {
@@ -2579,6 +2579,33 @@ namespace OHelper.Properties {
         internal static string Zoom {
             get {
                 return ResourceManager.GetString("Zoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unleashed.
+        /// </summary>
+        internal static string Unleashed {
+            get {
+                return ResourceManager.GetString("Unleashed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Eco.
+        /// </summary>
+        internal static string Eco {
+            get {
+                return ResourceManager.GetString("Eco", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Performance.
+        /// </summary>
+        internal static string Performance {
+            get {
+                return ResourceManager.GetString("Performance", resourceCulture);
             }
         }
     }

@@ -67,6 +67,7 @@ namespace OHelper
             buttonSilent.Text = Properties.Strings.Silent;
             buttonBalanced.Text = Properties.Strings.Balanced;
             buttonTurbo.Text = Properties.Strings.Turbo;
+            buttonUnleashed.Text = Properties.Strings.Unleashed;
             buttonFans.Text = Properties.Strings.FansPower;
 
             buttonEco.Text = Properties.Strings.EcoMode;
@@ -110,6 +111,7 @@ namespace OHelper
             buttonSilent.AccessibleName = Properties.Strings.Silent;
             buttonBalanced.AccessibleName = Properties.Strings.Balanced;
             buttonTurbo.AccessibleName = Properties.Strings.Turbo;
+            buttonUnleashed.AccessibleName = Properties.Strings.Unleashed;
             buttonFans.AccessibleName = Properties.Strings.FansAndPower;
             panelGPU.AccessibleName = Properties.Strings.GPUMode;
             buttonEco.AccessibleName = Properties.Strings.EcoMode;
@@ -134,6 +136,7 @@ namespace OHelper
             buttonSilent.BorderColor = colorEco;
             buttonBalanced.BorderColor = colorStandard;
             buttonTurbo.BorderColor = colorTurbo;
+            buttonUnleashed.BorderColor = colorCustom;
             buttonFans.BorderColor = colorCustom;
 
             buttonEco.BorderColor = colorEco;
@@ -162,6 +165,7 @@ namespace OHelper
             buttonSilent.Click += ButtonSilent_Click;
             buttonBalanced.Click += ButtonBalanced_Click;
             buttonTurbo.Click += ButtonTurbo_Click;
+            buttonUnleashed.Click += ButtonUnleashed_Click;
 
             buttonEco.Click += ButtonEco_Click;
             buttonStandard.Click += ButtonStandard_Click;
@@ -851,17 +855,17 @@ namespace OHelper
                 titleGPU.Enabled = false;
                 contextMenuStrip.Items.Add(titleGPU);
 
-                menuEco = new ToolStripMenuItem(Properties.Strings.EcoMode);
+                menuEco = new ToolStripMenuItem(Properties.Strings.EcoMode + " (" + Properties.Strings.GPUModeEco + ")");
                 menuEco.Click += ButtonEco_Click;
                 menuEco.Margin = padding;
                 contextMenuStrip.Items.Add(menuEco);
 
-                menuStandard = new ToolStripMenuItem(Properties.Strings.StandardMode);
+                menuStandard = new ToolStripMenuItem(Properties.Strings.StandardMode + " (" + Properties.Strings.GPUModeStandard + ")");
                 menuStandard.Click += ButtonStandard_Click;
                 menuStandard.Margin = padding;
                 contextMenuStrip.Items.Add(menuStandard);
 
-                menuUltimate = new ToolStripMenuItem(Properties.Strings.UltimateMode);
+                menuUltimate = new ToolStripMenuItem(Properties.Strings.UltimateMode + " (" + Properties.Strings.GPUModeUltimate + ")");
                 menuUltimate.Click += ButtonUltimate_Click;
                 menuUltimate.Margin = padding;
                 contextMenuStrip.Items.Add(menuUltimate);
@@ -1729,6 +1733,7 @@ namespace OHelper
             buttonSilent.Activated = false;
             buttonBalanced.Activated = false;
             buttonTurbo.Activated = false;
+            buttonUnleashed.Activated = false;
             buttonFans.Activated = false;
 
             switch (mode)
@@ -1742,12 +1747,16 @@ namespace OHelper
                 case HpACPI.PerformanceBalanced:
                     buttonBalanced.Activated = true;
                     break;
+                case HpACPI.PerformanceUnleashed:
+                    buttonUnleashed.Activated = true;
+                    break;
                 default:
                     buttonFans.Activated = true;
                     buttonFans.BorderColor = Modes.GetBase(mode) switch
                     {
                         HpACPI.PerformanceSilent => colorEco,
                         HpACPI.PerformanceTurbo => colorTurbo,
+                        HpACPI.PerformanceUnleashed => colorCustom,
                         _ => colorStandard,
                     };
                     break;
@@ -1826,8 +1835,6 @@ namespace OHelper
                 menuEco.Visible = buttonEco.Visible = false;
                 menuOptimized.Visible = buttonOptimized.Visible = false;
                 buttonStopGPU.Visible = true;
-                tableGPU.ColumnCount = 3;
-                tableScreen.ColumnCount = 3;
             }
             else
             {
@@ -1837,8 +1844,7 @@ namespace OHelper
             if (!ultimate)
             {
                 menuUltimate.Visible = buttonUltimate.Visible = false;
-                tableGPU.ColumnCount = 3;
-                tableScreen.ColumnCount = 3;
+                menuOptimized.Visible = buttonOptimized.Visible = false;
             }
         }
 
@@ -1852,7 +1858,7 @@ namespace OHelper
             buttonOptimized.Visible = false;
             buttonStopGPU.Visible = true;
 
-            tableGPU.ColumnCount = 0;
+            tableGPU.Visible = false;
 
             SetContextMenu();
 
@@ -1927,7 +1933,10 @@ namespace OHelper
                     buttonOptimized.BorderColor = colorStandard;
                     buttonStandard.Activated = !GPUAuto;
                     buttonOptimized.Activated = GPUAuto;
-                    labelGPU.Text = Properties.Strings.GPUMode + ": " + (AppConfig.IsAlwaysUltimate() ? Properties.Strings.GPUModeUltimate : Properties.Strings.GPUModeStandard);
+                    if (AppConfig.IsAlwaysUltimate())
+                        labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeUltimate;
+                    else
+                        labelGPU.Text = Properties.Strings.GPUMode + ": " + Properties.Strings.GPUModeStandard;
                     panelGPU.AccessibleName = Properties.Strings.GPUMode + " - " + (GPUAuto ? Properties.Strings.Optimized : Properties.Strings.StandardMode);
                     break;
             }
@@ -1987,6 +1996,11 @@ namespace OHelper
             Program.modeControl.SetPerformanceMode(HpACPI.PerformanceTurbo);
         }
 
+        private void ButtonUnleashed_Click(object? sender, EventArgs e)
+        {
+            Program.modeControl.SetPerformanceMode(HpACPI.PerformanceUnleashed);
+        }
+
 
         public void ButtonEnabled(RButton but, bool enabled)
         {
@@ -2030,7 +2044,27 @@ namespace OHelper
 
         public void UpdateKeyboardLabel()
         {
-            labelKeyboard.Text = Properties.Strings.LaptopKeyboard + (PeripheralsProvider.IsAuraSync ? " +" : "");
+            string type = "";
+            if (AppConfig.IsOmen())
+            {
+                var caps = AppConfig.GetModelCapabilities();
+                if (caps.HasPerKeyRgb)
+                    type = "Per-Key RGB";
+                else if (caps.HasFourZoneRgb)
+                    type = "4-Zone RGB";
+            }
+            else if (Aura.BacklightType != AuraBacklightType.Unknown)
+            {
+                type = Aura.BacklightType switch
+                {
+                    AuraBacklightType.PerKey => "Per-Key RGB",
+                    AuraBacklightType.MultiZone => "4-Zone RGB",
+                    AuraBacklightType.SingleZone => "Single Zone",
+                    _ => ""
+                };
+            }
+
+            labelKeyboard.Text = Properties.Strings.LaptopKeyboard + (type.Length > 0 ? ": " + type : "") + (PeripheralsProvider.IsAuraSync ? " +" : "");
         }
 
         public void VisualizePeripherals()

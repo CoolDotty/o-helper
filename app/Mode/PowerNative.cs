@@ -205,10 +205,12 @@ namespace OHelper.Mode
         {
             switch (mode)
             {
-                case 1: // turbo
+                case 1: // performance
                     return POWER_TURBO;
-                case 2: //silent
+                case 2: // eco
                     return POWER_SILENT;
+                case 4: // unleashed
+                    return POWER_TURBO;
                 default: // balanced
                     return POWER_BALANCED;
             }

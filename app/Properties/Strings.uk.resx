@@ -379,7 +379,7 @@
     <value>Вимикає dGPU, щоб зберегти заряд</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Еко</value>
+    <value>Тільки iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Вимкнення dGPU коли NVIDIA Display Mode не встановлено в режим Optimus може спричинити проблеми з управлінням яскравістю до наступного перезавантаження. 
@@ -462,10 +462,10 @@
     <value>Режим Графіки</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Тільки iGPU</value>
+    <value>Тільки інтегрована</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Гібридний</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Ексклюзивний dGPU</value>
@@ -741,7 +741,7 @@
     <value>Вимикання</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Тихий</value>
+    <value>Еко</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Сон</value>
@@ -750,7 +750,7 @@
     <value>Вмикає dGPU для нормального використання</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Стандартний</value>
+    <value>Гібридний</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Запустити</value>
@@ -792,7 +792,7 @@
     <value>Сенсорний екран</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Турбо</value>
+    <value>Продуктивність</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Вимкнений</value>
@@ -963,5 +963,11 @@
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Рознузданий</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Еко</value>
   </data>
 </root>

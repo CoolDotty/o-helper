@@ -14,7 +14,8 @@ public enum HpMode
 {
     Balanced = 0,
     Turbo = 1,
-    Silent = 2
+    Silent = 2,
+    Manual = 4
 }
 
 public enum HpGPU
@@ -179,7 +180,8 @@ public class HpACPI
     public const int PerformanceBalanced = 0;
     public const int PerformanceTurbo = 1;
     public const int PerformanceSilent = 2;
-    public const int PerformanceManual = 4;
+    public const int PerformanceManual = 4; // WMI firmware byte for manual/unleashed mode
+    public const int PerformanceUnleashed = 4; // UI-facing alias for mode 4
 
     public const int GPUModeEco = 0;
     public const int GPUModeStandard = 1;

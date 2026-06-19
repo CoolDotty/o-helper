@@ -45,7 +45,7 @@ namespace OHelper.Gpu
                 }
             }
 
-            settings.VisualiseGPUButtons(eco >= 0, mux >= 0);
+            settings.VisualiseGPUButtons(eco >= 0, mux >= 0 && !AppConfig.IsOmenTranscend14());
 
             if (mux == 0)
             {

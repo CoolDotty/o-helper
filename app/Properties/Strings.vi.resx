@@ -379,7 +379,7 @@
     <value>Tắt GPU rời để tiết kiệm pin</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Tiết kiệm</value>
+    <value>Chỉ dùng iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Vô hiệu hóa GPU rời bằng cách chuyển sang chế độ Eco trong khi chế độ màn hình trong NVIDIA Control Panel chưa được đổi thành Optimus có thể gây ra lỗi điều chỉnh độ sáng cho đến khi khởi động lại.
@@ -462,10 +462,10 @@ Bạn có muốn tiếp tục không?</value>
     <value>Chế độ GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Chỉ dùng GPU tích hợp</value>
+    <value>Chỉ GPU tích hợp</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>GPU tích hợp + GPU rời</value>
+    <value>Kết hợp</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>Chỉ dùng GPU rời</value>
@@ -741,7 +741,7 @@ Bạn có muốn tiếp tục không?</value>
     <value>Tắt nguồn</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Im lặng</value>
+    <value>Tiết kiệm</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Ngủ</value>
@@ -750,7 +750,7 @@ Bạn có muốn tiếp tục không?</value>
     <value>Bật GPU rời song song với GPU tích hợp</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Tiêu chuẩn</value>
+    <value>Kết hợp</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Start</value>
@@ -792,7 +792,7 @@ Bạn có muốn tiếp tục không?</value>
     <value>Touchscreen</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Hiệu suất</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Đã tắt</value>
@@ -963,5 +963,11 @@ Khuyến nghị nếu bạn gặp tình trạng treo ngẫu nhiên hoặc phần
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Phóng sinh</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Tiết kiệm</value>
   </data>
 </root>

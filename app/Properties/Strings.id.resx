@@ -379,7 +379,7 @@
     <value>Menonaktikan dGPU untuk menghemat baterai</value>
   </data>
   <data name="EcoMode" xml:space="preserve">
-    <value>Eco</value>
+    <value>Hanya iGPU</value>
   </data>
   <data name="EnableOptimusText" xml:space="preserve">
     <value>Menonaktikan dGPU dengan masuk ke mode Eco saat Mode Tampilan di Panel Kontrol NVIDIA tidak diatur ke Optimus mungkin dapat menyebabkan masalah dengan kontrol kecerahan hingga mulai ulang berikutnya. 
@@ -462,10 +462,10 @@ Apakah Anda masih ingin melanjutkan?</value>
     <value>Mode GPU</value>
   </data>
   <data name="GPUModeEco" xml:space="preserve">
-    <value>Hanya iGPU</value>
+    <value>Hanya terintegrasi</value>
   </data>
   <data name="GPUModeStandard" xml:space="preserve">
-    <value>iGPU + dGPU</value>
+    <value>Hibrida</value>
   </data>
   <data name="GPUModeUltimate" xml:space="preserve">
     <value>dGPU eksklusif</value>
@@ -741,7 +741,7 @@ Apakah Anda masih ingin melanjutkan?</value>
     <value>Matikan</value>
   </data>
   <data name="Silent" xml:space="preserve">
-    <value>Diam</value>
+    <value>Eco</value>
   </data>
   <data name="Sleep" xml:space="preserve">
     <value>Tidur</value>
@@ -750,7 +750,7 @@ Apakah Anda masih ingin melanjutkan?</value>
     <value>Mengaktifkan dGPU untuk penggunaan standar</value>
   </data>
   <data name="StandardMode" xml:space="preserve">
-    <value>Standar</value>
+    <value>Hibrida</value>
   </data>
   <data name="Start" xml:space="preserve">
     <value>Mulai</value>
@@ -792,7 +792,7 @@ Apakah Anda masih ingin melanjutkan?</value>
     <value>Touchscreen</value>
   </data>
   <data name="Turbo" xml:space="preserve">
-    <value>Turbo</value>
+    <value>Performa</value>
   </data>
   <data name="TurnedOff" xml:space="preserve">
     <value>Dimatikan</value>
@@ -963,5 +963,11 @@ Direkomendasikan jika Anda mengalami hang acak atau perangkat keras tidak respon
   </data>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
+  </data>
+  <data name="Unleashed" xml:space="preserve">
+    <value>Lepas</value>
+  </data>
+  <data name="Eco" xml:space="preserve">
+    <value>Eco</value>
   </data>
 </root>

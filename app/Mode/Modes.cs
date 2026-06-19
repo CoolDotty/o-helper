@@ -37,13 +37,15 @@ namespace OHelper.Mode
         {
             Dictionary<int, string> modes = new Dictionary<int, string>
             {
-              {2, Properties.Strings.Silent},
+              {2, Properties.Strings.Eco},
               {0, Properties.Strings.Balanced},
-              {1, Properties.Strings.Turbo}
+              {1, Properties.Strings.Performance},
+              {4, Properties.Strings.Unleashed}
             };
 
             for (int i = 3; i < maxModes; i++)
             {
+                if (i == 4) continue;
                 if (Exists(i)) modes.Add(i, GetName(i));
             }
 
@@ -52,9 +54,10 @@ namespace OHelper.Mode
 
         public static List<int> GetList()
         {
-            List<int> modes = new() { 2, 0, 1 };
+            List<int> modes = new() { 2, 0, 1, 4 };
             for (int i = 3; i < maxModes; i++)
             {
+                if (i == 4) continue;
                 if (Exists(i)) modes.Add(i);
             }
 
@@ -111,7 +114,8 @@ namespace OHelper.Mode
 
         public static bool IsCurrentCustom()
         {
-            return GetCurrent() > 2;
+            int mode = GetCurrent();
+            return mode > 4 || (mode == 3);
         }
 
         public static void SetCurrent(int mode)
@@ -139,6 +143,8 @@ namespace OHelper.Mode
         {
             if (mode >= 0 && mode <= 2)
                 return mode;
+            if (mode == 4)
+                return 4;
             else
                 return AppConfig.Get("mode_base_" + mode);
         }
@@ -150,9 +156,11 @@ namespace OHelper.Mode
                 case 0:
                     return Properties.Strings.Balanced;
                 case 1:
-                    return Properties.Strings.Turbo;
+                    return Properties.Strings.Performance;
                 case 2:
-                    return Properties.Strings.Silent;
+                    return Properties.Strings.Eco;
+                case 4:
+                    return Properties.Strings.Unleashed;
                 default:
                     return AppConfig.GetString("mode_name_" + mode);
             }
