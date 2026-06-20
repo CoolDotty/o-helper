@@ -150,8 +150,8 @@ namespace OHelper.Mode
 
                     if (AppConfig.Is("status_mode")) Program.acpi.DeviceSet(HpACPI.StatusMode, [0x00, Modes.GetBase(mode) == HpACPI.PerformanceSilent ? (byte)0x02 : (byte)0x03], "StatusMode");
                     int status = Program.acpi.DeviceSet(HpACPI.PerformanceMode, AppConfig.IsManualModeRequired() ? HpACPI.PerformanceManual : Modes.GetBase(mode), "Mode");
-                    // Vivobook fallback
-                    if (status != 1) Program.acpi.SetVivoMode(Modes.GetBase(mode));
+                    // Vivobook fallback — retry the same command on failure
+                    if (status != 1) Program.acpi.DeviceSet(HpACPI.PerformanceMode, AppConfig.IsManualModeRequired() ? HpACPI.PerformanceManual : Modes.GetBase(mode), "Mode retry");
 
                     SetGPUClocks();
 

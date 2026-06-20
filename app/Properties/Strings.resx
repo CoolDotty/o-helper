@@ -144,6 +144,9 @@
   <data name="AlertUltimateTitle" xml:space="preserve">
     <value>Reboot now?</value>
   </data>
+  <data name="AlertGpuModeReboot" xml:space="preserve">
+    <value>Switching to {0} requires a system restart</value>
+  </data>
   <data name="AllyController" xml:space="preserve">
     <value>Ally Controller</value>
   </data>

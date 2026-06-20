@@ -29,41 +29,33 @@ namespace OHelper.Gpu
                 return;
             }
 
-            int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
-            int mux = Program.acpi.DeviceGet(HpACPI.GPUMux);
+            bool switchingSupported = Program.acpi.SupportsGpuModeSwitching();
+            bool showEco = switchingSupported && Program.acpi.SupportsGpuMode(HpACPI.GPUModeEco);
+            bool showStandard = switchingSupported && Program.acpi.SupportsGpuMode(HpACPI.GPUModeStandard);
+            bool showUltimate = switchingSupported && Program.acpi.SupportsGpuMode(HpACPI.GPUModeUltimate);
 
-            Logger.WriteLine("Eco flag : " + eco);
-            Logger.WriteLine("Mux flag : " + mux);
+            int mode = Program.acpi.GetGpuMode();
+            Logger.WriteLine($"GPU mode: {mode} (switching supported: {switchingSupported}, eco: {showEco}, std: {showStandard}, ultimate: {showUltimate})");
 
-            if (eco == 1 && HardwareControl.GpuControl?.IsValid == true)
+            gpuMode = mode;
+
+            if (switchingSupported)
             {
-                Logger.WriteLine("Eco half-state");
-                if (AppConfig.IsEcoBootFix())
-                {
-                    HardwareControl.DisposeGpuControl();
-                    Task.Run(() => Program.acpi.DeviceSet(HpACPI.GPUEco, eco, "GPUEco Force Fix"));
-                }
-            }
+            bool showOptimized = (showEco || showStandard) && showUltimate;
 
-            settings.VisualiseGPUButtons(eco >= 0, mux >= 0 && !AppConfig.IsOmenTranscend14());
-
-            if (mux == 0)
-            {
-                gpuMode = HpACPI.GPUModeUltimate;
+            settings.VisualiseGPUButtons(showEco, showStandard, showUltimate, showOptimized);
             }
             else
             {
-                if (eco == 1)
-                    gpuMode = HpACPI.GPUModeEco;
-                else
-                    gpuMode = HpACPI.GPUModeStandard;
+                if (gpuExists is null) gpuExists = Program.acpi.GetFan(HpFan.GPU) >= 0;
+                settings.HideGPUModes((bool)gpuExists);
+                return;
+            }
 
-                // GPU mode not supported
-                if (eco < 0 && mux < 0)
-                {
-                    if (gpuExists is null) gpuExists = Program.acpi.GetFan(HpFan.GPU) >= 0;
-                    settings.HideGPUModes((bool)gpuExists);
-                }
+            if (mode == HpACPI.GPUModeEco && HardwareControl.GpuControl?.IsValid == true)
+            {
+                Logger.WriteLine("GPU in iGPU-only mode but dGPU control still active — disposing");
+                HardwareControl.DisposeGpuControl();
             }
 
             AppConfig.Set("gpu_mode", gpuMode);
@@ -77,6 +69,12 @@ namespace OHelper.Gpu
 
         public void SetGPUMode(int GPUMode, int auto = 0)
         {
+            if (!Program.acpi.SupportsGpuMode(GPUMode))
+            {
+                Logger.WriteLine($"GPU mode {GPUMode} not supported on this model");
+                settings.VisualiseGPUMode();
+                return;
+            }
 
             int CurrentGPU = AppConfig.Get("gpu_mode");
             AppConfig.Set("gpu_auto", auto);
@@ -87,67 +85,39 @@ namespace OHelper.Gpu
                 return;
             }
 
-            var restart = false;
-            var changed = false;
-
-            int status;
-
-            if (CurrentGPU == HpACPI.GPUModeUltimate)
+            string modeName = GPUMode switch
             {
-                DialogResult dialogResult = MessageBox.Show(Properties.Strings.AlertUltimateOff, Properties.Strings.AlertUltimateTitle, MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
-                {
-                    status = Program.acpi.DeviceSet(HpACPI.GPUMux, 1, "GPUMux");
-                    restart = true;
-                    changed = true;
-                }
-            }
-            else if (GPUMode == HpACPI.GPUModeUltimate)
-            {
-                DialogResult dialogResult = MessageBox.Show(Properties.Strings.AlertUltimateOn, Properties.Strings.AlertUltimateTitle, MessageBoxButtons.YesNo);
-                if (dialogResult == DialogResult.Yes)
-                {
-                    Program.acpi.SetGPUEco(0);
-                    Thread.Sleep(500);
+                HpACPI.GPUModeEco => Properties.Strings.GPUModeEco,
+                HpACPI.GPUModeStandard => Properties.Strings.GPUModeStandard,
+                HpACPI.GPUModeUltimate => Properties.Strings.GPUModeUltimate,
+                _ => "GPU Mode"
+            };
 
-                    int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
-                    Logger.WriteLine("Eco flag : " + eco);
-                    if (eco == 1)
-                    {
-                        settings.VisualiseGPUMode();
-                        return;
-                    }
+            DialogResult dialogResult = MessageBox.Show(
+                string.Format(Properties.Strings.AlertGpuModeReboot, modeName),
+                Properties.Strings.AlertUltimateTitle,
+                MessageBoxButtons.YesNo);
 
-                    status = Program.acpi.DeviceSet(HpACPI.GPUMux, 0, "GPUMux");
-                    restart = true;
-                    changed = true;
-                }
-
-            }
-            else if (GPUMode == HpACPI.GPUModeEco)
+            if (dialogResult != DialogResult.Yes)
             {
-                settings.VisualiseGPUMode(GPUMode);
-                SetGPUEco(1);
-                changed = true;
-            }
-            else if (GPUMode == HpACPI.GPUModeStandard)
-            {
-                settings.VisualiseGPUMode(GPUMode);
-                SetGPUEco(0);
-                changed = true;
+                settings.VisualiseGPUMode();
+                return;
             }
 
-            if (changed)
+            int status = Program.acpi.DeviceSet(HpACPI.GPUEco, GPUMode, "GPUMode");
+            Logger.WriteLine($"GPU mode set result: {status}");
+
+            if (status == 1)
             {
                 AppConfig.Set("gpu_mode", GPUMode);
-            }
-
-            if (restart)
-            {
                 settings.VisualiseGPUMode();
                 Process.Start("shutdown", "/r /t 1");
             }
-
+            else
+            {
+                Logger.WriteLine("GPU mode change failed — no reboot");
+                settings.VisualiseGPUMode();
+            }
         }
 
 
@@ -160,7 +130,7 @@ namespace OHelper.Gpu
             Task.Run(async () =>
             {
 
-                int status = 1;
+                int targetMode = eco == 1 ? HpACPI.GPUModeEco : HpACPI.GPUModeStandard;
 
                 if (eco == 1)
                 {
@@ -169,12 +139,12 @@ namespace OHelper.Gpu
                     if (AppConfig.IsNVPlatform()) NvidiaGpuControl.StopNVService();
                 }
 
-                Logger.WriteLine($"Running eco command {eco}");
+                Logger.WriteLine($"Running eco command {eco} (mode {targetMode})");
 
                 try
                 {
 
-                    status = Program.acpi.SetGPUEco(eco);
+                    int status = Program.acpi.DeviceSet(HpACPI.GPUEco, targetMode, "GPUEco");
                     await Task.Delay(TimeSpan.FromMilliseconds(AppConfig.Get("refresh_delay", 500)));
 
                     settings.Invoke(delegate
@@ -239,10 +209,9 @@ namespace OHelper.Gpu
 
             if (!GpuAuto && !ForceGPU) return false;
 
-            int eco = Program.acpi.DeviceGet(HpACPI.GPUEco);
-            int mux = Program.acpi.DeviceGet(HpACPI.GPUMux);
+            int currentMode = Program.acpi.GetGpuMode();
 
-            if (mux == 0)
+            if (currentMode == HpACPI.GPUModeUltimate)
             {
                 if (optimized) SetGPUMode(HpACPI.GPUModeStandard, 1);
                 return false;
@@ -250,14 +219,14 @@ namespace OHelper.Gpu
             else
             {
 
-                if (eco == 1)
+                if (currentMode == HpACPI.GPUModeEco)
                     if ((GpuAuto && IsPlugged()) || (ForceGPU && GpuMode == HpACPI.GPUModeStandard))
                     {
                         if (delay > 0) Thread.Sleep(delay);
                         SetGPUEco(0);
                         return true;
                     }
-                if (eco == 0)
+                if (currentMode == HpACPI.GPUModeStandard)
                     if ((GpuAuto && !IsPlugged()) || (ForceGPU && GpuMode == HpACPI.GPUModeEco))
                     {
 
@@ -349,16 +318,16 @@ namespace OHelper.Gpu
 
         public void CaptureNvBootState()
         {
-            nvRestartPending = Program.acpi.DeviceGet(HpACPI.GPUEco) == 1;
+            nvRestartPending = Program.acpi.GetGpuMode() == HpACPI.GPUModeEco;
         }
 
         public void StandardModeFix()
         {
             if (!AppConfig.IsStandardModeFix()) return;
-            if (Program.acpi.DeviceGet(HpACPI.GPUMux) == 0) return; // Ultimate mode
+            if (Program.acpi.GetGpuMode() == HpACPI.GPUModeUltimate) return;
 
             Logger.WriteLine("Forcing Standard Mode on shutdown");
-            Program.acpi.SetGPUEco(0);
+            Program.acpi.DeviceSet(HpACPI.GPUEco, HpACPI.GPUModeStandard, "GPUEco Standard Fix");
         }
 
     }

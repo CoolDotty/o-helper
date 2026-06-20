@@ -142,6 +142,15 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Switching to {0} requires a system restart.
+        /// </summary>
+        internal static string AlertGpuModeReboot {
+            get {
+                return ResourceManager.GetString("AlertGpuModeReboot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ally Controller.
         /// </summary>
         internal static string AllyController {

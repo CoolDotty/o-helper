@@ -1821,24 +1821,27 @@ namespace OHelper
 
         }
 
-        public void VisualiseGPUButtons(bool eco = true, bool ultimate = true)
+        public void VisualiseGPUButtons(bool eco = true, bool standard = true, bool ultimate = true, bool optimized = true)
         {
-            if (!eco)
-            {
-                menuEco.Visible = buttonEco.Visible = false;
-                menuOptimized.Visible = buttonOptimized.Visible = false;
-                buttonStopGPU.Visible = true;
-            }
-            else
-            {
-                buttonStopGPU.Visible = false;
-            }
+            buttonEco.Visible = eco;
+            buttonStandard.Visible = standard;
+            buttonUltimate.Visible = ultimate;
+            buttonOptimized.Visible = optimized;
+            buttonStopGPU.Visible = !eco && !standard;
 
-            if (!ultimate)
-            {
-                menuUltimate.Visible = buttonUltimate.Visible = false;
-                menuOptimized.Visible = buttonOptimized.Visible = false;
-            }
+            menuEco.Visible = eco;
+            menuStandard.Visible = standard;
+            menuUltimate.Visible = ultimate;
+            menuOptimized.Visible = optimized;
+
+            tableGPU.SetColumn(buttonEco, 0);
+            tableGPU.SetColumnSpan(buttonEco, 1);
+            tableGPU.SetColumn(buttonStandard, 1);
+            tableGPU.SetColumnSpan(buttonStandard, 1);
+            tableGPU.SetColumn(buttonOptimized, 2);
+            tableGPU.SetColumnSpan(buttonOptimized, 1);
+            tableGPU.SetColumn(buttonUltimate, 3);
+            tableGPU.SetColumnSpan(buttonUltimate, 1);
         }
 
         public void HideGPUModes(bool gpuExists)

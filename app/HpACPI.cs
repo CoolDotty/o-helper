@@ -189,6 +189,10 @@ public class HpACPI
     public const int GPUModeStandard = 1;
     public const int GPUModeUltimate = 2;
 
+    public const int WmiGpuModeHybrid = 0;
+    public const int WmiGpuModeDiscrete = 1;
+    public const int WmiGpuModeUma = 3;
+
     public const int MinTotal = 5;
 
     public static int MaxTotal = 150;
@@ -217,6 +221,50 @@ public class HpACPI
 
     public static uint GPUEco => AppConfig.IsVivoZenPro() ? GPUEcoVivo : GPUEcoROG;
     public static uint GPUMux => AppConfig.IsVivoZenPro() ? GPUMuxVivo : GPUMuxROG;
+
+    public bool SupportsGpuModeSwitching()
+    {
+        var sdd = GetSystemDesignData();
+        if (sdd.ReadSucceeded && sdd.SupportsGraphicsSwitching)
+            return true;
+
+        var modelCaps = AppConfig.GetModelCapabilities();
+        if (modelCaps.HasMuxSwitch)
+            return true;
+
+        if (!sdd.ReadSucceeded && ProbeSupport(GPUEco))
+        {
+            Logger.WriteLine("HpACPI: GPU mode switching enabled via WMI probe (SystemDesignData unavailable)");
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool SupportsGpuMode(int mode)
+    {
+        if (!SupportsGpuModeSwitching()) return false;
+
+        var sdd = GetSystemDesignData();
+        if (sdd.ReadSucceeded)
+        {
+            return mode switch
+            {
+                GPUModeEco => sdd.HasIntegratedSlot,
+                GPUModeStandard => sdd.HasHybridSlot,
+                GPUModeUltimate => sdd.HasDedicatedSlot,
+                _ => false
+            };
+        }
+
+        return mode switch
+        {
+            GPUModeEco => true,
+            GPUModeStandard => true,
+            GPUModeUltimate => false,
+            _ => false
+        };
+    }
 
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern IntPtr CreateFile(
@@ -581,11 +629,9 @@ public class HpACPI
         if (DeviceID == ScreenOverdrive)
             return SetOverdrive(Status != 0);
 
-        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo)
-            return SetGPUEco(Status);
-
-        if (DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
-            return SetGpuMode(Status == GPUModeUltimate ? 1 : 0);
+        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo
+            || DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
+            return SetGpuModeValue(Status);
 
         if (DeviceID == GPUXG)
             return SetGpuXg(Status);
@@ -666,11 +712,9 @@ public class HpACPI
         if (DeviceID == ScreenOverdrive)
             return GetOverdrive() ? 1 : 0;
 
-        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo)
-            return GetGpuEcoMode();
-
-        if (DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
-            return GetGpuMuxMode();
+        if (DeviceID == GPUEco || DeviceID == GPUEcoROG || DeviceID == GPUEcoVivo
+            || DeviceID == GPUMux || DeviceID == GPUMuxROG || DeviceID == GPUMuxVivo)
+            return GetGpuMode();
 
         if (DeviceID == GPUXG)
 #pragma warning disable CS0618
@@ -874,17 +918,7 @@ public class HpACPI
 
     #region GPU Mode
 
-    public int SetGPUEco(int eco)
-    {
-        return SetGpuMode(eco == GPUModeEco ? 0 : 1);
-    }
-
-    public int SetVivoMode(int mode)
-    {
-        return 1;
-    }
-
-    private int GetGpuEcoMode()
+    public int GetGpuMode()
     {
         if (!IsWmiReady()) return GPUModeStandard;
 
@@ -896,42 +930,94 @@ public class HpACPI
 
         if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
         {
-            int mode = result.Data[0];
-            return mode == 0 ? GPUModeEco : GPUModeStandard;
+            int wmiMode = result.Data[0];
+            int mode = WmiModeToAppMode(wmiMode);
+            Logger.WriteLine($"HpACPI: GPU mode WMI={wmiMode} -> app={mode}");
+            return mode;
         }
 
-        return GPUModeStandard;
-    }
-
-    private int GetGpuMuxMode()
-    {
-        if (!IsWmiReady()) return GPUModeStandard;
-
-        var result = ExecuteBiosCommand(
-            (uint)HpBiosCommand.Legacy,
-            (int)HpBiosCommandType.GpuModeGet,
-            null,
-            4);
-
-        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+        int fallback = DetectGpuModeFromVideoControllers();
+        if (fallback >= 0)
         {
-            int mode = result.Data[0];
-            if (mode == 0) return GPUModeEco;
-            if (mode == 1) return GPUModeUltimate;
-            return GPUModeStandard;
+            Logger.WriteLine($"HpACPI: GPU mode WMI failed, fallback video controller detection -> {fallback}");
+            return fallback;
         }
 
         return GPUModeStandard;
     }
 
-    private int SetGpuMode(int mode)
+    private int WmiModeToAppMode(int wmiMode)
     {
+        return wmiMode switch
+        {
+            WmiGpuModeHybrid => GPUModeStandard,
+            WmiGpuModeDiscrete => GPUModeUltimate,
+            WmiGpuModeUma => GPUModeEco,
+            _ => GPUModeStandard
+        };
+    }
+
+    private int AppModeToWmiMode(int appMode)
+    {
+        return appMode switch
+        {
+            GPUModeStandard => WmiGpuModeHybrid,
+            GPUModeUltimate => WmiGpuModeDiscrete,
+            GPUModeEco => WmiGpuModeUma,
+            _ => WmiGpuModeHybrid
+        };
+    }
+
+    private int DetectGpuModeFromVideoControllers()
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT * FROM Win32_VideoController");
+            bool hasDgpu = false;
+            bool hasIgpu = false;
+
+            foreach (var obj in searcher.Get())
+            {
+                string name = obj["Name"]?.ToString() ?? "";
+                int status = Convert.ToInt32(obj["Status"] ?? 0);
+                if (status != 0) continue;
+
+                if (name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) ||
+                    (name.Contains("AMD", StringComparison.OrdinalIgnoreCase) && !name.Contains("Radeon Graphics", StringComparison.OrdinalIgnoreCase)))
+                    hasDgpu = true;
+                else
+                    hasIgpu = true;
+            }
+
+            if (hasDgpu && hasIgpu) return GPUModeStandard;
+            if (hasDgpu && !hasIgpu) return GPUModeUltimate;
+            if (hasIgpu && !hasDgpu) return GPUModeEco;
+        }
+        catch { }
+
+        return -1;
+    }
+
+    public int SetGpuModeValue(int appMode)
+    {
+        if (!SupportsGpuMode(appMode))
+        {
+            Logger.WriteLine($"HpACPI: GPU mode {appMode} not supported on this model");
+            return 0;
+        }
+
+        int wmiMode = AppModeToWmiMode(appMode);
+        Logger.WriteLine($"HpACPI: Setting GPU mode app={appMode} wmi={wmiMode}");
+
         var result = ExecuteBiosCommand(
             (uint)HpBiosCommand.GpuMode,
             (int)HpBiosCommandType.GpuModeSet,
-            new byte[] { (byte)mode, 0, 0, 0 },
+            new byte[] { (byte)wmiMode, 0, 0, 0 },
             4);
-        return result.Success && result.ReturnCode == 0 ? 1 : 0;
+
+        bool success = result.Success && result.ReturnCode == 0;
+        Logger.WriteLine($"HpACPI: GPU mode set result: success={success} rc={result.ReturnCode}");
+        return success ? 1 : 0;
     }
 
     private int SetGpuXg(int status)
