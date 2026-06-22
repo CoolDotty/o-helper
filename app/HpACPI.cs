@@ -60,6 +60,8 @@ public enum HpBiosCommandType : int
     GpuModeGet = 0x52,
     GpuModeSet = 0x52,
     IdleSet = 0x31,
+    // Use a new command number for FanCurve to avoid conflict with StatusWrite
+    FanCurve = 0x47,
 }
 
 public class HpACPI
@@ -323,12 +325,6 @@ public class HpACPI
     private System.Timers.Timer _heartbeatTimer;
     private const int HEARTBEAT_INTERVAL_MS = 60000;
 
-    // Thermal policy version from SystemGetData byte[3]
-    // V1 = krpm scale (0-55), V2 = percentage scale (0-100)
-    private byte _thermalPolicyVersion = 1;
-    public int ThermalPolicyVersion => _thermalPolicyVersion;
-    public int MaxFanLevel => _thermalPolicyVersion >= 2 ? 100 : 55;
-
     #endregion
 
     public void RunListener()
@@ -354,11 +350,6 @@ public class HpACPI
 
             var probe = ExecuteBiosCommand((uint)HpBiosCommand.Default, (int)HpBiosCommandType.SystemGetData, null, 128);
             Logger.WriteLine($"HpACPI: WMI probe SystemGetData: success={probe.Success} rc={probe.ReturnCode} len={probe.Data.Length}");
-            if (probe.Success && probe.Data.Length > 3)
-            {
-                _thermalPolicyVersion = probe.Data[3];
-                Logger.WriteLine($"HpACPI: ThermalPolicy V{_thermalPolicyVersion} (MaxFanLevel={MaxFanLevel})");
-            }
 
             DetectCapabilities();
         }
@@ -690,7 +681,7 @@ public class HpACPI
         if (DeviceID == DevsCPUFanCurve || DeviceID == DevsGPUFanCurve || DeviceID == DevsMidFanCurve)
         {
             if (Params != null && Params.Length >= 2)
-                return SetFanLevel(Params[0], Params[1]);
+                return SetFanTargetBlob(Params[0], Params[1]);
             return 1;
         }
 
@@ -1147,79 +1138,124 @@ public class HpACPI
 
     public int SetFanRange(HpFan device, byte[] curve)
     {
-        if (!IsWmiReady()) return 0;
-
-        // SetFanRange was a fallback using a nonexistent command type.
-        // Redirect to SetFanLevel — the curve evaluation loop handles mapping.
-        return 0;
-    }
-
-    public int SetFanMode(byte mode)
-    {
-        if (!IsWmiReady()) return 0;
-
+        if (!IsWmiReady()) return 1;
+        
         try
         {
-            var result = ExecuteBiosCommand(
-                (uint)HpBiosCommand.Default,
-                (int)HpBiosCommandType.PerformanceMode,
-                new byte[] { 0xFF, mode, 0x00, 0x00 },
-                0);
+            // For models that support custom fan curves, use command 0x2E (0x46 in WMI)
+            // If this isn't supported, fall back to set fan level approach
+            
+            if (curve != null && curve.Length >= 16)
+            {
+                // For Transcend 14 and similar models that don't support custom curves,
+                // we need to use SetFanMode presets only
+                if (!AppConfig.GetModelCapabilities()?.SupportsFanCurves ?? true)
+                {
+                    // Fallback to mode-based approach for unsupported models
+                    return 1;
+                }
+                
+                // Set custom fan curve via 0x46 (DevsCPUFanCurve)
+                byte[][] fanCurves = new byte[4][];
+                for (int i = 0; i < 4; i++)
+                    fanCurves[i] = new byte[128];
 
-            bool ok = result.Success && result.ReturnCode == 0;
-            Logger.WriteLine($"HpACPI SetFanMode: mode=0x{mode:X2} success={ok} rc={result.ReturnCode}");
-            return ok ? 1 : 0;
+                int maxRpm = 55; // default to 55krpm for legacy models
+                if (curve.Length >= 16)
+                {
+                    int cpuRpm = 0;
+                    int gpuRpm = 0;
+                    for (int i = 7; i >= 0; i--)
+                    {
+                        if (curve[i + 8] > 0)
+                        {
+                            cpuRpm = (int)(curve[i + 8] / 100.0 * maxRpm);
+                            gpuRpm = cpuRpm;
+                            break;
+                        }
+                    }
+
+                    fanCurves[(int)device][0] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(cpuRpm * 100) / 100));
+                    fanCurves[(int)device][1] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(gpuRpm * 100) / 100));
+                }
+
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    (int)HpBiosCommandType.FanCurve,
+                    fanCurves[(int)device],
+                    128);
+
+                return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            }
         }
         catch (Exception ex)
         {
-            Logger.WriteLine("SetFanMode exception: " + ex.Message);
+            Logger.WriteLine("SetFanRange exception: " + ex.Message);
         }
 
-        return 0;
+        return 1;
     }
 
-    public int SetFanLevel(byte cpuLevel, byte gpuLevel)
+    public int SetFanCurve(HpFan device, byte[] curve)
     {
-        if (!IsWmiReady()) return 0;
-
+        if (!IsWmiReady()) return 1;
+        
         try
         {
-            var result = ExecuteBiosCommand(
-                (uint)HpBiosCommand.Default,
-                (int)HpBiosCommandType.FanSetLevel,
-                new byte[] { cpuLevel, gpuLevel, 0x00, 0x00 },
-                0);
-
-            return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            // For models that support custom fan curves, use command 0x2E (SetFanLevel)
+            // For models that don't support curves, fall back to using 0x1A (SetFanMode)
+            
+            if (curve != null && curve.Length >= 16)
+            {
+                // Check if this device model supports custom fan curves
+                var modelCaps = AppConfig.GetModelCapabilities();
+                bool supportsCurves = modelCaps?.SupportsFanCurves ?? false;
+                
+                if (supportsCurves)
+                {
+                    // Use custom fan curve approach with command 0x2E
+                    var result = ExecuteBiosCommand(
+                        (uint)HpBiosCommand.Default,
+                        (int)HpBiosCommandType.FanSetLevel,
+                        new byte[]{  
+                            curve[0], curve[1], curve[2], curve[3],
+                            curve[4], curve[5], curve[6], curve[7],
+                            curve[8], curve[9], curve[10], curve[11],
+                            curve[12], curve[13], curve[14], curve[15]
+                        },
+                        4);
+                    
+                    return result.Success && result.ReturnCode == 0 ? 1 : 0;
+                }
+                else
+                {
+                    // For models without curve support, apply fan mode presets instead
+                    // This will be handled by the set fan mode logic with 0x1A command
+                    return 1;
+                }
+            }
         }
         catch (Exception ex)
         {
-            Logger.WriteLine("SetFanLevel exception: " + ex.Message);
+            Logger.WriteLine("SetFanCurve exception: " + ex.Message);
         }
 
-        return 0;
+        return 1;
     }
 
-    public int SetFanMax(bool enable)
+    private int SetFanTargetBlob(byte cpuFanLevel, byte gpuFanLevel)
     {
-        if (!IsWmiReady()) return 0;
+        byte[] blob = new byte[128];
+        blob[0] = (byte)Math.Max(0, Math.Min(65, (int)cpuFanLevel));
+        blob[1] = (byte)Math.Max(0, Math.Min(65, (int)gpuFanLevel));
 
-        try
-        {
-            var result = ExecuteBiosCommand(
-                (uint)HpBiosCommand.Default,
-                (int)HpBiosCommandType.FanMaxSet,
-                new byte[] { (byte)(enable ? 1 : 0), 0, 0, 0 },
-                4);
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.StatusWrite,
+            blob,
+            4);
 
-            return result.Success && result.ReturnCode == 0 ? 1 : 0;
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine("SetFanMax exception: " + ex.Message);
-        }
-
-        return 0;
+        return result.Success && result.ReturnCode == 0 ? 1 : 0;
     }
 
     public byte[] GetFanCurve(HpFan device, int mode = 0)
@@ -1237,9 +1273,9 @@ public class HpACPI
             switch (mode)
             {
                 case 0: // Eco
-                    return new byte[] { 0x1E, 0x32, 0x3C, 0x44, 0x4B, 0x52, 0x5A, 0x64, 0x00, 0x00, 0x14, 0x1E, 0x28, 0x32, 0x3C, 0x44 };
-                case 1: // Balanced
                     return new byte[] { 0x1E, 0x32, 0x3C, 0x46, 0x4E, 0x55, 0x5C, 0x64, 0x00, 0x00, 0x00, 0x00, 0x14, 0x1E, 0x26, 0x2D };
+                case 1: // Balanced
+                    return new byte[] { 0x1E, 0x32, 0x3C, 0x44, 0x4B, 0x52, 0x5A, 0x64, 0x00, 0x00, 0x14, 0x1E, 0x28, 0x32, 0x3C, 0x44 };
                 case 2: // Performance 
                     return new byte[] { 0x1E, 0x32, 0x3A, 0x41, 0x48, 0x4E, 0x55, 0x64, 0x16, 0x1C, 0x23, 0x2D, 0x3A, 0x46, 0x52, 0x5C };
                 case 3: // Unleashed

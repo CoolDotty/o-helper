@@ -371,14 +371,6 @@ public static class AppConfig
                     switch (device)
                     {
                         case HpFan.GPU:
-                            return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
-                        default:
-                            return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
-                    }
-                case HpACPI.PerformanceSilent:
-                    switch (device)
-                    {
-                        case HpFan.GPU:
                             return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
                         default:
                             return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
@@ -433,17 +425,17 @@ public static class AppConfig
                 switch (device)
                 {
                     case HpFan.GPU:
-                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
                     default:
-                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
+                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
                 }
             default:
                 switch (device)
                 {
                     case HpFan.GPU:
-                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
+                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
                     default:
-                        return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
+                        return StringToBytes("1E-32-3C-44-4B-52-5A-64-00-00-14-1E-28-32-3C-44");
                 }
         }
     }
