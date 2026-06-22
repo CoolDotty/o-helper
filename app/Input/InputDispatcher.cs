@@ -75,7 +75,10 @@ namespace OHelper.Input
             if (backlightActivity && iddle.TotalSeconds > kb_timeout)
             {
                 backlightActivity = false;
-                Aura.ApplyBrightness(0, "Timeout");
+                if (AppConfig.IsOmenKeyboardSupported())
+                    OmenApplyBacklight(0, "Timeout");
+                else
+                    Aura.ApplyBrightness(0, "Timeout");
             }
 
             if (!backlightActivity && iddle.TotalSeconds < kb_timeout)
@@ -666,6 +669,9 @@ namespace OHelper.Input
 
         static void MuteLED()
         {
+            // SoundMuteLed is an ASUS HID-driven device; on HP Omen there is no
+            // confirmed WMI commandType for it, so skip the call entirely.
+            if (AppConfig.IsOmen()) return;
             Thread.Sleep(500);
             Program.acpi.DeviceSet(HpACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLed");
         }
@@ -685,11 +691,15 @@ namespace OHelper.Input
         {
             bool muteStatus = Audio.ToggleMicMute();
             Program.toast.RunToast(muteStatus ? Properties.Strings.Muted : Properties.Strings.Unmuted, muteStatus ? ToastIcon.MicrophoneMute : ToastIcon.Microphone);
-            if (AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(HpACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
+            // MicMuteLed is ASUS-HID-driven; HP Omen has no confirmed WMI commandType for it.
+            if (!AppConfig.IsOmen() && AppConfig.IsVivoZenbook()) Program.acpi.DeviceSet(HpACPI.MicMuteLed, muteStatus ? 1 : 0, "MicmuteLed");
         }
 
         static void MuteLEDInit()
         {
+            // MicMuteLed/SoundMuteLed are HID-driven on ASUS. HP Omen has no
+            // confirmed WMI commandType for them, so skip the probe entirely.
+            if (AppConfig.IsOmen()) return;
             if (!AppConfig.IsVivoZenbook()) return;
             if (Program.acpi.IsSupported(HpACPI.MicMuteLed)) Program.acpi.DeviceSet(HpACPI.MicMuteLed, Audio.IsMicMuted() ? 1 : 0, "MicmuteLedInit");
             if (Program.acpi.IsSupported(HpACPI.SoundMuteLed)) Program.acpi.DeviceSet(HpACPI.SoundMuteLed, Audio.IsMuted() ? 1 : 0, "SoundLedInit");
@@ -1044,7 +1054,13 @@ namespace OHelper.Input
                 }
             }
 
-            if (!AppConfig.Is("skip_aura"))
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                // Omen keyboard path: WMI BIOS only, no Aura HID.
+                Logger.WriteLine("AutoKeyboard: Omen path (IsOmenKeyboardSupported)");
+                SetBacklightAuto();
+            }
+            else if (!AppConfig.Is("skip_aura"))
             {
                 Aura.Init();
                 Aura.ApplyPower();
@@ -1060,12 +1076,20 @@ namespace OHelper.Input
         public static void SetBacklightAuto()
         {
             if (lidClose || tentMode) return;
-            Aura.ApplyBrightness(GetBacklight(), "Auto");
+            if (AppConfig.IsOmenKeyboardSupported())
+                OmenApplyBacklight(GetBacklight(), "Auto");
+            else
+                Aura.ApplyBrightness(GetBacklight(), "Auto");
             backlightActivity = true;
         }
 
         public static void StartupBacklight()
         {
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                OmenApplyBacklight(GetBacklight(), "Startup");
+                return;
+            }
             Aura.DirectBrightness(GetBacklight(), "Startup");
         }
 
@@ -1088,17 +1112,55 @@ namespace OHelper.Input
             else
                 AppConfig.Set("keyboard_brightness", backlight);
 
-            if (force || !AsusService.IsAsusOptimizationRunning())
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                OmenApplyBacklight(backlight, "HotKey");
+            }
+            else if (force || !AsusService.IsAsusOptimizationRunning())
             {
                 Aura.ApplyBrightness(backlight, "HotKey");
             }
 
-            if (!AsusService.IsOSDRunning())
+            if (!AppConfig.IsOmenKeyboardSupported() && !AsusService.IsOSDRunning())
             {
                 string[] backlightNames = new string[] { Properties.Strings.BacklightOff, Properties.Strings.BacklightLow, Properties.Strings.BacklightMid, Properties.Strings.BacklightMax };
                 Program.toast.RunToast(backlightNames[backlight], delta > 0 ? ToastIcon.BacklightUp : ToastIcon.BacklightDown);
             }
+            else if (AppConfig.IsOmenKeyboardSupported())
+            {
+                // Omen has no OSD service — always show our own toast.
+                string[] backlightNames = new string[] { Properties.Strings.BacklightOff, Properties.Strings.BacklightLow, Properties.Strings.BacklightMid, Properties.Strings.BacklightMax };
+                Program.toast.RunToast(backlightNames[backlight], delta > 0 ? ToastIcon.BacklightUp : ToastIcon.BacklightDown);
+            }
 
+        }
+
+        // Translate the 0..3 backlight level the rest of the app uses into the
+        // raw byte range HP firmware expects (0x64 = off, 0xE4 = full on) and
+        // apply it through the WMI keyboard interface.
+        static void OmenApplyBacklight(int backlight, string log)
+        {
+            if (Program.acpi == null) return;
+
+            byte raw;
+            switch (backlight)
+            {
+                case 0: raw = HpACPI.KbBrightnessOff; break;
+                case 1: raw = 0xA4; break;       // ~33%
+                case 2: raw = 0xC4; break;       // ~66%
+                case 3: raw = HpACPI.KbBrightnessFull; break;
+                default: raw = HpACPI.KbBrightnessFull; break;
+            }
+
+            Logger.WriteLine($"OmenBacklight ({log}): level={backlight} raw=0x{raw:X2}");
+            try
+            {
+                Program.acpi.SetBrightnessLevel(raw);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"OmenBacklight failed: {ex.Message}");
+            }
         }
 
         public static void ToggleScreenpad()

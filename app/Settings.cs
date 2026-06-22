@@ -1115,11 +1115,21 @@ namespace OHelper
 
         private void PictureColor2_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                OmenCycleZone();
+                return;
+            }
             SetColorPicker("aura_color2");
         }
 
         private void PictureColor_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                OmenPickZoneColor();
+                return;
+            }
             buttonKeyboardColor.PerformClick();
         }
 
@@ -1201,6 +1211,11 @@ namespace OHelper
 
         private void ButtonKeyboardColor_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                OmenPickZoneColor();
+                return;
+            }
             SetColorPicker("aura_color");
         }
 
@@ -1244,6 +1259,12 @@ namespace OHelper
 
         public void InitAura()
         {
+            if (AppConfig.IsOmenKeyboardSupported())
+            {
+                InitOmenKeyboard();
+                return;
+            }
+
             comboKeyboard.DropDownStyle = ComboBoxStyle.DropDownList;
             if (!Aura.IsBacklightDetected && !AppConfig.Is("skip_aura"))
                 Aura.Init();
@@ -1273,6 +1294,196 @@ namespace OHelper
             VisualiseAura();
 
             InitRearLight();
+        }
+
+        // ---- Omen WMI keyboard path ----
+        // The Omen keyboard uses the WMI BiosCmd.Keyboard (0x20009) interface via
+        // HpACPI, not the ASUS Aura HID path. We reuse the existing keyboard panel
+        // controls (comboKeyboard, buttonKeyboardColor, pictureColor, pictureColor2)
+        // but drive them with Omen semantics:
+        //   * comboKeyboard  -> effect list (Static/Breathing/ColorCycle/Wave)
+        //   * buttonKeyboardColor / pictureColor -> opens color picker for the
+        //     currently selected zone; clicking cycles Right→Middle→Left→WASD
+        //   * pictureColor2 -> preview of the next zone (visual hint)
+        // Brightness is handled by the existing backlight hotkey path
+        // (InputDispatcher.SetBacklight -> OmenApplyBacklight).
+
+        private bool _omenKbInit;
+        private int _omenKbZone = 0; // 0=Right, 1=Middle, 2=Left, 3=WASD
+        private static readonly string[] _omenZoneNames =
+            { Properties.Strings.OmenKeyboardZoneRight,
+              Properties.Strings.OmenKeyboardZoneMiddle,
+              Properties.Strings.OmenKeyboardZoneLeft,
+              Properties.Strings.OmenKeyboardZoneWasd };
+
+        private void InitOmenKeyboard()
+        {
+            if (_omenKbInit) return;
+            _omenKbInit = true;
+
+            int kbType = Program.acpi.GetKeyboardType();
+            bool hasBacklight = Program.acpi.HasBacklight();
+
+            Logger.WriteLine($"OmenKeyboard: type={kbType} hasBacklight={hasBacklight}");
+
+            if (!hasBacklight && kbType < 0)
+            {
+                // No keyboard reachable via WMI — hide the whole panel.
+                panelKeyboard.Visible = false;
+                return;
+            }
+
+            // Hide the ASUS "Extra" button — Omen uses the keyboard panel directly.
+            buttonKeyboard.Visible = false;
+
+            // Effect list keyed by integer (0=Static,1=Breathing,2=ColorCycle,3=Wave)
+            comboKeyboard.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboKeyboard.Items.Clear();
+            comboKeyboard.Items.Add(Properties.Strings.OmenEffectStatic);
+            comboKeyboard.Items.Add(Properties.Strings.OmenEffectBreathing);
+            comboKeyboard.Items.Add(Properties.Strings.OmenEffectColorCycle);
+            comboKeyboard.Items.Add(Properties.Strings.OmenEffectWave);
+            comboKeyboard.SelectedIndex = Math.Max(0, Math.Min(3, AppConfig.Get("omen_kb_effect", 0)));
+            comboKeyboard.SelectedIndexChanged -= ComboKeyboard_SelectedValueChanged;
+            comboKeyboard.SelectedIndexChanged += ComboKeyboard_OmenEffectChanged;
+
+            // Color picker buttons: clicking the color swatch cycles to the next zone
+            // and opens the color picker for that zone. This reuses the existing
+            // pictureColor / pictureColor2 / buttonKeyboardColor controls.
+            buttonKeyboardColor.Text = _omenZoneNames[_omenKbZone];
+            pictureColor2.Visible = true;
+
+            // Load persisted zone colors (stored as ARGB ints under omen_kb_zone_<n>).
+            for (int z = 0; z < HpACPI.KbZoneCount; z++)
+            {
+                int argb = AppConfig.Get($"omen_kb_zone_{z}", Color.White.ToArgb());
+                _omenZoneColors[z] = Color.FromArgb(argb);
+            }
+
+            // Pre-fill the keyboard with the persisted colors so the hardware matches
+            // the UI on startup.
+            Task.Run(ApplyOmenZoneColors);
+
+            VisualiseOmenKeyboard();
+        }
+
+        private readonly Color[] _omenZoneColors = new Color[HpACPI.KbZoneCount]
+            { Color.White, Color.White, Color.White, Color.White };
+
+        private void VisualiseOmenKeyboard()
+        {
+            buttonKeyboardColor.Text = _omenZoneNames[_omenKbZone];
+            pictureColor.BackColor = _omenZoneColors[_omenKbZone];
+            int nextZone = (_omenKbZone + 1) % HpACPI.KbZoneCount;
+            pictureColor2.BackColor = _omenZoneColors[nextZone];
+        }
+
+        private void OmenPickZoneColor()
+        {
+            ColorDialog colorDlg = new ColorDialog();
+            colorDlg.AllowFullOpen = true;
+            colorDlg.Color = _omenZoneColors[_omenKbZone];
+
+            try
+            {
+                colorDlg.CustomColors = AppConfig.GetString("aura_color_custom", "")
+                    .Split('-').Select(int.Parse).ToArray();
+            }
+            catch { }
+
+            if (colorDlg.ShowDialog() == DialogResult.OK)
+            {
+                AppConfig.Set("aura_color_custom", string.Join("-", colorDlg.CustomColors));
+                AppConfig.Set($"omen_kb_zone_{_omenKbZone}", colorDlg.Color.ToArgb());
+                _omenZoneColors[_omenKbZone] = colorDlg.Color;
+
+                // Apply this one zone through the WMI color-table path. The table is
+                // read-modify-written inside SetZoneColor so other zones are preserved.
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        Program.acpi.SetZoneColor(_omenKbZone,
+                            colorDlg.Color.R, colorDlg.Color.G, colorDlg.Color.B);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.WriteLine($"OmenKeyboard: SetZoneColor failed: {ex.Message}");
+                    }
+                });
+
+                VisualiseOmenKeyboard();
+            }
+        }
+
+        private void OmenCycleZone()
+        {
+            _omenKbZone = (_omenKbZone + 1) % HpACPI.KbZoneCount;
+            VisualiseOmenKeyboard();
+        }
+
+        private void ComboKeyboard_OmenEffectChanged(object? sender, EventArgs e)
+        {
+            int effect = comboKeyboard.SelectedIndex;
+            AppConfig.Set("omen_kb_effect", effect);
+            Task.Run(() => ApplyOmenEffect(effect));
+        }
+
+        /// <summary>
+        /// Pushes the persisted 4-zone colors down to the keyboard via WMI.
+        /// Safe to call from a background thread.
+        /// </summary>
+        private void ApplyOmenZoneColors()
+        {
+            try
+            {
+                byte[] zones = new byte[HpACPI.KbZoneCount * HpACPI.KbZoneColorStride];
+                for (int z = 0; z < HpACPI.KbZoneCount; z++)
+                {
+                    Color c = _omenZoneColors[z];
+                    int o = z * HpACPI.KbZoneColorStride;
+                    zones[o] = c.R;
+                    zones[o + 1] = c.G;
+                    zones[o + 2] = c.B;
+                }
+                Program.acpi.SetColorTable(zones);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"OmenKeyboard: SetColorTable failed: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Applies an LED animation effect via WMI CMD 0x07.
+        /// Effect layout: zone=0xFF(all), colorMode, speed, brightness, colorCount, R,G,B, R,G,B.
+        /// </summary>
+        private void ApplyOmenEffect(int effect)
+        {
+            try
+            {
+                Color primary = _omenZoneColors[0];
+                Color secondary = _omenZoneColors[1];
+
+                byte[] anim = new byte[HpACPI.KbColorTableSize];
+                anim[0] = 0xFF; // all zones
+                anim[1] = (byte)effect; // 0=static,1=breathing,2=color cycle,3=wave
+                anim[2] = 0x05; // speed (mid; lower = faster)
+                anim[3] = 0x64; // brightness 100
+                anim[4] = (byte)(effect == 0 ? 1 : 2); // color count (1 for static, 2 otherwise)
+                anim[5] = primary.R;
+                anim[6] = primary.G;
+                anim[7] = primary.B;
+                anim[8] = secondary.R;
+                anim[9] = secondary.G;
+                anim[10] = secondary.B;
+
+                Program.acpi.SetLedAnimation(anim);
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine($"OmenKeyboard: SetLedAnimation failed: {ex.Message}");
+            }
         }
 
         public void SetAura()
@@ -2043,11 +2254,21 @@ namespace OHelper
             string type = "";
             if (AppConfig.IsOmen())
             {
-                var caps = AppConfig.GetModelCapabilities();
-                if (caps.HasPerKeyRgb)
+                // Prefer the runtime probe from WMI CMD 0x01 over the DB flags,
+                // falling back to model DB flags if the probe hasn't run / failed.
+                int kbType = Program.acpi?.GetKeyboardType() ?? -1;
+                if (kbType == HpACPI.KbTypePerKeyRgb)
                     type = "Per-Key RGB";
-                else if (caps.HasFourZoneRgb)
-                    type = "4-Zone RGB";
+                else if (kbType >= HpACPI.KbTypeStandard)
+                    type = HpACPI.KeyboardTypeName(kbType) + " (4-Zone)";
+                else
+                {
+                    var caps = AppConfig.GetModelCapabilities();
+                    if (caps.HasPerKeyRgb)
+                        type = "Per-Key RGB";
+                    else if (caps.HasFourZoneRgb)
+                        type = "4-Zone RGB";
+                }
             }
             else if (Aura.BacklightType != AuraBacklightType.Unknown)
             {

@@ -976,4 +976,40 @@ Recommended if you experience random hangs or unresponsive hardware.</value>
   <data name="OverlayOnlyInGames" xml:space="preserve">
     <value>Overlay only in games</value>
   </data>
+  <data name="OmenKeyboardBacklight" xml:space="preserve">
+    <value>Keyboard Backlight</value>
+  </data>
+  <data name="OmenKeyboardBrightness" xml:space="preserve">
+    <value>Brightness</value>
+  </data>
+  <data name="OmenKeyboardZoneRight" xml:space="preserve">
+    <value>Right Zone</value>
+  </data>
+  <data name="OmenKeyboardZoneMiddle" xml:space="preserve">
+    <value>Middle Zone</value>
+  </data>
+  <data name="OmenKeyboardZoneLeft" xml:space="preserve">
+    <value>Left Zone</value>
+  </data>
+  <data name="OmenKeyboardZoneWasd" xml:space="preserve">
+    <value>WASD Zone</value>
+  </data>
+  <data name="OmenEffectStatic" xml:space="preserve">
+    <value>Static</value>
+  </data>
+  <data name="OmenEffectBreathing" xml:space="preserve">
+    <value>Breathing</value>
+  </data>
+  <data name="OmenEffectColorCycle" xml:space="preserve">
+    <value>Color Cycle</value>
+  </data>
+  <data name="OmenEffectWave" xml:space="preserve">
+    <value>Wave</value>
+  </data>
+  <data name="OmenEffectSpeed" xml:space="preserve">
+    <value>Effect Speed</value>
+  </data>
+  <data name="OmenKeyboardApplyAllZones" xml:space="preserve">
+    <value>Apply to All Zones</value>
+  </data>
 </root>

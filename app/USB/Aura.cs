@@ -365,6 +365,10 @@ namespace OHelper.USB
 
         public static void Init()
         {
+            // Aura is an ASUS ROG HID protocol. HP Omen uses the WMI BiosCmd.Keyboard
+            // (0x20009) interface; never probe ASUS HID on HP hardware.
+            if (AppConfig.IsOmen()) return;
+
             DetectBacklightType();
 
             if (AppConfig.IsZ13())
@@ -391,6 +395,9 @@ namespace OHelper.USB
 
         public static void ApplyBrightness(int brightness, string log = "Backlight")
         {
+            // HP Omen backlight is driven by HpACPI.SetBrightnessLevel via InputDispatcher.
+            if (AppConfig.IsOmen()) return;
+
             if (brightness == 0) backlight = false;
 
             DirectBrightness(brightness, log);
@@ -467,6 +474,9 @@ namespace OHelper.USB
 
         public static void ApplyPower()
         {
+            // ASUS-only Aura HID boot/sleep/shutdown keyboard power messages.
+            // HP Omen doesn't expose these via the WMI 0x20009 interface.
+            if (AppConfig.IsOmen()) return;
 
             bool backlightBattery = AppConfig.IsBacklightZones() && (SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online);
 
@@ -786,6 +796,10 @@ namespace OHelper.USB
 
         public static void ApplyAura()
         {
+            // HP Omen keyboard RGB is driven by HpACPI.SetColorTable / SetLedAnimation
+            // via the Settings UI; never invoke the ASUS Aura HID protocol on HP.
+            if (AppConfig.IsOmen()) return;
+
             Mode = (AuraMode)AppConfig.Get("aura_mode");
             Speed = (AuraSpeed)AppConfig.Get("aura_speed");
             SetColor(AppConfig.Get("aura_color"));

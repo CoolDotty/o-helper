@@ -62,6 +62,15 @@ public enum HpBiosCommandType : int
     IdleSet = 0x31,
     // Use a new command number for FanCurve to avoid conflict with StatusWrite
     FanCurve = 0x47,
+
+    // Keyboard (BiosCmd.Keyboard = 0x20009)
+    KeyboardType = 0x01,
+    KeyboardColorGet = 0x02,
+    KeyboardColorSet = 0x03,
+    KeyboardBrightnessGet = 0x04,
+    KeyboardBacklightSet = 0x05,
+    KeyboardHasBacklight = 0x06,
+    KeyboardAnimationSet = 0x07,
 }
 
 public class HpACPI
@@ -1731,6 +1740,277 @@ public class HpACPI
         }
 
         return curve;
+    }
+
+    #endregion
+
+    #region Keyboard RGB / Backlight (BiosCmd.Keyboard = 0x20009)
+
+    // HP Omen keyboard backlight types (CMD 0x01)
+    public const int KbTypeStandard = 0;
+    public const int KbTypeWithNumPad = 1;
+    public const int KbTypeTenKeyLess = 2;
+    public const int KbTypePerKeyRgb = 3;
+
+    // Backlight raw byte range from OmenCore: 0x64 = 100 = off, 0xE4 = 228 = full on
+    public const byte KbBrightnessOff = 0x64;
+    public const byte KbBrightnessFull = 0xE4;
+
+    // 4-zone ColorTable layout (128 bytes)
+    public const int KbColorTableSize = 128;
+    public const int KbZoneCount = 4;
+    public const int KbZoneColorOffset = 25; // first zone at byte 25
+    public const int KbZoneColorStride = 3;  // 3 bytes (R,G,B) per zone
+
+    public int KeyboardType { get; private set; } = -1;
+
+    // Cached probes (probed once, reset only on demand)
+    private bool? _kbHasBacklight;
+    private bool _kbProbed;
+
+    public int GetKeyboardType()
+    {
+        if (KeyboardType >= 0) return KeyboardType;
+        if (!IsWmiReady()) return -1;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Keyboard,
+                (int)HpBiosCommandType.KeyboardType,
+                null,
+                4);
+
+            if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            {
+                KeyboardType = result.Data[0];
+                Logger.WriteLine($"HpACPI: KeyboardType = {KeyboardType} ({KeyboardTypeName(KeyboardType)})");
+                return KeyboardType;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: GetKeyboardType failed: {ex.Message}");
+        }
+
+        return -1;
+    }
+
+    public static string KeyboardTypeName(int type) => type switch
+    {
+        KbTypeStandard => "Standard",
+        KbTypeWithNumPad => "WithNumPad",
+        KbTypeTenKeyLess => "TenKeyLess",
+        KbTypePerKeyRgb => "PerKeyRgb",
+        _ => $"Unknown(0x{type:X2})"
+    };
+
+    public bool HasBacklight()
+    {
+        if (_kbHasBacklight.HasValue) return _kbHasBacklight.Value;
+        if (!IsWmiReady()) return false;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Keyboard,
+                (int)HpBiosCommandType.KeyboardHasBacklight,
+                null,
+                4);
+
+            if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            {
+                _kbHasBacklight = result.Data[0] != 0;
+                return _kbHasBacklight.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine($"HpACPI: HasBacklight failed: {ex.Message}");
+        }
+
+        _kbHasBacklight = false;
+        return false;
+    }
+
+    public byte GetBacklightBrightness()
+    {
+        if (!IsWmiReady()) return KbBrightnessOff;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardBrightnessGet,
+            null,
+            4);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+            return result.Data[0];
+
+        return KbBrightnessOff;
+    }
+
+    public bool SetBacklightOn(bool on)
+    {
+        if (!IsWmiReady()) return false;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardBacklightSet,
+            new byte[] { on ? KbBrightnessFull : KbBrightnessOff, 0, 0, 0 },
+            4);
+
+        return result.Success && result.ReturnCode == 0;
+    }
+
+    public bool SetBrightnessLevel(byte level)
+    {
+        if (!IsWmiReady()) return false;
+
+        // Clamp to the firmware's raw byte range (0x64..0xE4)
+        if (level < KbBrightnessOff) level = KbBrightnessOff;
+        if (level > KbBrightnessFull) level = KbBrightnessFull;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardBacklightSet,
+            new byte[] { level, 0, 0, 0 },
+            4);
+
+        return result.Success && result.ReturnCode == 0;
+    }
+
+    public byte[] GetColorTable()
+    {
+        if (!IsWmiReady()) return new byte[KbColorTableSize];
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardColorGet,
+            null,
+            KbColorTableSize);
+
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length == KbColorTableSize)
+            return result.Data;
+
+        return new byte[KbColorTableSize];
+    }
+
+    public bool SetColorTable(byte[] zones)
+    {
+        if (!IsWmiReady()) return false;
+        if (zones == null || zones.Length != 12) return false;
+
+        // Critical sequencing: SetBacklightOn(true) then wait 30-50ms before SetColorTable
+        SetBacklightOn(true);
+        System.Threading.Thread.Sleep(40);
+
+        byte[] blob = BuildColorTableBlob(zones);
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardColorSet,
+            blob,
+            KbColorTableSize);
+
+        return result.Success && result.ReturnCode == 0;
+    }
+
+    public bool SetZoneColor(int zone, byte r, byte g, byte b)
+    {
+        if (zone < 0 || zone >= KbZoneCount) return false;
+
+        byte[] current = GetColorTable();
+
+        // Read zone count sanity check
+        if (current.Length < KbZoneColorOffset + KbZoneCount * KbZoneColorStride)
+            return false;
+
+        // Extract the 4 zones (12 bytes) from the existing table
+        byte[] zones = ExtractZones(current);
+        int idx = zone * KbZoneColorStride;
+        zones[idx] = r;
+        zones[idx + 1] = g;
+        zones[idx + 2] = b;
+
+        return SetColorTable(zones);
+    }
+
+    public byte[] GetLedAnimation()
+    {
+        if (!IsWmiReady()) return new byte[KbColorTableSize];
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardHasBacklight,
+            null,
+            KbColorTableSize);
+
+        if (result.Success && result.ReturnCode == 0)
+            return result.Data;
+
+        return new byte[KbColorTableSize];
+    }
+
+    public bool SetLedAnimation(byte[] animationData)
+    {
+        if (!IsWmiReady()) return false;
+        if (animationData == null || animationData.Length < 12) return false;
+
+        byte[] blob = new byte[KbColorTableSize];
+        Array.Copy(animationData, blob, Math.Min(animationData.Length, KbColorTableSize));
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Keyboard,
+            (int)HpBiosCommandType.KeyboardAnimationSet,
+            blob,
+            KbColorTableSize);
+
+        return result.Success && result.ReturnCode == 0;
+    }
+
+    private static byte[] BuildColorTableBlob(byte[] zones)
+    {
+        byte[] blob = new byte[KbColorTableSize];
+        blob[0] = KbZoneCount; // ZoneCount
+        // Bytes 1-24 are padding (already 0)
+        // Bytes 25-36 hold the 4 zone colors
+        for (int z = 0; z < KbZoneCount && z * KbZoneColorStride + 2 < zones.Length; z++)
+        {
+            int dst = KbZoneColorOffset + z * KbZoneColorStride;
+            int src = z * KbZoneColorStride;
+            blob[dst] = zones[src];
+            blob[dst + 1] = zones[src + 1];
+            blob[dst + 2] = zones[src + 2];
+        }
+        return blob;
+    }
+
+    private static byte[] ExtractZones(byte[] colorTable)
+    {
+        byte[] zones = new byte[KbZoneCount * KbZoneColorStride];
+        for (int z = 0; z < KbZoneCount; z++)
+        {
+            int src = KbZoneColorOffset + z * KbZoneColorStride;
+            int dst = z * KbZoneColorStride;
+            if (src + 2 < colorTable.Length)
+            {
+                zones[dst] = colorTable[src];
+                zones[dst + 1] = colorTable[src + 1];
+                zones[dst + 2] = colorTable[src + 2];
+            }
+        }
+        return zones;
+    }
+
+    /// <summary>
+    /// Probes keyboard support once and caches the result.
+    /// Returns true if the keyboard WMI interface responds to a HasBacklight check.
+    /// </summary>
+    public bool ProbeKeyboardSupport()
+    {
+        if (_kbProbed) return _kbHasBacklight ?? false;
+        _kbProbed = true;
+        return HasBacklight();
     }
 
     #endregion
