@@ -344,6 +344,7 @@ namespace OHelper
                 ScreenControl.AutoScreen();
             }
 
+            ScreenControl.OnPowerChangedRefreshMode();
             ScreenControl.InitMiniled();
             VisualControl.InitBrightness();
 

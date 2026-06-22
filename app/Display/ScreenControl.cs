@@ -4,12 +4,21 @@ using System.Diagnostics;
 
 namespace OHelper.Display
 {
+    public enum RefreshRateMode
+    {
+        Auto = 0,
+        Hz60 = 1,
+        Hz120 = 2,
+        Dynamic = 3
+    }
+
     public static class ScreenControl
     {
 
         public const int MAX_REFRESH = 1000;
         public static int MIN_RATE = AppConfig.Get("min_rate", 60);
         public static int MAX_RATE = AppConfig.Get("max_rate");
+        public const string REFRESH_MODE_KEY = "refresh_rate_mode";
 
         public static int GetMaxRate(string? laptopScreen)
         {
@@ -17,8 +26,74 @@ namespace OHelper.Display
             else return ScreenNative.GetMaxRefreshRate(laptopScreen);
         }
 
+        // ============================================
+        // REFRESH RATE MODE API (Auto/60Hz/120Hz/Dynamic)
+        // ============================================
+
+        public static RefreshRateMode GetRefreshRateMode()
+        {
+            int stored = AppConfig.Get(REFRESH_MODE_KEY, -1);
+            if (stored >= 0 && stored <= 3) return (RefreshRateMode)stored;
+
+            // Derive from legacy screen_auto flag for backward compatibility
+            return AppConfig.Is("screen_auto") ? RefreshRateMode.Auto : RefreshRateMode.Hz120;
+        }
+
+        public static void SetRefreshRateMode(RefreshRateMode mode)
+        {
+            AppConfig.Set(REFRESH_MODE_KEY, (int)mode);
+            AppConfig.Set("screen_auto", mode == RefreshRateMode.Auto ? 1 : 0);
+            ApplyRefreshRateMode(mode);
+        }
+
+        public static void ApplyRefreshRateMode(RefreshRateMode? modeOverride = null)
+        {
+            if (!AppConfig.HasDisplayModes()) return;
+
+            var mode = modeOverride ?? GetRefreshRateMode();
+            var laptopScreen = ScreenNative.FindLaptopScreen(true);
+
+            switch (mode)
+            {
+                case RefreshRateMode.Auto:
+                    if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
+                        ScreenNative.SetRefreshRateExact(laptopScreen, 120);
+                    else
+                        ScreenNative.SetRefreshRateExact(laptopScreen, 60);
+                    break;
+                case RefreshRateMode.Hz60:
+                    ScreenNative.SetRefreshRateExact(laptopScreen, 60);
+                    break;
+                case RefreshRateMode.Hz120:
+                    ScreenNative.SetRefreshRateExact(laptopScreen, 120);
+                    break;
+                case RefreshRateMode.Dynamic:
+                    ScreenNative.SetRefreshRateExact(laptopScreen, 120);
+                    ScreenNative.EnableDynamicRefresh(true);
+                    break;
+            }
+
+            InitScreen();
+        }
+
+        // Called on power source change (AC<->battery) to honor Auto mode
+        public static void OnPowerChangedRefreshMode()
+        {
+            if (GetRefreshRateMode() == RefreshRateMode.Auto)
+                ApplyRefreshRateMode(RefreshRateMode.Auto);
+        }
+
         public static void AutoScreen(bool force = false)
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                if (force || GetRefreshRateMode() == RefreshRateMode.Auto)
+                    ApplyRefreshRateMode(RefreshRateMode.Auto);
+                else
+                    ApplyRefreshRateMode(GetRefreshRateMode());
+                return;
+            }
+
             if (force || AppConfig.Is("screen_auto"))
             {
                 if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
@@ -55,6 +130,20 @@ namespace OHelper.Display
 
         public static void ToggleScreenRate()
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                var current = GetRefreshRateMode();
+                var next = current switch
+                {
+                    RefreshRateMode.Auto => RefreshRateMode.Hz60,
+                    RefreshRateMode.Hz60 => RefreshRateMode.Hz120,
+                    RefreshRateMode.Hz120 => RefreshRateMode.Dynamic,
+                    _ => RefreshRateMode.Auto
+                };
+                SetRefreshRateMode(next);
+                return;
+            }
+
             var laptopScreen = ScreenNative.FindLaptopScreen(true);
             var refreshRate = ScreenNative.GetRefreshRate(laptopScreen);
             if (refreshRate < 0) return;

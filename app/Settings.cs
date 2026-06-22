@@ -245,6 +245,9 @@ namespace OHelper
             buttonFHD.MouseMove += ButtonFHD_MouseHover;
             buttonFHD.MouseLeave += ButtonScreen_MouseLeave;
 
+            buttonMiniled.MouseMove += ButtonMiniled_MouseHover;
+            buttonMiniled.MouseLeave += ButtonScreen_MouseLeave;
+
             buttonUpdates.Click += ButtonUpdates_Click;
 
             sliderBattery.MouseUp += SliderBattery_MouseUp;
@@ -994,6 +997,14 @@ namespace OHelper
             labelTipScreen.Text = Properties.Strings.AutoRefreshTooltip.Replace("60", ScreenControl.MIN_RATE.ToString());
         }
 
+        private void ButtonMiniled_MouseHover(object? sender, EventArgs e)
+        {
+            if (AppConfig.HasDisplayModes())
+                labelTipScreen.Text = Properties.Strings.DynamicRefreshTooltip;
+            else
+                labelTipScreen.Text = Properties.Strings.ToggleMiniled;
+        }
+
         private void ButtonUltimate_MouseHover(object? sender, EventArgs e)
         {
             labelTipGPU.Text = Properties.Strings.UltimateGPUTooltip;
@@ -1034,6 +1045,11 @@ namespace OHelper
 
         private void ButtonScreenAuto_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                ScreenControl.SetRefreshRateMode(RefreshRateMode.Auto);
+                return;
+            }
             ScreenControl.SetAutoRefresh(1);
             ScreenControl.AutoScreen();
         }
@@ -1673,19 +1689,33 @@ namespace OHelper
 
         private void Button120Hz_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                ScreenControl.SetRefreshRateMode(RefreshRateMode.Hz120);
+                return;
+            }
             ScreenControl.SetAutoRefresh(0);
             ScreenControl.SetScreen(ScreenControl.MAX_REFRESH, 1);
         }
 
         private void Button60Hz_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                ScreenControl.SetRefreshRateMode(RefreshRateMode.Hz60);
+                return;
+            }
             ScreenControl.SetAutoRefresh(0);
             ScreenControl.SetScreen(ScreenControl.MIN_RATE, 0);
         }
 
-
         private void ButtonMiniled_Click(object? sender, EventArgs e)
         {
+            if (AppConfig.HasDisplayModes())
+            {
+                ScreenControl.SetRefreshRateMode(RefreshRateMode.Dynamic);
+                return;
+            }
             ScreenControl.ToogleMiniled();
         }
 
@@ -1709,6 +1739,59 @@ namespace OHelper
             button60Hz.Activated = false;
             button120Hz.Activated = false;
             buttonScreenAuto.Activated = false;
+
+            // Refresh rate mode UI (Auto/60Hz/120Hz/Dynamic) for Transcend 14 and similar
+            if (AppConfig.HasDisplayModes())
+            {
+                var mode = ScreenControl.GetRefreshRateMode();
+
+                buttonScreenAuto.Text = Properties.Strings.AutoMode;
+                button60Hz.Text = "60Hz";
+                button120Hz.Text = maxFrequency > ScreenControl.MIN_RATE ? maxFrequency + "Hz" : "120Hz";
+
+                buttonMiniled.Text = Properties.Strings.DynamicMode;
+                buttonMiniled.BorderColor = colorCustom;
+                buttonMiniled.Visible = true;
+                buttonMiniled.Enabled = screenEnabled;
+                buttonMiniled.Activated = false;
+
+                if (mode == RefreshRateMode.Auto)
+                {
+                    buttonScreenAuto.Activated = true;
+                }
+                else if (mode == RefreshRateMode.Hz60)
+                {
+                    button60Hz.Activated = true;
+                }
+                else if (mode == RefreshRateMode.Hz120)
+                {
+                    button120Hz.Activated = true;
+                }
+                else if (mode == RefreshRateMode.Dynamic)
+                {
+                    buttonMiniled.Activated = true;
+                }
+
+                panelScreen.Visible = true;
+                tableScreen.Visible = true;
+                buttonFHD.Visible = false;
+                buttonHDRControl.Visible = false;
+
+                if (!screenEnabled)
+                {
+                    labelVisual.Text = Properties.Strings.VisualModesScreen;
+                    labelVisual.Location = tableVisual.Location;
+                    labelVisual.Width = tableVisual.Width;
+                    labelVisual.Height = tableVisual.Height;
+                    labelVisual.Visible = true;
+                }
+                else
+                {
+                    labelVisual.Visible = false;
+                }
+
+                return;
+            }
 
             if (screenAuto)
             {
