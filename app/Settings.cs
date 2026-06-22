@@ -69,6 +69,7 @@ namespace OHelper
             buttonTurbo.Text = Properties.Strings.Turbo;
             buttonUnleashed.Text = Properties.Strings.Unleashed;
             buttonFans.Text = Properties.Strings.FansPower;
+            buttonMaxFans.Text = Properties.Strings.MaxFans;
 
             buttonEco.Text = Properties.Strings.EcoMode;
             buttonUltimate.Text = Properties.Strings.UltimateMode;
@@ -113,6 +114,7 @@ namespace OHelper
             buttonTurbo.AccessibleName = Properties.Strings.Turbo;
             buttonUnleashed.AccessibleName = Properties.Strings.Unleashed;
             buttonFans.AccessibleName = Properties.Strings.FansAndPower;
+            buttonMaxFans.AccessibleName = Properties.Strings.MaxFans;
             panelGPU.AccessibleName = Properties.Strings.GPUMode;
             buttonEco.AccessibleName = Properties.Strings.EcoMode;
             buttonStandard.AccessibleName = Properties.Strings.StandardMode;
@@ -138,6 +140,7 @@ namespace OHelper
             buttonTurbo.BorderColor = colorTurbo;
             buttonUnleashed.BorderColor = colorCustom;
             buttonFans.BorderColor = colorCustom;
+            buttonMaxFans.BorderColor = colorTurbo;
 
             buttonEco.BorderColor = colorEco;
             buttonStandard.BorderColor = colorStandard;
@@ -187,6 +190,7 @@ namespace OHelper
             buttonKeyboardColor.Click += ButtonKeyboardColor_Click;
 
             buttonFans.Click += ButtonFans_Click;
+            buttonMaxFans.Click += ButtonMaxFans_Click;
             buttonKeyboard.Click += ButtonKeyboard_Click;
             buttonController.Click += ButtonHandheld_Click;
 
@@ -294,6 +298,8 @@ namespace OHelper
 
             labelBacklight.ForeColor = colorStandard;
             labelBacklight.Click += LabelBacklight_Click;
+
+            InitMaxFans();
 
             panelPerformance.Focus();
             InitVisual();
@@ -1177,6 +1183,67 @@ namespace OHelper
         private void ButtonFans_Click(object? sender, EventArgs e)
         {
             FansToggle();
+        }
+
+        private bool _maxFansActive = false;
+        private bool _maxFansReady = false;
+
+        private void InitMaxFans()
+        {
+            var current = Program.acpi?.GetFanMax();
+            if (current.HasValue)
+            {
+                _maxFansActive = current.Value;
+                _maxFansReady = true;
+            }
+            else
+            {
+                _maxFansActive = false;
+                _maxFansReady = false;
+            }
+            UpdateMaxFansVisual();
+        }
+
+        private void UpdateMaxFansVisual()
+        {
+            buttonMaxFans.Activated = _maxFansActive;
+            buttonMaxFans.BorderColor = _maxFansActive ? colorTurbo : colorCustom;
+            buttonMaxFans.Invalidate();
+        }
+
+        private void ButtonMaxFans_Click(object? sender, EventArgs e)
+        {
+            if (Program.acpi == null || !Program.acpi.IsWmiReady())
+            {
+                Logger.WriteLine("ButtonMaxFans: WMI not ready, ignoring toggle");
+                return;
+            }
+
+            bool enable = !_maxFansActive;
+            int result = Program.acpi.SetFanMax(enable);
+
+            if (result == 1)
+            {
+                _maxFansActive = enable;
+                Program.modeControl.SetFanMaxActive(enable);
+                UpdateMaxFansVisual();
+                Program.toast?.RunToast(
+                    Properties.Strings.MaxFans + " " + (enable ? Properties.Strings.On : Properties.Strings.Off),
+                    ToastIcon.Fan);
+
+                if (!enable)
+                {
+                    Task.Run(async () =>
+                    {
+                        await Task.Delay(250);
+                        Program.settingsForm.BeginInvoke(() => Program.modeControl.AutoFans(true));
+                    });
+                }
+            }
+            else
+            {
+                Logger.WriteLine($"ButtonMaxFans: SetFanMax({enable}) failed");
+            }
         }
 
         private void SetColorPicker(string colorField = "aura_color", PictureBox? preview = null)
