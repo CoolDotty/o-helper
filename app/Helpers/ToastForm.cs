@@ -52,7 +52,8 @@ namespace OHelper.Helpers
         FnLock,
         Battery,
         Charger,
-        Controller
+        Controller,
+        Fan
     }
 
     public class ToastForm : OSDNativeForm
@@ -97,6 +98,7 @@ namespace OHelper.Helpers
                 ToastIcon.Battery        => Properties.Resources.icons8_charged_battery_96,
                 ToastIcon.Charger        => Properties.Resources.icons8_charging_battery_96,
                 ToastIcon.Controller     => Properties.Resources.icons8_controller_96,
+                ToastIcon.Fan            => Properties.Resources.icons8_fan_32,
                 _                        => null
             };
 

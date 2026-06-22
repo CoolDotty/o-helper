@@ -1080,6 +1080,15 @@ namespace OHelper.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Max Fans.
+        /// </summary>
+        internal static string MaxFans {
+            get {
+                return ResourceManager.GetString("MaxFans", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Flicker-free Dimming.
         /// </summary>
         internal static string FlickerFreeDimming {

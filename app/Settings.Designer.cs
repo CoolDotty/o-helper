@@ -62,6 +62,7 @@ namespace OHelper
             buttonTurbo = new RButton();
             buttonUnleashed = new RButton();
             buttonFans = new RButton();
+            buttonMaxFans = new RButton();
             panelCPUTitle = new Panel();
             picturePerf = new PictureBox();
             labelPerf = new Label();
@@ -608,8 +609,10 @@ namespace OHelper
             tablePerf.Controls.Add(buttonBalanced, 1, 0);
             tablePerf.Controls.Add(buttonTurbo, 2, 0);
             tablePerf.Controls.Add(buttonUnleashed, 3, 0);
-            tablePerf.SetColumnSpan(buttonFans, 4);
+            tablePerf.SetColumnSpan(buttonFans, 2);
             tablePerf.Controls.Add(buttonFans, 0, 1);
+            tablePerf.SetColumnSpan(buttonMaxFans, 2);
+            tablePerf.Controls.Add(buttonMaxFans, 2, 1);
             tablePerf.Dock = DockStyle.Top;
             tablePerf.Location = new Point(20, 60);
             tablePerf.Margin = new Padding(8, 4, 8, 4);
@@ -731,6 +734,29 @@ namespace OHelper
             buttonFans.Text = "&Fans + Power";
             buttonFans.TextImageRelation = TextImageRelation.ImageBeforeText;
             buttonFans.UseVisualStyleBackColor = false;
+            // 
+            // buttonMaxFans
+            // 
+            buttonMaxFans.Activated = false;
+            buttonMaxFans.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            buttonMaxFans.BackColor = SystemColors.ControlLight;
+            buttonMaxFans.BorderColor = Color.Transparent;
+            buttonMaxFans.BorderRadius = 2;
+            buttonMaxFans.Dock = DockStyle.Right;
+            buttonMaxFans.FlatAppearance.BorderSize = 0;
+            buttonMaxFans.FlatStyle = FlatStyle.Flat;
+            buttonMaxFans.Image = Properties.Resources.icons8_fan_32;
+            buttonMaxFans.ImageAlign = ContentAlignment.MiddleRight;
+            buttonMaxFans.Location = new Point(396, 132);
+            buttonMaxFans.Margin = new Padding(2);
+            buttonMaxFans.Name = "buttonMaxFans";
+            buttonMaxFans.Padding = new Padding(2);
+            buttonMaxFans.Secondary = true;
+            buttonMaxFans.Size = new Size(180, 40);
+            buttonMaxFans.TabIndex = 5;
+            buttonMaxFans.Text = "Ma&x Fans";
+            buttonMaxFans.TextImageRelation = TextImageRelation.ImageBeforeText;
+            buttonMaxFans.UseVisualStyleBackColor = false;
             // 
             // panelCPUTitle
             // 
@@ -2321,6 +2347,7 @@ namespace OHelper
         private RButton buttonKeyboardColor;
         private RButton buttonUnleashed;
         private RButton buttonFans;
+        private RButton buttonMaxFans;
         private Slider sliderBattery;
         private Panel panelGPUTitle;
         private PictureBox pictureGPU;

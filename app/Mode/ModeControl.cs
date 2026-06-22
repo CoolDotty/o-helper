@@ -12,6 +12,7 @@ namespace OHelper.Mode
 
         private static bool customFans = false;
         private static int customPower = 0;
+        private static bool _fanMaxActive = false;
 
         private int _cpuUV = 0;
         private int _igpuUV = 0;
@@ -219,9 +220,30 @@ namespace OHelper.Mode
             Toast();
         }
 
+        public void SetFanMaxActive(bool active)
+        {
+            _fanMaxActive = active;
+            if (active)
+            {
+                SetReapplyEnabled(false);
+                Logger.WriteLine("ModeControl: Fan curve reapply paused (Max Fans active)");
+            }
+            else
+            {
+                SetReapplyEnabled(true);
+                Logger.WriteLine("ModeControl: Fan curve reapply resumed (Max Fans inactive)");
+            }
+        }
+
         public void AutoFans(bool force = false)
         {
             customFans = false;
+
+            if (_fanMaxActive)
+            {
+                Logger.WriteLine("ModeControl: AutoFans skipped (Max Fans active)");
+                return;
+            }
 
             if (AppConfig.IsApplyFans() || force)
             {

@@ -434,6 +434,9 @@ Do you still want to continue?</value>
   <data name="FansPower" xml:space="preserve">
     <value>Fans + Power</value>
   </data>
+  <data name="MaxFans" xml:space="preserve">
+    <value>Max Fans</value>
+  </data>
   <data name="FlickerFreeDimming" xml:space="preserve">
     <value>Flicker-free Dimming</value>
   </data>

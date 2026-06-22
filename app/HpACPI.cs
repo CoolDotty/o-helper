@@ -1325,6 +1325,52 @@ public class HpACPI
         return 1;
     }
 
+    public int SetFanMax(bool enabled)
+    {
+        if (!IsWmiReady()) return 0;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.FanMaxSet,
+                new byte[] { enabled ? (byte)1 : (byte)0, 0, 0, 0 },
+                4);
+
+            Logger.WriteLine($"HpACPI SetFanMax: enabled={enabled} success={result.Success} rc={result.ReturnCode}");
+            return result.Success && result.ReturnCode == 0 ? 1 : 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("SetFanMax exception: " + ex.Message);
+        }
+
+        return 0;
+    }
+
+    public bool? GetFanMax()
+    {
+        if (!IsWmiReady()) return null;
+
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.FanMaxGet,
+                new byte[4],
+                4);
+
+            if (result.Success && result.ReturnCode == 0 && result.Data.Length > 0)
+                return result.Data[0] != 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("GetFanMax exception: " + ex.Message);
+        }
+
+        return null;
+    }
+
     private static int NormalizeRpm(int rpm)
     {
         int clamped = Math.Max(0, Math.Min(6500, rpm));
