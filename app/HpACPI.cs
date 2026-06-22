@@ -1199,40 +1199,39 @@ public class HpACPI
     public int SetFanCurve(HpFan device, byte[] curve)
     {
         if (!IsWmiReady()) return 1;
-        
+
+        // No valid curve to apply — report failure so AutoFans can fall back
+        // to SetFanRange / firmware-default handling instead of silently no-opping.
+        if (curve == null || curve.Length < 16)
+            return 0;
+
         try
         {
-            // For models that support custom fan curves, use command 0x2E (SetFanLevel)
-            // For models that don't support curves, fall back to using 0x1A (SetFanMode)
-            
-            if (curve != null && curve.Length >= 16)
+            // Check if this device model supports custom fan curves
+            var modelCaps = AppConfig.GetModelCapabilities();
+            bool supportsCurves = modelCaps?.SupportsFanCurves ?? false;
+
+            if (supportsCurves)
             {
-                // Check if this device model supports custom fan curves
-                var modelCaps = AppConfig.GetModelCapabilities();
-                bool supportsCurves = modelCaps?.SupportsFanCurves ?? false;
-                
-                if (supportsCurves)
-                {
-                    // Use custom fan curve approach with command 0x2E
-                    var result = ExecuteBiosCommand(
-                        (uint)HpBiosCommand.Default,
-                        (int)HpBiosCommandType.FanSetLevel,
-                        new byte[]{  
-                            curve[0], curve[1], curve[2], curve[3],
-                            curve[4], curve[5], curve[6], curve[7],
-                            curve[8], curve[9], curve[10], curve[11],
-                            curve[12], curve[13], curve[14], curve[15]
-                        },
-                        4);
-                    
-                    return result.Success && result.ReturnCode == 0 ? 1 : 0;
-                }
-                else
-                {
-                    // For models without curve support, apply fan mode presets instead
-                    // This will be handled by the set fan mode logic with 0x1A command
-                    return 1;
-                }
+                // Use custom fan curve approach with command 0x2E
+                var result = ExecuteBiosCommand(
+                    (uint)HpBiosCommand.Default,
+                    (int)HpBiosCommandType.FanSetLevel,
+                    new byte[]{
+                        curve[0], curve[1], curve[2], curve[3],
+                        curve[4], curve[5], curve[6], curve[7],
+                        curve[8], curve[9], curve[10], curve[11],
+                        curve[12], curve[13], curve[14], curve[15]
+                    },
+                    4);
+
+                return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            }
+            else
+            {
+                // For models without curve support, apply fan mode presets instead
+                // This will be handled by the set fan mode logic with 0x1A command
+                return 1;
             }
         }
         catch (Exception ex)
@@ -1240,7 +1239,7 @@ public class HpACPI
             Logger.WriteLine("SetFanCurve exception: " + ex.Message);
         }
 
-        return 1;
+        return 0;
     }
 
     private int SetFanTargetBlob(byte cpuFanLevel, byte gpuFanLevel)
@@ -1268,17 +1267,17 @@ public class HpACPI
         // For now, return a fallback - actual implementation will pull from model DB
         // This is the implementation of GetDefaultCurve method in AppConfig
         // For Transcend model, return appropriate curve
-        if (AppConfig.IsOmenTranscend() && mode <= 3)
+        if (AppConfig.IsOmenTranscend() && mode <= 4)
         {
             switch (mode)
             {
-                case 0: // Eco
-                    return new byte[] { 0x1E, 0x32, 0x3C, 0x46, 0x4E, 0x55, 0x5C, 0x64, 0x00, 0x00, 0x00, 0x00, 0x14, 0x1E, 0x26, 0x2D };
-                case 1: // Balanced
+                case HpACPI.PerformanceBalanced: // 0
                     return new byte[] { 0x1E, 0x32, 0x3C, 0x44, 0x4B, 0x52, 0x5A, 0x64, 0x00, 0x00, 0x14, 0x1E, 0x28, 0x32, 0x3C, 0x44 };
-                case 2: // Performance 
+                case HpACPI.PerformanceTurbo: // 1
                     return new byte[] { 0x1E, 0x32, 0x3A, 0x41, 0x48, 0x4E, 0x55, 0x64, 0x16, 0x1C, 0x23, 0x2D, 0x3A, 0x46, 0x52, 0x5C };
-                case 3: // Unleashed
+                case HpACPI.PerformanceSilent: // 2 (Eco)
+                    return new byte[] { 0x1E, 0x32, 0x3C, 0x46, 0x4E, 0x55, 0x5C, 0x64, 0x00, 0x00, 0x00, 0x00, 0x14, 0x1E, 0x26, 0x2D };
+                case HpACPI.PerformanceManual: // 4 (Unleashed)
                     return new byte[] { 0x1E, 0x32, 0x3A, 0x41, 0x48, 0x4E, 0x55, 0x64, 0x1C, 0x26, 0x30, 0x3A, 0x46, 0x52, 0x5C, 0x64 };
             }
         }
