@@ -335,12 +335,13 @@ public static class AppConfig
     public static byte[] GetFanConfig(HpFan device)
     {
         string curveString = GetString(GgetParamName(device));
-        byte[] curve = { };
 
         if (curveString is not null)
-            curve = StringToBytes(curveString);
+            return StringToBytes(curveString);
 
-        return curve;
+        // No saved curve for this mode/device — fall back to the built-in default
+        // so the correct per-mode curve is actually applied on a fresh install.
+        return GetDefaultCurve(device);
     }
 
     public static void SetFanConfig(HpFan device, byte[] curve)
@@ -382,6 +383,14 @@ public static class AppConfig
                             return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
                         default:
                             return StringToBytes("1E-32-3A-41-48-4E-55-64-16-1C-23-2D-3A-46-52-5C");
+                    }
+                case HpACPI.PerformanceSilent:
+                    switch (device)
+                    {
+                        case HpFan.GPU:
+                            return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
+                        default:
+                            return StringToBytes("1E-32-3C-46-4E-55-5C-64-00-00-00-00-14-1E-26-2D");
                     }
                 case HpACPI.PerformanceManual:
                     switch (device)
