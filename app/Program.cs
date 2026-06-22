@@ -110,6 +110,7 @@ namespace OHelper
             Logger.WriteLine("Start Count: " + startCount);
 
             acpi = new HpACPI();
+            HardwareMonitor.Start();
 
             // ACPI hardware is optional — UI works without it
             if (!acpi.IsConnected() && AppConfig.IsASUS())

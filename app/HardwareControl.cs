@@ -440,7 +440,11 @@ public static class HardwareControl
         lastUpdate = last;
 
         if (isPZ13) return (float)GetCPUTempWMI();
-        cpuTemp = Program.acpi.DeviceGet(HpACPI.Temp_CPU);
+
+        cpuTemp = HardwareMonitor.GetCpuTemperature();
+
+        if (cpuTemp == null || cpuTemp < 0)
+            cpuTemp = Program.acpi.DeviceGet(HpACPI.Temp_CPU);
 
         if (cpuTemp < 0) try
         {
@@ -485,10 +489,12 @@ public static class HardwareControl
 
     public static float? GetGPUTemp()
     {
+        gpuTemp = HardwareMonitor.GetGpuTemperature();
+
+        if (gpuTemp == null || gpuTemp < 0)
         try
         {
             gpuTemp = GpuControl?.GetCurrentTemperature();
-
         }
         catch (Exception ex)
         {
