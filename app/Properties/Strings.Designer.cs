@@ -2626,5 +2626,113 @@ namespace OHelper.Properties {
                 return ResourceManager.GetString("Performance", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Keyboard Backlight.
+        /// </summary>
+        internal static string OmenKeyboardBacklight {
+            get {
+                return ResourceManager.GetString("OmenKeyboardBacklight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Brightness.
+        /// </summary>
+        internal static string OmenKeyboardBrightness {
+            get {
+                return ResourceManager.GetString("OmenKeyboardBrightness", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Right Zone.
+        /// </summary>
+        internal static string OmenKeyboardZoneRight {
+            get {
+                return ResourceManager.GetString("OmenKeyboardZoneRight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Middle Zone.
+        /// </summary>
+        internal static string OmenKeyboardZoneMiddle {
+            get {
+                return ResourceManager.GetString("OmenKeyboardZoneMiddle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Left Zone.
+        /// </summary>
+        internal static string OmenKeyboardZoneLeft {
+            get {
+                return ResourceManager.GetString("OmenKeyboardZoneLeft", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to WASD Zone.
+        /// </summary>
+        internal static string OmenKeyboardZoneWasd {
+            get {
+                return ResourceManager.GetString("OmenKeyboardZoneWasd", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Static.
+        /// </summary>
+        internal static string OmenEffectStatic {
+            get {
+                return ResourceManager.GetString("OmenEffectStatic", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Breathing.
+        /// </summary>
+        internal static string OmenEffectBreathing {
+            get {
+                return ResourceManager.GetString("OmenEffectBreathing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Color Cycle.
+        /// </summary>
+        internal static string OmenEffectColorCycle {
+            get {
+                return ResourceManager.GetString("OmenEffectColorCycle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Wave.
+        /// </summary>
+        internal static string OmenEffectWave {
+            get {
+                return ResourceManager.GetString("OmenEffectWave", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Effect Speed.
+        /// </summary>
+        internal static string OmenEffectSpeed {
+            get {
+                return ResourceManager.GetString("OmenEffectSpeed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Apply to All Zones.
+        /// </summary>
+        internal static string OmenKeyboardApplyAllZones {
+            get {
+                return ResourceManager.GetString("OmenKeyboardApplyAllZones", resourceCulture);
+            }
+        }
     }
 }

@@ -831,7 +831,39 @@ public static class AppConfig
     // OMEN 4-zone RGB keyboards
     public static bool IsOmen4ZoneRGB()
     {
+        // Trust the per-model capability database first
+        var caps = GetModelCapabilities();
+        if (caps.HasFourZoneRgb || caps.HasPerKeyRgb)
+            return true;
+
+        // Fallback: Transcend 14 string match (covers models not yet in the DB)
         return IsOmenTranscend14();
+    }
+
+    // Any HP Omen keyboard that uses the WMI 0x20009 BIOS interface.
+    // Used to decide whether to show the Omen keyboard lighting panel
+    // instead of the ASUS Aura HID path. The runtime WMI probe in
+    // HpACPI.GetKeyboardType() / HasBacklight() confirms the keyboard
+    // is actually present and reachable.
+    public static bool IsOmenKeyboardSupported()
+    {
+        if (!IsOmen()) return false;
+
+        // Victus and Desktop entries in the DB disable 4-zone/per-key RGB.
+        var caps = GetModelCapabilities();
+        if (!caps.HasKeyboardBacklight) return false;
+        if (!caps.HasFourZoneRgb && !caps.HasPerKeyRgb) return false;
+
+        // Respect the existing config escape hatch used to hide the
+        // ASUS Aura panel; reuse it for the Omen panel as well.
+        if (Is("no_rgb")) return false;
+
+        return true;
+    }
+
+    public static bool IsOmenKeyboardRgb()
+    {
+        return IsOmenKeyboardSupported() && IsOmen4ZoneRGB();
     }
 
     // OMEN Slim series (slim chassis, different fan curves)
