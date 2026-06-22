@@ -1676,7 +1676,7 @@ namespace OHelper
             // 
             // tableLayoutPeripherals
             // 
-            tableLayoutPeripherals.AutoSize = true;
+            tableLayoutPeripherals.AutoSize = false;
             tableLayoutPeripherals.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             tableLayoutPeripherals.ColumnCount = 3;
             tableLayoutPeripherals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
