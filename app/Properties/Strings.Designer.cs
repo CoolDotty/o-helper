@@ -826,6 +826,24 @@ namespace OHelper.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Dynamic.
+        /// </summary>
+        internal static string DynamicMode {
+            get {
+                return ResourceManager.GetString("DynamicMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to 120Hz with Windows Dynamic Refresh Rate.
+        /// </summary>
+        internal static string DynamicRefreshTooltip {
+            get {
+                return ResourceManager.GetString("DynamicRefreshTooltip", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Disable PCIe Link State Management (plugged in).
         /// </summary>
         internal static string DisablePCIeASPM {

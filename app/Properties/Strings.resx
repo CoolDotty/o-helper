@@ -252,6 +252,12 @@
   <data name="AutoRefreshTooltip" xml:space="preserve">
     <value>Sets 60Hz to save battery, and back when plugged</value>
   </data>
+  <data name="DynamicMode" xml:space="preserve">
+    <value>Dynamic</value>
+  </data>
+  <data name="DynamicRefreshTooltip" xml:space="preserve">
+    <value>120Hz with Windows Dynamic Refresh Rate</value>
+  </data>
   <data name="Awake" xml:space="preserve">
     <value>Awake</value>
   </data>

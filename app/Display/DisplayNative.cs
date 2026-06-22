@@ -102,6 +102,8 @@ namespace OHelper.Display
             DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO = 9,
             DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE = 10,
             DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL = 11,
+            DISPLAYCONFIG_DEVICE_INFO_SET_HDR_STATE = 16,
+            DISPLAYCONFIG_DEVICE_INFO_SET_WCG_STATE = 17,
             DISPLAYCONFIG_DEVICE_INFO_FORCE_UINT32 = 0xFFFFFFFF,
         }
 
@@ -384,6 +386,15 @@ namespace OHelper.Display
             public bool advancedColorForceDisabled => (value & 0x8) == 0x8;
         }
 
+        // Set packet for DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE (type 10).
+        // Used to enable/disable advanced color (HDR/WCG) on a target.
+        [StructLayout(LayoutKind.Sequential)]
+        public struct DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE
+        {
+            public DISPLAYCONFIG_DEVICE_INFO_HEADER header;
+            public uint value; // bit 1 = enable advanced color
+        }
+
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public struct DEVMODE
         {
@@ -455,6 +466,9 @@ namespace OHelper.Display
 
         [DllImport("user32.dll")]
         public static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO requestPacket);
+
+        [DllImport("user32.dll")]
+        public static extern int DisplayConfigSetDeviceInfo(ref DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE requestPacket);
 
         [DllImport("user32.dll")]
         public static extern int EnumDisplaySettingsEx(

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
@@ -113,7 +114,7 @@ namespace OHelper.Display
                     if (log) Logger.WriteLine(targetName.monitorDevicePath + " " + targetName.outputTechnology);
                     AppConfig.Set("internal_display", targetName.monitorFriendlyDeviceName);
 
-                    // Resolve GDI device name directly from the source path entry — no EnumDisplayDevices needed
+                    // Resolve GDI device name directly from the source path entry - no EnumDisplayDevices needed
                     var sourceName = new DisplayNative.DISPLAYCONFIG_SOURCE_DEVICE_NAME();
                     sourceName.header.type = DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
                     sourceName.header.size = (uint)Marshal.SizeOf(sourceName);
@@ -175,6 +176,107 @@ namespace OHelper.Display
                 laptopScreen, ref dm, IntPtr.Zero, DisplayNative.DisplaySettingsFlags.CDS_UPDATEREGISTRY, IntPtr.Zero);
             Logger.WriteLine("Screen = " + frequency + "Hz : " + (result == 0 ? "OK" : result));
             return result;
+        }
+
+        /// <summary>
+        /// Enumerates distinct refresh rates available at the current resolution/bpp
+        /// for the given display, sorted ascending.
+        /// </summary>
+        public static List<int> EnumRefreshRates(string? laptopScreen)
+        {
+            var rates = new SortedSet<int>();
+            if (laptopScreen is null) return rates.ToList();
+
+            var dm = CreateDevmode();
+            if (DisplayNative.EnumDisplaySettingsEx(laptopScreen, ENUM_CURRENT_SETTINGS, ref dm) == 0)
+                return rates.ToList();
+
+            int width = dm.dmPelsWidth;
+            int height = dm.dmPelsHeight;
+            int bpp = dm.dmBitsPerPel;
+
+            int i = 0;
+            while (DisplayNative.EnumDisplaySettingsEx(laptopScreen, i, ref dm) != 0)
+            {
+                if (dm.dmPelsWidth == width && dm.dmPelsHeight == height && dm.dmBitsPerPel == bpp
+                    && dm.dmDisplayFrequency > 0)
+                {
+                    rates.Add(dm.dmDisplayFrequency);
+                }
+                i++;
+            }
+
+            return rates.ToList();
+        }
+
+        /// <summary>
+        /// Sets a specific refresh rate on the given display and returns true on success.
+        /// </summary>
+        public static bool SetRefreshRateExact(string laptopScreen, int hz)
+        {
+            if (string.IsNullOrEmpty(laptopScreen)) return false;
+            return SetRefreshRate(laptopScreen, hz) == 0;
+        }
+
+        /// <summary>
+        /// Attempts to enable Windows Dynamic Refresh Rate (DRR) on the internal panel.
+        /// Since DRR has no documented CCD packet, this is a best-effort approach:
+        /// it queries the internal display target and tries the undocumented
+        /// DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE packet (type 10) used
+        /// by Windows to toggle advanced color / dynamic rate features. If the packet
+        /// is not accepted by the driver, the display remains at the previously-set
+        /// fixed refresh rate and false is returned.
+        /// </summary>
+        public static bool EnableDynamicRefresh(bool enable)
+        {
+            try
+            {
+                var err = DisplayNative.GetDisplayConfigBufferSizes(
+                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out uint pathCount, out uint modeCount);
+                if (err != 0) return false;
+
+                var paths = new DisplayNative.DISPLAYCONFIG_PATH_INFO[pathCount];
+                var modes = new DisplayNative.DISPLAYCONFIG_MODE_INFO[modeCount];
+                err = DisplayNative.QueryDisplayConfig(
+                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                    ref pathCount, paths, ref modeCount, modes, nint.Zero);
+                if (err != 0) return false;
+
+                string? internalName = AppConfig.GetString("internal_display");
+
+                foreach (var path in paths)
+                {
+                    var targetName = new DisplayNative.DISPLAYCONFIG_TARGET_DEVICE_NAME();
+                    targetName.header.type = DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+                    targetName.header.size = (uint)Marshal.SizeOf(targetName);
+                    targetName.header.adapterId = path.targetInfo.adapterId;
+                    targetName.header.id = path.targetInfo.id;
+
+                    if (DisplayNative.DisplayConfigGetDeviceInfo(ref targetName) != 0) continue;
+
+                    bool isInternal = targetName.outputTechnology == DisplayNative.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY.DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL
+                        || targetName.outputTechnology == DisplayNative.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY.DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EMBEDDED
+                        || targetName.monitorFriendlyDeviceName == internalName;
+                    if (!isInternal) continue;
+
+                    var setPacket = new DisplayNative.DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE();
+                    setPacket.header.type = (DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE)10; // DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE
+                    setPacket.header.size = (uint)Marshal.SizeOf(setPacket);
+                    setPacket.header.adapterId = path.targetInfo.adapterId;
+                    setPacket.header.id = path.targetInfo.id;
+                    setPacket.value = enable ? 0x2u : 0x0u;
+
+                    int rc = DisplayNative.DisplayConfigSetDeviceInfo(ref setPacket);
+                    Logger.WriteLine("EnableDynamicRefresh(" + enable + ") = " + (rc == 0 ? "OK" : ("err " + rc)));
+                    return rc == 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("EnableDynamicRefresh: " + ex.Message);
+            }
+
+            return false;
         }
 
         public static DisplayNative.DEVMODE CreateDevmode()

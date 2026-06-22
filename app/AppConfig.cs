@@ -819,6 +819,12 @@ public static class AppConfig
         return IsOmenTranscend() && ContainsModel("14-fb");
     }
 
+    // Refresh rate mode support (Auto/60Hz/120Hz/Dynamic) — Transcend 14 OLED 120Hz
+    public static bool HasDisplayModes()
+    {
+        return IsOmenTranscend14();
+    }
+
     // OMEN 4-zone RGB keyboards
     public static bool IsOmen4ZoneRGB()
     {
