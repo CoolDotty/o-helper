@@ -216,6 +216,13 @@ namespace OHelper.Input
                 hook.RegisterHotKey(ModifierKeys.None, Keys.Down);
             }
 
+            // Win-lock group — suppress Left/Right Windows keys when locked
+            if (AppConfig.Is("win_lock"))
+            {
+                hook.RegisterHotKey(ModifierKeys.None, Keys.LWin);
+                hook.RegisterHotKey(ModifierKeys.None, Keys.RWin);
+            }
+
             foreach (ushort code in GetActiveMouseComboCarriers())
                 hook.RegisterHotKey(ModifierKeys.None, Keys.F13 + (code - 0x0068));
 
@@ -784,7 +791,12 @@ namespace OHelper.Input
 
         public static void ToggleWinLock()
         {
-            Program.toast.RunToast(Properties.Strings.WinLockToggle);
+            bool winLock = !AppConfig.Is("win_lock");
+            AppConfig.Set("win_lock", winLock ? 1 : 0);
+
+            Program.settingsForm.BeginInvoke(Program.inputDispatcher.RegisterKeys);
+
+            Program.toast.RunToast("Win-Lock " + (winLock ? Properties.Strings.On : Properties.Strings.Off), ToastIcon.FnLock);
         }
 
         public static void SetSlateMode(int status)

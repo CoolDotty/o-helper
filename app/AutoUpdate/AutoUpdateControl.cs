@@ -13,7 +13,7 @@ namespace OHelper.AutoUpdate
 
         SettingsForm settings;
 
-        public string versionUrl = "https://github.com/seerge/g-helper/releases";
+        public string versionUrl = "https://github.com/CoolDotty/o-helper/releases";
         public bool update = false;
 
         static long lastUpdate;
@@ -75,7 +75,7 @@ namespace OHelper.AutoUpdate
                 using (var httpClient = new HttpClient())
                 {
                     httpClient.DefaultRequestHeaders.Add("User-Agent", "O-Helper App");
-                    var json = await httpClient.GetStringAsync("https://api.github.com/repos/seerge/g-helper/releases/latest");
+                    var json = await httpClient.GetStringAsync("https://api.github.com/repos/CoolDotty/o-helper/releases/latest");
                     var config = JsonSerializer.Deserialize<JsonElement>(json);
                     var tag = config.GetProperty("tag_name").ToString().Replace("v", "");
                     var assets = config.GetProperty("assets");
@@ -114,7 +114,7 @@ namespace OHelper.AutoUpdate
 
                             settings.Invoke((System.Windows.Forms.MethodInvoker)delegate
                             {
-                                dialogResult = MessageBox.Show(settings, Properties.Strings.DownloadUpdate + ": G-Helper " + tag + "?", "Update", MessageBoxButtons.YesNo);
+                                dialogResult = MessageBox.Show(settings, Properties.Strings.DownloadUpdate + ": O-Helper " + tag + "?", "Update", MessageBoxButtons.YesNo);
                             });
                             
                             if (dialogResult == DialogResult.Yes)

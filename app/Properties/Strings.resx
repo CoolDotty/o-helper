@@ -121,7 +121,7 @@
     <value>Acceleration</value>
   </data>
   <data name="ACPIError" xml:space="preserve">
-    <value>Can't connect to ASUS ACPI. Application can't function without it. Try to install Asus System Control Interface</value>
+    <value>Can't connect to the ACPI/WMI interface. Application can't function without it. Try installing or reinstalling the HP system firmware driver</value>
   </data>
   <data name="AlertAPUMemoryRestart" xml:space="preserve">
     <value>Restart your device to apply changes</value>
@@ -181,7 +181,7 @@
     <value>Memory Assigned to GPU</value>
   </data>
   <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Asus Services Running</value>
+    <value>OEM Services Running</value>
   </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Battery State</value>

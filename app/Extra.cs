@@ -479,8 +479,14 @@ namespace OHelper
             toolTip.SetToolTip(checkNVPlatform, Properties.Strings.NVPlatformTooltip);
             toolTip.SetToolTip(checkAspm, Properties.Strings.DisablePCIeASPMTooltip);
 
+            // ASUS Services panel is meaningless on HP Omen — hide it and skip init
+            if (!AppConfig.IsASUS())
+            {
+                panelServices.Visible = false;
+            }
+
             InitCores();
-            InitServices();
+            if (AppConfig.IsASUS()) InitServices();
             InitHibernate();
 
             InitACPITesting();
@@ -751,7 +757,7 @@ namespace OHelper
 
         private void PictureHelp_Click(object? sender, EventArgs e)
         {
-            Process.Start(new ProcessStartInfo("https://github.com/seerge/g-helper/wiki/Power-user-settings#custom-hotkey-actions") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://github.com/CoolDotty/o-helper") { UseShellExecute = true });
         }
 
         private void CheckNoOverdrive_CheckedChanged(object? sender, EventArgs e)

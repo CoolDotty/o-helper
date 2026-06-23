@@ -123,7 +123,7 @@ public class Startup
 
         using (TaskDefinition td = TaskService.Instance.NewTask())
         {
-            td.RegistrationInfo.Description = "G-Helper Charge Limit";
+            td.RegistrationInfo.Description = "O-Helper Charge Limit";
             td.Triggers.Add(new BootTrigger());
             td.Triggers.Add(new EventTrigger
             {
@@ -158,7 +158,7 @@ public class Startup
         using (TaskDefinition td = TaskService.Instance.NewTask())
         {
 
-            td.RegistrationInfo.Description = "G-Helper Auto Start";
+            td.RegistrationInfo.Description = "O-Helper Auto Start";
             td.Triggers.Add(new LogonTrigger { Delay = TimeSpan.FromSeconds(1) });
             td.Actions.Add(strExeFilePath);
 
@@ -200,7 +200,7 @@ public class Startup
             catch (Exception e)
             {
                 if (ProcessHelper.IsUserAdministrator())
-                    MessageBox.Show("Can't remove task. Try running Task Scheduler by hand and manually deleting GHelper task if it exists there.", "Scheduler Error", MessageBoxButtons.OK);
+                    MessageBox.Show("Can't remove task. Try running Task Scheduler by hand and manually deleting OHelper task if it exists there.", "Scheduler Error", MessageBoxButtons.OK);
                 else
                     ProcessHelper.RunAsAdmin();
             }

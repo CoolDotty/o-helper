@@ -249,6 +249,8 @@ namespace OHelper
             buttonMiniled.MouseLeave += ButtonScreen_MouseLeave;
 
             buttonUpdates.Click += ButtonUpdates_Click;
+            // Updates tab queries the ASUS ROG driver/BIOS API — useless on HP Omen, hide it
+            if (!AppConfig.IsASUS()) buttonUpdates.Visible = false;
 
             sliderBattery.MouseUp += SliderBattery_MouseUp;
             sliderBattery.KeyUp += SliderBattery_KeyUp;

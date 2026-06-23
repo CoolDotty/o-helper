@@ -112,13 +112,14 @@ namespace OHelper
             acpi = new HpACPI();
             HardwareMonitor.Start();
 
-            // ACPI hardware is optional — UI works without it
+            // ACPI hardware is optional on HP Omen (graceful WMI no-op fallback),
+            // but required on legacy ASUS models where the app can't function without it
             if (!acpi.IsConnected() && AppConfig.IsASUS())
             {
                 DialogResult dialogResult = MessageBox.Show(Properties.Strings.ACPIError, Properties.Strings.StartupError, MessageBoxButtons.YesNo);
                 if (dialogResult == DialogResult.Yes)
                 {
-                    Process.Start(new ProcessStartInfo("https://www.asus.com/support/FAQ/1047338/") { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo("https://support.hp.com/products/laptops") { UseShellExecute = true });
                 }
 
                 Application.Exit();

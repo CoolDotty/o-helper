@@ -1412,7 +1412,7 @@ namespace OHelper
             Thread t = new Thread(() =>
             {
                 OpenFileDialog ofd = new OpenFileDialog();
-                ofd.Filter = "G-Helper Mouse Profile V1 (*.gmp1)|*.gmp1";
+                ofd.Filter = "O-Helper Mouse Profile V1 (*.gmp1)|*.gmp1";
 
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
@@ -1451,7 +1451,7 @@ namespace OHelper
             Thread t = new Thread(() =>
             {
                 SaveFileDialog sfd = new SaveFileDialog();
-                sfd.Filter = "G-Helper Mouse Profile V1 (*.gmp1)|*.gmp1";
+                sfd.Filter = "O-Helper Mouse Profile V1 (*.gmp1)|*.gmp1";
 
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
