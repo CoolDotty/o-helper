@@ -41,6 +41,12 @@ namespace OHelper.Display
 
         public static void SetRefreshRateMode(RefreshRateMode mode)
         {
+            if (mode == RefreshRateMode.Dynamic && !ScreenNative.IsDynamicRefreshAvailable())
+            {
+                Program.toast?.RunToast(Properties.Strings.DynamicRefreshUnsupported);
+                return;
+            }
+
             AppConfig.Set(REFRESH_MODE_KEY, (int)mode);
             AppConfig.Set("screen_auto", mode == RefreshRateMode.Auto ? 1 : 0);
             ApplyRefreshRateMode(mode);
@@ -56,20 +62,23 @@ namespace OHelper.Display
             switch (mode)
             {
                 case RefreshRateMode.Auto:
+                    ScreenNative.EnableDynamicRefresh(false);
                     if (SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online)
                         ScreenNative.SetRefreshRateExact(laptopScreen, 120);
                     else
                         ScreenNative.SetRefreshRateExact(laptopScreen, 60);
                     break;
                 case RefreshRateMode.Hz60:
+                    ScreenNative.EnableDynamicRefresh(false);
                     ScreenNative.SetRefreshRateExact(laptopScreen, 60);
                     break;
                 case RefreshRateMode.Hz120:
+                    ScreenNative.EnableDynamicRefresh(false);
                     ScreenNative.SetRefreshRateExact(laptopScreen, 120);
                     break;
                 case RefreshRateMode.Dynamic:
-                    ScreenNative.SetRefreshRateExact(laptopScreen, 120);
-                    ScreenNative.EnableDynamicRefresh(true);
+                    if (!ScreenNative.EnableDynamicRefresh(true))
+                        Program.toast?.RunToast(Properties.Strings.DynamicRefreshUnsupported);
                     break;
             }
 
@@ -79,10 +88,8 @@ namespace OHelper.Display
         // Called on power source change (AC<->battery) to honor Auto mode
         public static void OnPowerChangedRefreshMode()
         {
-            if (GetRefreshRateMode() == RefreshRateMode.Auto)
-                ApplyRefreshRateMode(RefreshRateMode.Auto);
+            ApplyRefreshRateMode(GetRefreshRateMode());
         }
-
         public static void AutoScreen(bool force = false)
         {
             if (AppConfig.HasDisplayModes())
@@ -137,7 +144,7 @@ namespace OHelper.Display
                 {
                     RefreshRateMode.Auto => RefreshRateMode.Hz60,
                     RefreshRateMode.Hz60 => RefreshRateMode.Hz120,
-                    RefreshRateMode.Hz120 => RefreshRateMode.Dynamic,
+                    RefreshRateMode.Hz120 => ScreenNative.IsDynamicRefreshAvailable() ? RefreshRateMode.Dynamic : RefreshRateMode.Auto,
                     _ => RefreshRateMode.Auto
                 };
                 SetRefreshRateMode(next);

@@ -105,6 +105,8 @@ namespace OHelper.Overlay
         private const int BaseFullWidth = BaseWidth - BasePadX + BaseUsageBarGap + BaseUsageBarWidth + BaseUsageNumGap + BaseUsageNumColWidth + BaseFullPadRight;
         private const int BaseCompleteWidth = BaseFullWidth + BaseMemBarGap + BaseMemNumColWidth + BaseUsageNumGap + BaseUsageBarWidth;
 
+        // Fixed-contrast OSD palette by design: this overlay is drawn over games/video
+        // where app light/dark theme colors would reduce readability.
         private static readonly SolidBrush _bgBrush = new(Color.FromArgb(128, 0, 0, 0));
         private static readonly SolidBrush _gpuBrush = new(Color.FromArgb(255, 0, 255, 80));
         private static readonly SolidBrush _cpuBrush = new(Color.FromArgb(255, 60, 220, 255));

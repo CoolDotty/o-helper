@@ -72,8 +72,6 @@ namespace OHelper.Helpers
         }
 
         private static readonly Font _toastFont = new Font("Segoe UI", 36f, FontStyle.Bold, GraphicsUnit.Pixel);
-        private static readonly SolidBrush _toastBrush = new SolidBrush(Color.FromArgb(150, Color.Black));
-        private static readonly SolidBrush _toastTextBrush = new SolidBrush(Color.White);
         private static readonly StringFormat _toastFormat = new StringFormat
         {
             LineAlignment = StringAlignment.Center,
@@ -83,7 +81,9 @@ namespace OHelper.Helpers
         protected override void PerformPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.FillRoundedRectangle(_toastBrush, Bound, 10);
+            using var toastBrush = new SolidBrush(Color.FromArgb(220, OHelper.UI.RForm.buttonSecond));
+            using var toastTextBrush = new SolidBrush(OHelper.UI.RForm.foreMain);
+            e.Graphics.FillRoundedRectangle(toastBrush, Bound, 10);
 
             using Bitmap? icon = toastIcon switch
             {
@@ -110,7 +110,7 @@ namespace OHelper.Helpers
                 shiftX = 40;
             }
 
-            e.Graphics.DrawString(toastText, _toastFont, _toastTextBrush,
+            e.Graphics.DrawString(toastText, _toastFont, toastTextBrush,
                 new PointF(Bound.Width / 2 + shiftX, Bound.Height / 2), _toastFormat);
         }
 

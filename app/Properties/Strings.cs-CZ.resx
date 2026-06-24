@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>Paměť přidělená GPU</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Služeb Asus spuštěno</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Stav baterie</value>
   </data>
@@ -766,9 +763,6 @@ Chcete přesto pokračovat?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Zastavování služeb</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Přepnout Auru</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Automatické přepínání do režimu Clamshell</value>

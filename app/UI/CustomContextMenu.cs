@@ -9,10 +9,10 @@ namespace OHelper.UI
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
             var bounds = new Rectangle(0, 0, e.Item.Width, e.Item.Height);
-            Color bg = e.Item.Owner?.BackColor ?? SystemColors.Menu;
+            Color bg = e.Item.Owner?.BackColor ?? RForm.formBack;
 
             if (e.Item.Selected && e.Item.Enabled)
-                using (var b = new SolidBrush(SystemColors.Highlight))
+                using (var b = new SolidBrush(RForm.borderMain))
                     e.Graphics.FillRectangle(b, bounds);
             else
                 using (var b = new SolidBrush(bg))
@@ -24,8 +24,8 @@ namespace OHelper.UI
             if (e.Item is not ToolStripMenuItem { Checked: true }) return;
 
             Color color = e.Item.Selected
-                ? SystemColors.HighlightText
-                : (e.Item.Owner?.ForeColor ?? SystemColors.MenuText);
+                ? RForm.foreMain
+                : (e.Item.Owner?.ForeColor ?? RForm.foreMain);
 
             var rect = new Rectangle(0, 0, e.ImageRectangle.Right + e.ImageRectangle.X, e.Item.Height);
             TextRenderer.DrawText(e.Graphics, "?", e.Item.Font, rect, color,
@@ -35,11 +35,11 @@ namespace OHelper.UI
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
         {
             if (!e.Item.Enabled)
-                e.TextColor = Color.FromArgb(130, e.Item.Owner?.ForeColor ?? SystemColors.MenuText);
+                e.TextColor = Color.FromArgb(130, e.Item.Owner?.ForeColor ?? RForm.foreMain);
             else if (e.Item.Selected)
-                e.TextColor = SystemColors.HighlightText;
+                e.TextColor = RForm.foreMain;
             else
-                e.TextColor = e.Item.Owner?.ForeColor ?? SystemColors.MenuText;
+                e.TextColor = e.Item.Owner?.ForeColor ?? RForm.foreMain;
 
             base.OnRenderItemText(e);
         }
@@ -47,7 +47,7 @@ namespace OHelper.UI
         protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
         {
             int y = e.Item.Height / 2;
-            Color fore = e.ToolStrip?.ForeColor ?? SystemColors.MenuText;
+            Color fore = e.ToolStrip?.ForeColor ?? RForm.foreMain;
             using var pen = new Pen(Color.FromArgb(50, fore));
             e.Graphics.DrawLine(pen, 0, y, e.Item.Width, y);
         }

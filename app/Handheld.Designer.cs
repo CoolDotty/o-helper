@@ -475,7 +475,7 @@ namespace OHelper
             // 
             buttonReset.Activated = false;
             buttonReset.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonReset.BackColor = SystemColors.ControlLight;
+            buttonReset.BackColor = RForm.buttonSecond;
             buttonReset.BorderColor = Color.Transparent;
             buttonReset.BorderRadius = 2;
             buttonReset.FlatStyle = FlatStyle.Flat;
@@ -562,8 +562,8 @@ namespace OHelper
             // 
             // comboSecondary
             // 
-            comboSecondary.BorderColor = Color.White;
-            comboSecondary.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboSecondary.BorderColor = RForm.borderMain;
+            comboSecondary.ButtonColor = RForm.buttonMain;
             comboSecondary.FlatStyle = FlatStyle.Flat;
             comboSecondary.Font = new Font("Segoe UI", 9F);
             comboSecondary.FormattingEnabled = true;
@@ -575,8 +575,8 @@ namespace OHelper
             // 
             // comboPrimary
             // 
-            comboPrimary.BorderColor = Color.White;
-            comboPrimary.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboPrimary.BorderColor = RForm.borderMain;
+            comboPrimary.ButtonColor = RForm.buttonMain;
             comboPrimary.FlatStyle = FlatStyle.Flat;
             comboPrimary.Font = new Font("Segoe UI", 9F);
             comboPrimary.FormattingEnabled = true;
@@ -600,8 +600,8 @@ namespace OHelper
             // 
             // comboTurboPrimary
             // 
-            comboTurboPrimary.BorderColor = Color.White;
-            comboTurboPrimary.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboTurboPrimary.BorderColor = RForm.borderMain;
+            comboTurboPrimary.ButtonColor = RForm.buttonMain;
             comboTurboPrimary.FlatStyle = FlatStyle.Flat;
             comboTurboPrimary.Font = new Font("Segoe UI", 9F);
             comboTurboPrimary.FormattingEnabled = true;
@@ -613,8 +613,8 @@ namespace OHelper
             // 
             // comboTurboSecondary
             // 
-            comboTurboSecondary.BorderColor = Color.White;
-            comboTurboSecondary.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboTurboSecondary.BorderColor = RForm.borderMain;
+            comboTurboSecondary.ButtonColor = RForm.buttonMain;
             comboTurboSecondary.FlatStyle = FlatStyle.Flat;
             comboTurboSecondary.Font = new Font("Segoe UI", 9F);
             comboTurboSecondary.FormattingEnabled = true;
@@ -627,7 +627,7 @@ namespace OHelper
             // buttonView
             // 
             buttonView.Activated = false;
-            buttonView.BackColor = SystemColors.ControlLight;
+            buttonView.BackColor = RForm.buttonSecond;
             buttonView.BorderColor = Color.Transparent;
             buttonView.BorderRadius = 5;
             buttonView.FlatAppearance.BorderSize = 0;
@@ -647,7 +647,7 @@ namespace OHelper
             // buttonLS
             // 
             buttonLS.Activated = false;
-            buttonLS.BackColor = SystemColors.ControlLight;
+            buttonLS.BackColor = RForm.buttonSecond;
             buttonLS.BorderColor = Color.Transparent;
             buttonLS.BorderRadius = 5;
             buttonLS.FlatAppearance.BorderSize = 0;
@@ -667,7 +667,7 @@ namespace OHelper
             // buttonLT
             // 
             buttonLT.Activated = false;
-            buttonLT.BackColor = SystemColors.ControlLight;
+            buttonLT.BackColor = RForm.buttonSecond;
             buttonLT.BorderColor = Color.Transparent;
             buttonLT.BorderRadius = 5;
             buttonLT.FlatAppearance.BorderSize = 0;
@@ -687,7 +687,7 @@ namespace OHelper
             // buttonLB
             // 
             buttonLB.Activated = false;
-            buttonLB.BackColor = SystemColors.ControlLight;
+            buttonLB.BackColor = RForm.buttonSecond;
             buttonLB.BorderColor = Color.Transparent;
             buttonLB.BorderRadius = 5;
             buttonLB.FlatAppearance.BorderSize = 0;
@@ -707,7 +707,7 @@ namespace OHelper
             // buttonDPR
             // 
             buttonDPR.Activated = false;
-            buttonDPR.BackColor = SystemColors.ControlLight;
+            buttonDPR.BackColor = RForm.buttonSecond;
             buttonDPR.BorderColor = Color.Transparent;
             buttonDPR.BorderRadius = 5;
             buttonDPR.FlatAppearance.BorderSize = 0;
@@ -727,7 +727,7 @@ namespace OHelper
             // buttonDPL
             // 
             buttonDPL.Activated = false;
-            buttonDPL.BackColor = SystemColors.ControlLight;
+            buttonDPL.BackColor = RForm.buttonSecond;
             buttonDPL.BorderColor = Color.Transparent;
             buttonDPL.BorderRadius = 5;
             buttonDPL.FlatAppearance.BorderSize = 0;
@@ -747,7 +747,7 @@ namespace OHelper
             // buttonDPD
             // 
             buttonDPD.Activated = false;
-            buttonDPD.BackColor = SystemColors.ControlLight;
+            buttonDPD.BackColor = RForm.buttonSecond;
             buttonDPD.BorderColor = Color.Transparent;
             buttonDPD.BorderRadius = 5;
             buttonDPD.FlatAppearance.BorderSize = 0;
@@ -767,7 +767,7 @@ namespace OHelper
             // buttonDPU
             // 
             buttonDPU.Activated = false;
-            buttonDPU.BackColor = SystemColors.ControlLight;
+            buttonDPU.BackColor = RForm.buttonSecond;
             buttonDPU.BorderColor = Color.Transparent;
             buttonDPU.BorderRadius = 5;
             buttonDPU.FlatAppearance.BorderSize = 0;
@@ -787,7 +787,7 @@ namespace OHelper
             // buttonM2
             // 
             buttonM2.Activated = false;
-            buttonM2.BackColor = SystemColors.ControlLight;
+            buttonM2.BackColor = RForm.buttonSecond;
             buttonM2.BorderColor = Color.Transparent;
             buttonM2.BorderRadius = 5;
             buttonM2.FlatAppearance.BorderSize = 0;
@@ -807,7 +807,7 @@ namespace OHelper
             // buttonM1
             // 
             buttonM1.Activated = false;
-            buttonM1.BackColor = SystemColors.ControlLight;
+            buttonM1.BackColor = RForm.buttonSecond;
             buttonM1.BorderColor = Color.Transparent;
             buttonM1.BorderRadius = 5;
             buttonM1.FlatAppearance.BorderSize = 0;
@@ -827,7 +827,7 @@ namespace OHelper
             // buttonRS
             // 
             buttonRS.Activated = false;
-            buttonRS.BackColor = SystemColors.ControlLight;
+            buttonRS.BackColor = RForm.buttonSecond;
             buttonRS.BorderColor = Color.Transparent;
             buttonRS.BorderRadius = 5;
             buttonRS.FlatAppearance.BorderSize = 0;
@@ -847,7 +847,7 @@ namespace OHelper
             // buttonMenu
             // 
             buttonMenu.Activated = false;
-            buttonMenu.BackColor = SystemColors.ControlLight;
+            buttonMenu.BackColor = RForm.buttonSecond;
             buttonMenu.BorderColor = Color.Transparent;
             buttonMenu.BorderRadius = 5;
             buttonMenu.FlatAppearance.BorderSize = 0;
@@ -867,7 +867,7 @@ namespace OHelper
             // buttonRT
             // 
             buttonRT.Activated = false;
-            buttonRT.BackColor = SystemColors.ControlLight;
+            buttonRT.BackColor = RForm.buttonSecond;
             buttonRT.BorderColor = Color.Transparent;
             buttonRT.BorderRadius = 5;
             buttonRT.FlatAppearance.BorderSize = 0;
@@ -887,7 +887,7 @@ namespace OHelper
             // buttonRB
             // 
             buttonRB.Activated = false;
-            buttonRB.BackColor = SystemColors.ControlLight;
+            buttonRB.BackColor = RForm.buttonSecond;
             buttonRB.BorderColor = Color.Transparent;
             buttonRB.BorderRadius = 5;
             buttonRB.FlatAppearance.BorderSize = 0;
@@ -907,7 +907,7 @@ namespace OHelper
             // buttonB
             // 
             buttonB.Activated = false;
-            buttonB.BackColor = SystemColors.ControlLight;
+            buttonB.BackColor = RForm.buttonSecond;
             buttonB.BorderColor = Color.Transparent;
             buttonB.BorderRadius = 5;
             buttonB.FlatAppearance.BorderSize = 0;
@@ -927,7 +927,7 @@ namespace OHelper
             // buttonA
             // 
             buttonA.Activated = false;
-            buttonA.BackColor = SystemColors.ControlLight;
+            buttonA.BackColor = RForm.buttonSecond;
             buttonA.BorderColor = Color.Transparent;
             buttonA.BorderRadius = 5;
             buttonA.FlatAppearance.BorderSize = 0;
@@ -947,7 +947,7 @@ namespace OHelper
             // buttonY
             // 
             buttonY.Activated = false;
-            buttonY.BackColor = SystemColors.ControlLight;
+            buttonY.BackColor = RForm.buttonSecond;
             buttonY.BorderColor = Color.Transparent;
             buttonY.BorderRadius = 5;
             buttonY.FlatAppearance.BorderSize = 0;
@@ -967,7 +967,7 @@ namespace OHelper
             // buttonX
             // 
             buttonX.Activated = false;
-            buttonX.BackColor = SystemColors.ControlLight;
+            buttonX.BackColor = RForm.buttonSecond;
             buttonX.BorderColor = Color.Transparent;
             buttonX.BorderRadius = 5;
             buttonX.FlatAppearance.BorderSize = 0;
@@ -1016,7 +1016,7 @@ namespace OHelper
             // 
             checkController.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             checkController.AutoSize = true;
-            checkController.BackColor = SystemColors.ControlLight;
+            checkController.BackColor = RForm.buttonSecond;
             checkController.Location = new Point(717, 40);
             checkController.Margin = new Padding(0);
             checkController.Name = "checkController";

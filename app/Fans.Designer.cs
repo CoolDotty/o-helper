@@ -267,7 +267,7 @@ namespace OHelper
             // labelTip
             // 
             labelTip.AutoSize = true;
-            labelTip.BackColor = SystemColors.ControlLightLight;
+            labelTip.BackColor = RForm.buttonMain;
             labelTip.Location = new Point(684, 92);
             labelTip.Margin = new Padding(4, 0, 4, 0);
             labelTip.Name = "labelTip";
@@ -392,7 +392,7 @@ namespace OHelper
             // buttonRemove
             // 
             buttonRemove.Activated = false;
-            buttonRemove.BackColor = SystemColors.ControlLight;
+            buttonRemove.BackColor = RForm.buttonSecond;
             buttonRemove.BorderColor = Color.Transparent;
             buttonRemove.BorderRadius = 2;
             buttonRemove.Dock = DockStyle.Fill;
@@ -409,7 +409,7 @@ namespace OHelper
             // buttonAdd
             // 
             buttonAdd.Activated = false;
-            buttonAdd.BackColor = SystemColors.ControlLight;
+            buttonAdd.BackColor = RForm.buttonSecond;
             buttonAdd.BorderColor = Color.Transparent;
             buttonAdd.BorderRadius = 2;
             buttonAdd.Dock = DockStyle.Fill;
@@ -426,7 +426,7 @@ namespace OHelper
             // buttonRename
             // 
             buttonRename.Activated = false;
-            buttonRename.BackColor = SystemColors.ControlLight;
+            buttonRename.BackColor = RForm.buttonSecond;
             buttonRename.BorderColor = Color.Transparent;
             buttonRename.BorderRadius = 2;
             buttonRename.Dock = DockStyle.Fill;
@@ -442,8 +442,8 @@ namespace OHelper
             // 
             // comboModes
             // 
-            comboModes.BorderColor = Color.White;
-            comboModes.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboModes.BorderColor = RForm.borderMain;
+            comboModes.ButtonColor = RForm.buttonMain;
             comboModes.Dock = DockStyle.Top;
             comboModes.FlatStyle = FlatStyle.Flat;
             comboModes.FormattingEnabled = true;
@@ -602,7 +602,7 @@ namespace OHelper
             // 
             buttonCalibrate.Activated = false;
             buttonCalibrate.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonCalibrate.BackColor = SystemColors.ControlLight;
+            buttonCalibrate.BackColor = RForm.buttonSecond;
             buttonCalibrate.BorderColor = Color.Transparent;
             buttonCalibrate.BorderRadius = 2;
             buttonCalibrate.FlatStyle = FlatStyle.Flat;
@@ -630,7 +630,7 @@ namespace OHelper
             // 
             checkApplyFans.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             checkApplyFans.AutoSize = true;
-            checkApplyFans.BackColor = SystemColors.ControlLight;
+            checkApplyFans.BackColor = RForm.buttonSecond;
             checkApplyFans.Location = new Point(454, 42);
             checkApplyFans.Margin = new Padding(0);
             checkApplyFans.Name = "checkApplyFans";
@@ -644,7 +644,7 @@ namespace OHelper
             // 
             buttonReset.Activated = false;
             buttonReset.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonReset.BackColor = SystemColors.ControlLight;
+            buttonReset.BackColor = RForm.buttonSecond;
             buttonReset.BorderColor = Color.Transparent;
             buttonReset.BorderRadius = 2;
             buttonReset.FlatStyle = FlatStyle.Flat;
@@ -660,8 +660,8 @@ namespace OHelper
             // comboBoost
             // 
             comboBoost.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            comboBoost.BorderColor = Color.White;
-            comboBoost.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoost.BorderColor = RForm.borderMain;
+            comboBoost.ButtonColor = RForm.buttonMain;
             comboBoost.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoost.FormattingEnabled = true;
             comboBoost.Items.AddRange(new object[] { "Disabled", "Enabled", "Aggressive", "Efficient Enabled", "Efficient Aggressive", "Aggressive at Guaranteed", "Efficient at Guaranteed" });
@@ -712,7 +712,7 @@ namespace OHelper
             // 
             // checkApplyUV
             // 
-            checkApplyUV.BackColor = SystemColors.ControlLight;
+            checkApplyUV.BackColor = RForm.buttonSecond;
             checkApplyUV.Dock = DockStyle.Top;
             checkApplyUV.Enabled = false;
             checkApplyUV.Location = new Point(16, 0);
@@ -739,7 +739,7 @@ namespace OHelper
             // buttonApplyAdvanced
             // 
             buttonApplyAdvanced.Activated = false;
-            buttonApplyAdvanced.BackColor = SystemColors.ControlLight;
+            buttonApplyAdvanced.BackColor = RForm.buttonSecond;
             buttonApplyAdvanced.BorderColor = Color.Transparent;
             buttonApplyAdvanced.BorderRadius = 2;
             buttonApplyAdvanced.Dock = DockStyle.Top;
@@ -767,7 +767,7 @@ namespace OHelper
             // buttonReadLimits
             //
             buttonReadLimits.Activated = false;
-            buttonReadLimits.BackColor = SystemColors.ControlLight;
+            buttonReadLimits.BackColor = RForm.buttonSecond;
             buttonReadLimits.BorderColor = Color.Transparent;
             buttonReadLimits.BorderRadius = 2;
             buttonReadLimits.Dock = DockStyle.Top;
@@ -786,7 +786,7 @@ namespace OHelper
             // 
             labelRisky.BackColor = Color.IndianRed;
             labelRisky.Dock = DockStyle.Top;
-            labelRisky.ForeColor = SystemColors.ControlLightLight;
+            labelRisky.ForeColor = RForm.foreMain;
             labelRisky.Location = new Point(0, 608);
             labelRisky.Margin = new Padding(0);
             labelRisky.Name = "labelRisky";
@@ -1040,7 +1040,7 @@ namespace OHelper
             buttonDownload.Activated = false;
             buttonDownload.AutoSize = true;
             buttonDownload.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonDownload.BackColor = SystemColors.ControlLight;
+            buttonDownload.BackColor = RForm.buttonSecond;
             buttonDownload.BorderColor = Color.Transparent;
             buttonDownload.BorderRadius = 2;
             buttonDownload.Dock = DockStyle.Top;
@@ -1089,7 +1089,7 @@ namespace OHelper
             // 
             // checkApplyPower
             // 
-            checkApplyPower.BackColor = SystemColors.ControlLight;
+            checkApplyPower.BackColor = RForm.buttonSecond;
             checkApplyPower.Dock = DockStyle.Top;
             checkApplyPower.Location = new Point(15, 15);
             checkApplyPower.Margin = new Padding(0);
@@ -1391,8 +1391,8 @@ namespace OHelper
             // comboPowerMode
             // 
             comboPowerMode.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            comboPowerMode.BorderColor = Color.White;
-            comboPowerMode.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboPowerMode.BorderColor = RForm.borderMain;
+            comboPowerMode.ButtonColor = RForm.buttonMain;
             comboPowerMode.DropDownStyle = ComboBoxStyle.DropDownList;
             comboPowerMode.FormattingEnabled = true;
             comboPowerMode.Items.AddRange(new object[] { "Disabled", "Enabled", "Aggressive", "Efficient Enabled", "Efficient Aggressive", "Aggressive at Guaranteed", "Efficient at Guaranteed" });
@@ -1824,7 +1824,7 @@ namespace OHelper
             // buttonAdvanced
             // 
             buttonAdvanced.Activated = false;
-            buttonAdvanced.BackColor = SystemColors.ControlLight;
+            buttonAdvanced.BackColor = RForm.buttonSecond;
             buttonAdvanced.BorderColor = Color.Transparent;
             buttonAdvanced.BorderRadius = 2;
             buttonAdvanced.Dock = DockStyle.Fill;
@@ -1842,7 +1842,7 @@ namespace OHelper
             // buttonGPU
             // 
             buttonGPU.Activated = false;
-            buttonGPU.BackColor = SystemColors.ControlLight;
+            buttonGPU.BackColor = RForm.buttonSecond;
             buttonGPU.BorderColor = Color.Transparent;
             buttonGPU.BorderRadius = 2;
             buttonGPU.Dock = DockStyle.Fill;
@@ -1860,7 +1860,7 @@ namespace OHelper
             // buttonCPU
             // 
             buttonCPU.Activated = false;
-            buttonCPU.BackColor = SystemColors.ControlLight;
+            buttonCPU.BackColor = RForm.buttonSecond;
             buttonCPU.BorderColor = Color.Transparent;
             buttonCPU.BorderRadius = 2;
             buttonCPU.Dock = DockStyle.Fill;

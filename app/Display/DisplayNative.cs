@@ -9,6 +9,7 @@ namespace OHelper.Display
     {
         #region Enums
 
+        [Flags]
         public enum QUERY_DEVICE_CONFIG_FLAGS : uint
         {
             QDC_ALL_PATHS = 0x00000001,
@@ -16,6 +17,28 @@ namespace OHelper.Display
             QDC_DATABASE_CURRENT = 0x00000004,
             QDC_VIRTUAL_MODE_AWARE = 0x00000010,
             QDC_INCLUDE_HMD = 0x00000020,
+            QDC_VIRTUAL_REFRESH_RATE_AWARE = 0x00000040,
+        }
+
+        [Flags]
+        public enum SET_DISPLAY_CONFIG_FLAGS : uint
+        {
+            SDC_TOPOLOGY_INTERNAL = 0x00000001,
+            SDC_TOPOLOGY_CLONE = 0x00000002,
+            SDC_TOPOLOGY_EXTEND = 0x00000004,
+            SDC_TOPOLOGY_EXTERNAL = 0x00000008,
+            SDC_TOPOLOGY_SUPPLIED = 0x00000010,
+            SDC_USE_SUPPLIED_DISPLAY_CONFIG = 0x00000020,
+            SDC_VALIDATE = 0x00000040,
+            SDC_APPLY = 0x00000080,
+            SDC_NO_OPTIMIZATION = 0x00000100,
+            SDC_SAVE_TO_DATABASE = 0x00000200,
+            SDC_ALLOW_CHANGES = 0x00000400,
+            SDC_PATH_PERSIST_IF_REQUIRED = 0x00000800,
+            SDC_FORCE_MODE_ENUMERATION = 0x00001000,
+            SDC_ALLOW_PATH_ORDER_CHANGES = 0x00002000,
+            SDC_VIRTUAL_MODE_AWARE = 0x00008000,
+            SDC_VIRTUAL_REFRESH_RATE_AWARE = 0x00020000,
         }
 
         public enum DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY : uint
@@ -130,6 +153,7 @@ namespace OHelper.Display
             DISPLAYCONFIG_PATH_ACTIVE = 0x00000001,
             DISPLAYCONFIG_PATH_PREFERRED_UNSCALED = 0x00000004,
             DISPLAYCONFIG_PATH_SUPPORT_VIRTUAL_MODE = 0x00000008,
+            DISPLAYCONFIG_PATH_BOOST_REFRESH_RATE = 0x00000010,
         }
 
         [Flags]
@@ -469,6 +493,14 @@ namespace OHelper.Display
 
         [DllImport("user32.dll")]
         public static extern int DisplayConfigSetDeviceInfo(ref DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE requestPacket);
+
+        [DllImport("user32.dll")]
+        public static extern int SetDisplayConfig(
+            uint numPathArrayElements,
+            [In] DISPLAYCONFIG_PATH_INFO[] pathArray,
+            uint numModeInfoArrayElements,
+            [In] DISPLAYCONFIG_MODE_INFO[] modeInfoArray,
+            SET_DISPLAY_CONFIG_FLAGS flags);
 
         [DllImport("user32.dll")]
         public static extern int EnumDisplaySettingsEx(

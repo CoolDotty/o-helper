@@ -70,8 +70,8 @@ namespace OHelper.UI
             e.DrawFocusRectangle();
         }
 
-        private Color borderColor = Color.Gray;
-        [DefaultValue(typeof(Color), "Gray")]
+        private Color borderColor = RForm.borderMain;
+        [DefaultValue(typeof(Color), "")]
         public Color BorderColor
         {
             get { return borderColor; }
@@ -86,8 +86,8 @@ namespace OHelper.UI
         }
 
 
-        private Color buttonColor = Color.FromArgb(255, 255, 255, 255);
-        [DefaultValue(typeof(Color), "255, 255, 255")]
+        private Color buttonColor = RForm.buttonMain;
+        [DefaultValue(typeof(Color), "")]
         public Color ButtonColor
         {
             get { return buttonColor; }
@@ -101,8 +101,8 @@ namespace OHelper.UI
             }
         }
 
-        private Color arrowColor = Color.Black;
-        [DefaultValue(typeof(Color), "Black")]
+        private Color arrowColor = RForm.foreMain;
+        [DefaultValue(typeof(Color), "")]
         public Color ArrowColor
         {
             get { return arrowColor; }

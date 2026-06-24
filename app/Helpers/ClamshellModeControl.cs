@@ -1,5 +1,4 @@
 using OHelper.Display;
-using OHelper.Display;
 using OHelper.Mode;
 using Microsoft.Win32;
 
@@ -92,7 +91,9 @@ namespace OHelper.Helpers
             if (IsClamshellEnabled())
                 ScheduleLidToggle();
 
-            if (AppConfig.Is("screen_force"))
+            if (AppConfig.HasDisplayModes())
+                Task.Delay(1500).ContinueWith(_ => ScreenControl.OnPowerChangedRefreshMode());
+            else if (AppConfig.Is("screen_force"))
                 ScreenControl.AutoScreen();
             else if (Program.settingsForm.Visible)
                 ScreenControl.InitScreen();

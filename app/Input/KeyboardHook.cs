@@ -2,6 +2,17 @@
 
 public sealed class KeyboardHook : IDisposable
 {
+    private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+    private const int WH_KEYBOARD_LL = 13;
+    private const int HC_ACTION = 0;
+    private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
+    private const int WM_SYSKEYDOWN = 0x0104;
+    private const int WM_SYSKEYUP = 0x0105;
+    private const int VK_LWIN = 0x5B;
+    private const int VK_RWIN = 0x5C;
+
     // Registers a hot key with Windows.
     [DllImport("user32.dll")]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -13,12 +24,17 @@ public sealed class KeyboardHook : IDisposable
     private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
     [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+    [DllImport("user32.dll", SetLastError = true)]
     public static extern void keybd_event(byte virtualKey, byte scanCode, uint flags, IntPtr extraInfo);
 
     public const int KEYEVENTF_EXTENDEDKEY = 1;
     public const int KEYEVENTF_KEYUP = 2;
 
-    private const byte VK_LWIN = 0x5B;
     private const byte VK_LCONTROL = 0xA2;
 
     [DllImport("user32.dll")]
@@ -141,15 +157,53 @@ public sealed class KeyboardHook : IDisposable
 
     private Window _window = new Window();
     private int _currentId;
+    private bool _suppressWinKeys;
+    private IntPtr _keyboardHookId;
+    private readonly LowLevelKeyboardProc _lowLevelKeyboardProc;
 
     public KeyboardHook()
     {
+        _lowLevelKeyboardProc = LowLevelKeyboardCallback;
+
         // register the event of the inner native window.
         _window.KeyPressed += delegate (object sender, KeyPressedEventArgs args)
         {
             if (KeyPressed != null)
                 KeyPressed(this, args);
         };
+    }
+
+    public void SetWinLock(bool enabled)
+    {
+        _suppressWinKeys = enabled;
+
+        if (enabled && _keyboardHookId == IntPtr.Zero)
+        {
+            _keyboardHookId = SetWindowsHookEx(WH_KEYBOARD_LL, _lowLevelKeyboardProc, IntPtr.Zero, 0);
+            if (_keyboardHookId == IntPtr.Zero)
+                Logger.WriteLine("Couldn't install Win-Lock keyboard hook");
+        }
+        else if (!enabled && _keyboardHookId != IntPtr.Zero)
+        {
+            UnhookWindowsHookEx(_keyboardHookId);
+            _keyboardHookId = IntPtr.Zero;
+        }
+    }
+
+    private IntPtr LowLevelKeyboardCallback(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (_suppressWinKeys && nCode == HC_ACTION)
+        {
+            int message = wParam.ToInt32();
+            if (message == WM_KEYDOWN || message == WM_KEYUP || message == WM_SYSKEYDOWN || message == WM_SYSKEYUP)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+                if (vkCode == VK_LWIN || vkCode == VK_RWIN)
+                    return 1;
+            }
+        }
+
+        return CallNextHookEx(_keyboardHookId, nCode, wParam, lParam);
     }
 
     /// <summary>
@@ -164,7 +218,7 @@ public sealed class KeyboardHook : IDisposable
 
         // register the hot key.
         if (!RegisterHotKey(_window.Handle, _currentId, (uint)modifier, (uint)key))
-            Logger.WriteLine("Couldn’t register " + key);
+            Logger.WriteLine("Couldn't register " + key);
     }
 
     /// <summary>
@@ -186,6 +240,7 @@ public sealed class KeyboardHook : IDisposable
     public void Dispose()
     {
         UnregisterAll();
+        SetWinLock(false);
         // dispose the inner native window.
         _window.Dispose();
     }

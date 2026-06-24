@@ -376,7 +376,7 @@ namespace OHelper.Peripherals.Mouse.Models
 
             setting.LightingMode = LightingModeForIndex(packet[offset + 0]);
             setting.Brightness = packet[offset + 1];
-            //Offset 2 is a bool that says whether dual color RGB is in use. Unsupported for now by GHelper
+            // Offset 2 is a bool that says whether dual color RGB is in use. Unsupported for now.
 
             setting.RGBColor = Color.FromArgb(packet[offset + 3], packet[offset + 4], packet[offset + 5]);
 

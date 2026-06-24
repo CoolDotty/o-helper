@@ -1,7 +1,6 @@
 using OHelper.Helpers;
 using Microsoft.Win32;
 using PawnIO;
-using System.Management;
 
 namespace OHelper.Display
 {
@@ -49,7 +48,6 @@ namespace OHelper.Display
         private static int _brightness = 100;
         private static bool _init = true;
         private static bool _download = true;
-        private static string? _splendidPath = null;
 
         private static System.Timers.Timer brightnessTimer = new System.Timers.Timer(200);
 
@@ -61,6 +59,11 @@ namespace OHelper.Display
         static VisualControl()
         {
             brightnessTimer.Elapsed += BrightnessTimerTimer_Elapsed;
+        }
+
+        public static bool IsSplendidSupported()
+        {
+            return AppConfig.IsASUS();
         }
 
         public static string GetGameVisualPath()
@@ -80,11 +83,13 @@ namespace OHelper.Display
 
         public static bool IsEReading()
         {
+            if (!IsSplendidSupported()) return false;
             return File.Exists(AppConfig.IsVivoZenPro() ? GetVivobookPath() : GetGameVisualPath() + "\\Asus_Monochrome.icm");
         }
 
         public static Dictionary<SplendidGamut, string> GetGamutModes()
         {
+            if (!IsSplendidSupported()) return new Dictionary<SplendidGamut, string>();
 
             bool isVivo = AppConfig.IsVivoZenPro();
 
@@ -222,17 +227,20 @@ namespace OHelper.Display
 
         public static bool IsEnabled()
         {
+            if (!IsSplendidSupported()) return false;
             var status = (int?)Registry.GetValue(GameVisualKey, GameVisualValue, 1);
             return status > 0;
         }
 
         public static void SetRegStatus(int status = 1)
         {
+            if (!IsSplendidSupported()) return;
             Registry.SetValue(GameVisualKey, GameVisualValue, status, RegistryValueKind.DWord);
         }
 
         public static void InitGamut()
         {
+            if (!IsSplendidSupported()) return;
             int gamut = AppConfig.Get("gamut");
 
             if (gamut < 0) return;
@@ -243,6 +251,7 @@ namespace OHelper.Display
 
         public static void SetGamut(int mode = -1)
         {
+            if (!IsSplendidSupported()) return;
             if (skipGamut) return;
             if (mode < 0) mode = (int)GetDefaultGamut();
 
@@ -270,6 +279,8 @@ namespace OHelper.Display
 
         public static void SetVisual(SplendidCommand mode = SplendidCommand.Default, int whiteBalance = DefaultColorTemp, bool init = false)
         {
+            if (!IsSplendidSupported()) return;
+
             Task.Run(async () =>
             {
                 if (AmdDisplay.IsOledPowerOptimization()) Program.settingsForm.VisualiseAmdOled(true);
@@ -340,31 +351,13 @@ namespace OHelper.Display
 
         private static string GetSplendidPath()
         {
-            if (_splendidPath == null)
-            {
-                try
-                {
-                    using (var searcher = new ManagementObjectSearcher(@"Select * from Win32_SystemDriver WHERE Name='ATKWMIACPIIO'"))
-                    {
-                        foreach (var driver in searcher.Get())
-                        {
-                            string path = driver["PathName"].ToString();
-                            _splendidPath = Path.GetDirectoryName(path);
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.WriteLine(ex.Message);
-                }
-            }
-
-            return _splendidPath;
+            return string.Empty;
         }
 
         private static int RunSplendid(SplendidCommand command, int? param1 = null, int? param2 = null, int? param3 = null)
         {
+            if (!IsSplendidSupported()) return 0;
+
             string splendidPath = GetSplendidPath();
             string splendidExe = $"{splendidPath}\\AsusSplendid.exe";
             bool isVivo = AppConfig.IsVivoZenPro();

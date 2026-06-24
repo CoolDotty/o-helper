@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>Bộ nhớ chuyển cho GPU</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Dịch vụ Asus đang chạy</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Trạng thái pin</value>
   </data>
@@ -769,9 +766,6 @@ Bạn có muốn tiếp tục không?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Stopping Services</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Bật tắt Aura</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Auto Toggle Clamshell Mode</value>

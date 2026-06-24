@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>GPU için Atanan Bellek</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Çalışan Asus Hizmetleri</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Pil Durumu</value>
   </data>
@@ -769,9 +766,6 @@ Yine de devam etmek istiyor musunuz?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Hizmetler Durduruluyor</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Aura Değiştir</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Otomatik Clamshell Modunu Aç</value>

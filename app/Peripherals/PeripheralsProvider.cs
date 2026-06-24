@@ -260,6 +260,8 @@ namespace OHelper.Peripherals
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void DetectAllAsusMice()
         {
+            if (!AppConfig.IsASUS()) return;
+
             //Add one line for every supported mouse class here to support them.
             DedectOmniMouse();
             DetectMouse(new ChakramX());
@@ -429,6 +431,7 @@ namespace OHelper.Peripherals
 
         public static void RegisterForDeviceEvents()
         {
+            if (!AppConfig.IsASUS()) return;
             HidSharp.DeviceList.Local.Changed += Device_Changed;
         }
 
@@ -445,6 +448,7 @@ namespace OHelper.Peripherals
         private static void DeviceTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             timer.Stop();
+            if (!AppConfig.IsASUS()) return;
             Logger.WriteLine("HID Device Event: Checking for new ASUS Mice");
             DetectAllAsusMice();
             if (AppConfig.IsZ13()) Program.inputDispatcher.Init();

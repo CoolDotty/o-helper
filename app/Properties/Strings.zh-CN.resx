@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>分配给 GPU 的内存</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>正在运行的 Asus 服务</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>电池状态</value>
   </data>
@@ -769,9 +766,6 @@
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>停止服务中...</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>切换 Aura 模式</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>自动切换合盖模式</value>

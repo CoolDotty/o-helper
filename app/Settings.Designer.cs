@@ -147,7 +147,6 @@ namespace OHelper
             panelVersion = new Panel();
             buttonEnergySaver = new RButton();
             buttonAmdOled = new RButton();
-            buttonArmoury = new RButton();
             labelVersion = new Label();
             buttonHDRControl = new RButton();
             panelMatrix.SuspendLayout();
@@ -283,8 +282,8 @@ namespace OHelper
             // 
             // comboMatrix
             // 
-            comboMatrix.BorderColor = Color.White;
-            comboMatrix.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboMatrix.BorderColor = RForm.borderMain;
+            comboMatrix.ButtonColor = RForm.buttonMain;
             comboMatrix.Dock = DockStyle.Top;
             comboMatrix.Font = new Font("Segoe UI", 9F);
             comboMatrix.FormattingEnabled = true;
@@ -297,8 +296,8 @@ namespace OHelper
             // 
             // comboMatrixRunning
             // 
-            comboMatrixRunning.BorderColor = Color.White;
-            comboMatrixRunning.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboMatrixRunning.BorderColor = RForm.borderMain;
+            comboMatrixRunning.ButtonColor = RForm.buttonMain;
             comboMatrixRunning.Dock = DockStyle.Top;
             comboMatrixRunning.Font = new Font("Segoe UI", 9F);
             comboMatrixRunning.FormattingEnabled = true;
@@ -311,8 +310,8 @@ namespace OHelper
             // 
             // comboInterval
             // 
-            comboInterval.BorderColor = Color.White;
-            comboInterval.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboInterval.BorderColor = RForm.borderMain;
+            comboInterval.ButtonColor = RForm.buttonMain;
             comboInterval.Dock = DockStyle.Top;
             comboInterval.Font = new Font("Segoe UI", 9F);
             comboInterval.FormattingEnabled = true;
@@ -328,7 +327,7 @@ namespace OHelper
             buttonMatrix.Activated = false;
             buttonMatrix.AutoSize = true;
             buttonMatrix.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonMatrix.BackColor = SystemColors.ControlLight;
+            buttonMatrix.BackColor = RForm.buttonSecond;
             buttonMatrix.BorderColor = Color.Transparent;
             buttonMatrix.BorderRadius = 2;
             buttonMatrix.Dock = DockStyle.Top;
@@ -397,7 +396,7 @@ namespace OHelper
             // 
             buttonBatteryFull.Activated = false;
             buttonBatteryFull.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonBatteryFull.BackColor = SystemColors.ControlLight;
+            buttonBatteryFull.BackColor = RForm.buttonSecond;
             buttonBatteryFull.BorderColor = Color.Transparent;
             buttonBatteryFull.BorderRadius = 2;
             buttonBatteryFull.FlatAppearance.BorderSize = 0;
@@ -509,7 +508,7 @@ namespace OHelper
             // buttonDonate
             // 
             buttonDonate.Activated = false;
-            buttonDonate.BackColor = SystemColors.ControlLight;
+            buttonDonate.BackColor = RForm.buttonSecond;
             buttonDonate.Badge = 0;
             buttonDonate.BorderColor = Color.Transparent;
             buttonDonate.BorderRadius = 2;
@@ -530,7 +529,7 @@ namespace OHelper
             // buttonQuit
             // 
             buttonQuit.Activated = false;
-            buttonQuit.BackColor = SystemColors.ControlLight;
+            buttonQuit.BackColor = RForm.buttonSecond;
             buttonQuit.BorderColor = Color.Transparent;
             buttonQuit.BorderRadius = 2;
             buttonQuit.Dock = DockStyle.Top;
@@ -550,7 +549,7 @@ namespace OHelper
             // buttonUpdates
             // 
             buttonUpdates.Activated = false;
-            buttonUpdates.BackColor = SystemColors.ControlLight;
+            buttonUpdates.BackColor = RForm.buttonSecond;
             buttonUpdates.BorderColor = Color.Transparent;
             buttonUpdates.BorderRadius = 2;
             buttonUpdates.Dock = DockStyle.Top;
@@ -626,7 +625,7 @@ namespace OHelper
             // buttonSilent
             // 
             buttonSilent.Activated = false;
-            buttonSilent.BackColor = SystemColors.ControlLightLight;
+            buttonSilent.BackColor = RForm.buttonMain;
             buttonSilent.BackgroundImageLayout = ImageLayout.None;
             buttonSilent.BorderColor = Color.Transparent;
             buttonSilent.BorderRadius = 5;
@@ -649,7 +648,7 @@ namespace OHelper
             // buttonBalanced
             // 
             buttonBalanced.Activated = false;
-            buttonBalanced.BackColor = SystemColors.ControlLightLight;
+            buttonBalanced.BackColor = RForm.buttonMain;
             buttonBalanced.BorderColor = Color.Transparent;
             buttonBalanced.BorderRadius = 5;
             buttonBalanced.Dock = DockStyle.Fill;
@@ -671,7 +670,7 @@ namespace OHelper
             // buttonTurbo
             // 
             buttonTurbo.Activated = false;
-            buttonTurbo.BackColor = SystemColors.ControlLightLight;
+            buttonTurbo.BackColor = RForm.buttonMain;
             buttonTurbo.BorderColor = Color.Transparent;
             buttonTurbo.BorderRadius = 5;
             buttonTurbo.Dock = DockStyle.Fill;
@@ -693,7 +692,7 @@ namespace OHelper
             // buttonUnleashed
             // 
             buttonUnleashed.Activated = false;
-            buttonUnleashed.BackColor = SystemColors.ControlLightLight;
+            buttonUnleashed.BackColor = RForm.buttonMain;
             buttonUnleashed.BorderColor = Color.Transparent;
             buttonUnleashed.BorderRadius = 5;
             buttonUnleashed.Dock = DockStyle.Fill;
@@ -716,7 +715,7 @@ namespace OHelper
             // 
             buttonFans.Activated = false;
             buttonFans.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonFans.BackColor = SystemColors.ControlLight;
+            buttonFans.BackColor = RForm.buttonSecond;
             buttonFans.BorderColor = Color.Transparent;
             buttonFans.BorderRadius = 2;
             buttonFans.Dock = DockStyle.Left;
@@ -739,7 +738,7 @@ namespace OHelper
             // 
             buttonMaxFans.Activated = false;
             buttonMaxFans.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonMaxFans.BackColor = SystemColors.ControlLight;
+            buttonMaxFans.BackColor = RForm.buttonSecond;
             buttonMaxFans.BorderColor = Color.Transparent;
             buttonMaxFans.BorderRadius = 2;
             buttonMaxFans.Dock = DockStyle.Right;
@@ -860,7 +859,7 @@ namespace OHelper
             // buttonAutoTDP
             // 
             buttonAutoTDP.Activated = false;
-            buttonAutoTDP.BackColor = SystemColors.ControlLightLight;
+            buttonAutoTDP.BackColor = RForm.buttonMain;
             buttonAutoTDP.BorderColor = Color.Transparent;
             buttonAutoTDP.BorderRadius = 5;
             buttonAutoTDP.Dock = DockStyle.Fill;
@@ -882,7 +881,7 @@ namespace OHelper
             // buttonOverlay
             // 
             buttonOverlay.Activated = false;
-            buttonOverlay.BackColor = SystemColors.ControlLightLight;
+            buttonOverlay.BackColor = RForm.buttonMain;
             buttonOverlay.BorderColor = Color.Transparent;
             buttonOverlay.BorderRadius = 5;
             buttonOverlay.Dock = DockStyle.Fill;
@@ -904,7 +903,7 @@ namespace OHelper
             // buttonFPS
             // 
             buttonFPS.Activated = false;
-            buttonFPS.BackColor = SystemColors.ControlLightLight;
+            buttonFPS.BackColor = RForm.buttonMain;
             buttonFPS.BorderColor = Color.Transparent;
             buttonFPS.BorderRadius = 5;
             buttonFPS.Dock = DockStyle.Fill;
@@ -951,7 +950,7 @@ namespace OHelper
             // buttonStopGPU
             // 
             buttonStopGPU.Activated = false;
-            buttonStopGPU.BackColor = SystemColors.ControlLightLight;
+            buttonStopGPU.BackColor = RForm.buttonMain;
             buttonStopGPU.BorderColor = Color.Transparent;
             buttonStopGPU.BorderRadius = 5;
             buttonStopGPU.CausesValidation = false;
@@ -975,7 +974,7 @@ namespace OHelper
             // buttonEco
             // 
             buttonEco.Activated = false;
-            buttonEco.BackColor = SystemColors.ControlLightLight;
+            buttonEco.BackColor = RForm.buttonMain;
             buttonEco.BorderColor = Color.Transparent;
             buttonEco.BorderRadius = 5;
             buttonEco.CausesValidation = false;
@@ -998,7 +997,7 @@ namespace OHelper
             // buttonStandard
             // 
             buttonStandard.Activated = false;
-            buttonStandard.BackColor = SystemColors.ControlLightLight;
+            buttonStandard.BackColor = RForm.buttonMain;
             buttonStandard.BorderColor = Color.Transparent;
             buttonStandard.BorderRadius = 5;
             buttonStandard.Dock = DockStyle.Top;
@@ -1020,7 +1019,7 @@ namespace OHelper
             // buttonXGM
             // 
             buttonXGM.Activated = false;
-            buttonXGM.BackColor = SystemColors.ControlLightLight;
+            buttonXGM.BackColor = RForm.buttonMain;
             buttonXGM.BorderColor = Color.Transparent;
             buttonXGM.BorderRadius = 5;
             buttonXGM.Dock = DockStyle.Top;
@@ -1043,7 +1042,7 @@ namespace OHelper
             // buttonOptimized
             // 
             buttonOptimized.Activated = false;
-            buttonOptimized.BackColor = SystemColors.ControlLightLight;
+            buttonOptimized.BackColor = RForm.buttonMain;
             buttonOptimized.BorderColor = Color.Transparent;
             buttonOptimized.BorderRadius = 5;
             buttonOptimized.Dock = DockStyle.Top;
@@ -1065,7 +1064,7 @@ namespace OHelper
             // buttonUltimate
             // 
             buttonUltimate.Activated = false;
-            buttonUltimate.BackColor = SystemColors.ControlLightLight;
+            buttonUltimate.BackColor = RForm.buttonMain;
             buttonUltimate.BorderColor = Color.Transparent;
             buttonUltimate.BorderRadius = 5;
             buttonUltimate.Dock = DockStyle.Top;
@@ -1184,7 +1183,7 @@ namespace OHelper
             // buttonScreenAuto
             // 
             buttonScreenAuto.Activated = false;
-            buttonScreenAuto.BackColor = SystemColors.ControlLightLight;
+            buttonScreenAuto.BackColor = RForm.buttonMain;
             buttonScreenAuto.BorderColor = Color.Transparent;
             buttonScreenAuto.BorderRadius = 5;
             buttonScreenAuto.Dock = DockStyle.Fill;
@@ -1203,7 +1202,7 @@ namespace OHelper
             // button60Hz
             // 
             button60Hz.Activated = false;
-            button60Hz.BackColor = SystemColors.ControlLightLight;
+            button60Hz.BackColor = RForm.buttonMain;
             button60Hz.BorderColor = Color.Transparent;
             button60Hz.BorderRadius = 5;
             button60Hz.CausesValidation = false;
@@ -1223,7 +1222,7 @@ namespace OHelper
             // button120Hz
             // 
             button120Hz.Activated = false;
-            button120Hz.BackColor = SystemColors.ControlLightLight;
+            button120Hz.BackColor = RForm.buttonMain;
             button120Hz.BorderColor = Color.Transparent;
             button120Hz.BorderRadius = 5;
             button120Hz.Dock = DockStyle.Fill;
@@ -1242,7 +1241,7 @@ namespace OHelper
             // buttonMiniled
             // 
             buttonMiniled.Activated = false;
-            buttonMiniled.BackColor = SystemColors.ControlLightLight;
+            buttonMiniled.BackColor = RForm.buttonMain;
             buttonMiniled.BorderColor = Color.Transparent;
             buttonMiniled.BorderRadius = 5;
             buttonMiniled.CausesValidation = false;
@@ -1262,7 +1261,7 @@ namespace OHelper
             // buttonFHD
             // 
             buttonFHD.Activated = false;
-            buttonFHD.BackColor = SystemColors.ControlLightLight;
+            buttonFHD.BackColor = RForm.buttonMain;
             buttonFHD.BorderColor = Color.Transparent;
             buttonFHD.BorderRadius = 5;
             buttonFHD.CausesValidation = false;
@@ -1367,7 +1366,7 @@ namespace OHelper
             // 
             buttonKeyboard.Activated = false;
             buttonKeyboard.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonKeyboard.BackColor = SystemColors.ControlLight;
+            buttonKeyboard.BackColor = RForm.buttonSecond;
             buttonKeyboard.BorderColor = Color.Transparent;
             buttonKeyboard.BorderRadius = 2;
             buttonKeyboard.Dock = DockStyle.Top;
@@ -1422,7 +1421,7 @@ namespace OHelper
             // 
             buttonKeyboardColor.Activated = false;
             buttonKeyboardColor.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonKeyboardColor.BackColor = SystemColors.ButtonHighlight;
+            buttonKeyboardColor.BackColor = RForm.buttonMain;
             buttonKeyboardColor.BorderColor = Color.Transparent;
             buttonKeyboardColor.BorderRadius = 2;
             buttonKeyboardColor.Dock = DockStyle.Top;
@@ -1439,8 +1438,8 @@ namespace OHelper
             // 
             // comboKeyboard
             // 
-            comboKeyboard.BorderColor = Color.White;
-            comboKeyboard.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboKeyboard.BorderColor = RForm.borderMain;
+            comboKeyboard.ButtonColor = RForm.buttonMain;
             comboKeyboard.Dock = DockStyle.Top;
             comboKeyboard.FlatStyle = FlatStyle.Flat;
             comboKeyboard.Font = new Font("Segoe UI", 9F);
@@ -1468,7 +1467,7 @@ namespace OHelper
             // buttonFnLock
             // 
             buttonFnLock.Activated = false;
-            buttonFnLock.BackColor = SystemColors.ControlLight;
+            buttonFnLock.BackColor = RForm.buttonSecond;
             buttonFnLock.BorderColor = Color.Transparent;
             buttonFnLock.BorderRadius = 2;
             buttonFnLock.Borderless = true;
@@ -1571,7 +1570,7 @@ namespace OHelper
             buttonRearColor.Activated = false;
             buttonRearColor.AutoSize = true;
             buttonRearColor.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonRearColor.BackColor = SystemColors.ButtonHighlight;
+            buttonRearColor.BackColor = RForm.buttonMain;
             buttonRearColor.BorderColor = Color.Transparent;
             buttonRearColor.BorderRadius = 2;
             buttonRearColor.Dock = DockStyle.Top;
@@ -1590,8 +1589,8 @@ namespace OHelper
             // 
             // comboRearLight
             // 
-            comboRearLight.BorderColor = Color.White;
-            comboRearLight.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboRearLight.BorderColor = RForm.borderMain;
+            comboRearLight.ButtonColor = RForm.buttonMain;
             comboRearLight.Dock = DockStyle.Top;
             comboRearLight.FlatStyle = FlatStyle.Flat;
             comboRearLight.Font = new Font("Segoe UI", 9F);
@@ -1699,7 +1698,7 @@ namespace OHelper
             // buttonPeripheral3
             // 
             buttonPeripheral3.Activated = false;
-            buttonPeripheral3.BackColor = SystemColors.ControlLightLight;
+            buttonPeripheral3.BackColor = RForm.buttonMain;
             buttonPeripheral3.BorderColor = Color.Transparent;
             buttonPeripheral3.BorderRadius = 5;
             buttonPeripheral3.CausesValidation = false;
@@ -1723,7 +1722,7 @@ namespace OHelper
             // buttonPeripheral2
             // 
             buttonPeripheral2.Activated = false;
-            buttonPeripheral2.BackColor = SystemColors.ControlLightLight;
+            buttonPeripheral2.BackColor = RForm.buttonMain;
             buttonPeripheral2.BorderColor = Color.Transparent;
             buttonPeripheral2.BorderRadius = 5;
             buttonPeripheral2.CausesValidation = false;
@@ -1747,7 +1746,7 @@ namespace OHelper
             // buttonPeripheral1
             // 
             buttonPeripheral1.Activated = false;
-            buttonPeripheral1.BackColor = SystemColors.ControlLightLight;
+            buttonPeripheral1.BackColor = RForm.buttonMain;
             buttonPeripheral1.BorderColor = Color.Transparent;
             buttonPeripheral1.BorderRadius = 5;
             buttonPeripheral1.CausesValidation = false;
@@ -1808,7 +1807,7 @@ namespace OHelper
             // buttonController
             // 
             buttonController.Activated = false;
-            buttonController.BackColor = SystemColors.ControlLight;
+            buttonController.BackColor = RForm.buttonSecond;
             buttonController.BorderColor = Color.Transparent;
             buttonController.BorderRadius = 5;
             buttonController.Dock = DockStyle.Fill;
@@ -1830,7 +1829,7 @@ namespace OHelper
             // buttonBacklight
             // 
             buttonBacklight.Activated = false;
-            buttonBacklight.BackColor = SystemColors.ControlLightLight;
+            buttonBacklight.BackColor = RForm.buttonMain;
             buttonBacklight.BorderColor = Color.Transparent;
             buttonBacklight.BorderRadius = 5;
             buttonBacklight.Dock = DockStyle.Fill;
@@ -1852,7 +1851,7 @@ namespace OHelper
             // buttonControllerMode
             // 
             buttonControllerMode.Activated = false;
-            buttonControllerMode.BackColor = SystemColors.ControlLightLight;
+            buttonControllerMode.BackColor = RForm.buttonMain;
             buttonControllerMode.BorderColor = Color.Transparent;
             buttonControllerMode.BorderRadius = 5;
             buttonControllerMode.Dock = DockStyle.Fill;
@@ -1961,7 +1960,7 @@ namespace OHelper
             // buttonInstallColor
             // 
             buttonInstallColor.Activated = false;
-            buttonInstallColor.BackColor = SystemColors.ControlLight;
+            buttonInstallColor.BackColor = RForm.buttonSecond;
             buttonInstallColor.BorderColor = Color.Transparent;
             buttonInstallColor.BorderRadius = 2;
             buttonInstallColor.Dock = DockStyle.Top;
@@ -1982,8 +1981,8 @@ namespace OHelper
             // 
             // comboVisual
             // 
-            comboVisual.BorderColor = Color.White;
-            comboVisual.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboVisual.BorderColor = RForm.borderMain;
+            comboVisual.ButtonColor = RForm.buttonMain;
             comboVisual.Dock = DockStyle.Top;
             comboVisual.FlatStyle = FlatStyle.Flat;
             comboVisual.Font = new Font("Segoe UI", 9F);
@@ -1997,8 +1996,8 @@ namespace OHelper
             // 
             // comboColorTemp
             // 
-            comboColorTemp.BorderColor = Color.White;
-            comboColorTemp.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboColorTemp.BorderColor = RForm.borderMain;
+            comboColorTemp.ButtonColor = RForm.buttonMain;
             comboColorTemp.Dock = DockStyle.Top;
             comboColorTemp.FlatStyle = FlatStyle.Flat;
             comboColorTemp.Font = new Font("Segoe UI", 9F);
@@ -2012,8 +2011,8 @@ namespace OHelper
             // 
             // comboGamut
             // 
-            comboGamut.BorderColor = Color.White;
-            comboGamut.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboGamut.BorderColor = RForm.borderMain;
+            comboGamut.ButtonColor = RForm.buttonMain;
             comboGamut.Dock = DockStyle.Top;
             comboGamut.FlatStyle = FlatStyle.Flat;
             comboGamut.Font = new Font("Segoe UI", 9F);
@@ -2090,7 +2089,6 @@ namespace OHelper
             panelVersion.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             panelVersion.Controls.Add(buttonEnergySaver);
             panelVersion.Controls.Add(buttonAmdOled);
-            panelVersion.Controls.Add(buttonArmoury);
             panelVersion.Controls.Add(labelVersion);
             panelVersion.Dock = DockStyle.Top;
             panelVersion.Location = new Point(11, 1837);
@@ -2103,7 +2101,7 @@ namespace OHelper
             // buttonEnergySaver
             // 
             buttonEnergySaver.Activated = false;
-            buttonEnergySaver.BackColor = SystemColors.ControlLight;
+            buttonEnergySaver.BackColor = RForm.buttonSecond;
             buttonEnergySaver.BorderColor = Color.Transparent;
             buttonEnergySaver.BorderRadius = 2;
             buttonEnergySaver.Dock = DockStyle.Right;
@@ -2124,7 +2122,7 @@ namespace OHelper
             // buttonAmdOled
             // 
             buttonAmdOled.Activated = false;
-            buttonAmdOled.BackColor = SystemColors.ControlLight;
+            buttonAmdOled.BackColor = RForm.buttonSecond;
             buttonAmdOled.BorderColor = Color.Transparent;
             buttonAmdOled.BorderRadius = 2;
             buttonAmdOled.Dock = DockStyle.Right;
@@ -2142,28 +2140,6 @@ namespace OHelper
             buttonAmdOled.Text = "AMD OledSaver";
             buttonAmdOled.UseVisualStyleBackColor = false;
             buttonAmdOled.Visible = false;
-            // 
-            // buttonArmoury
-            // 
-            buttonArmoury.Activated = false;
-            buttonArmoury.BackColor = SystemColors.ControlLight;
-            buttonArmoury.BorderColor = Color.Transparent;
-            buttonArmoury.BorderRadius = 2;
-            buttonArmoury.Dock = DockStyle.Right;
-            buttonArmoury.FlatAppearance.BorderSize = 0;
-            buttonArmoury.FlatStyle = FlatStyle.Flat;
-            buttonArmoury.Font = new Font("Segoe UI", 7.125F, FontStyle.Bold);
-            buttonArmoury.ForeColor = SystemColors.ControlDark;
-            buttonArmoury.ImageAlign = ContentAlignment.MiddleLeft;
-            buttonArmoury.Location = new Point(640, 5);
-            buttonArmoury.Margin = new Padding(0);
-            buttonArmoury.Name = "buttonArmoury";
-            buttonArmoury.Secondary = true;
-            buttonArmoury.Size = new Size(180, 40);
-            buttonArmoury.TabIndex = 40;
-            buttonArmoury.Text = "ArmouryCrate";
-            buttonArmoury.UseVisualStyleBackColor = false;
-            buttonArmoury.Visible = false;            
             // 
             // labelVersion
             // 
@@ -2183,7 +2159,7 @@ namespace OHelper
             // buttonHDRControl
             // 
             buttonHDRControl.Activated = false;
-            buttonHDRControl.BackColor = SystemColors.ControlLightLight;
+            buttonHDRControl.BackColor = RForm.buttonMain;
             buttonHDRControl.BorderColor = Color.Transparent;
             buttonHDRControl.BorderRadius = 5;
             buttonHDRControl.CausesValidation = false;
@@ -2417,7 +2393,6 @@ namespace OHelper
         private RBadgeButton buttonDonate;
         private RButton buttonEnergySaver;
         private RButton buttonAmdOled;
-        private RButton buttonArmoury;
         private RButton buttonHDRControl;
         private Panel panelRearLight;
         private TableLayoutPanel tableLayoutRearLight;

@@ -166,8 +166,10 @@ namespace OHelper.Display
                 : -1;
         }
 
-        public static int SetRefreshRate(string laptopScreen, int frequency = 120)
+        public static int SetRefreshRate(string? laptopScreen, int frequency = 120)
         {
+            if (string.IsNullOrEmpty(laptopScreen)) return 0;
+
             var dm = CreateDevmode();
             if (DisplayNative.EnumDisplaySettingsEx(laptopScreen, ENUM_CURRENT_SETTINGS, ref dm) == 0) return 0;
 
@@ -212,71 +214,107 @@ namespace OHelper.Display
         /// <summary>
         /// Sets a specific refresh rate on the given display and returns true on success.
         /// </summary>
-        public static bool SetRefreshRateExact(string laptopScreen, int hz)
+        public static bool SetRefreshRateExact(string? laptopScreen, int hz)
         {
             if (string.IsNullOrEmpty(laptopScreen)) return false;
             return SetRefreshRate(laptopScreen, hz) == 0;
         }
 
         /// <summary>
-        /// Attempts to enable Windows Dynamic Refresh Rate (DRR) on the internal panel.
-        /// Since DRR has no documented CCD packet, this is a best-effort approach:
-        /// it queries the internal display target and tries the undocumented
-        /// DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE packet (type 10) used
-        /// by Windows to toggle advanced color / dynamic rate features. If the packet
-        /// is not accepted by the driver, the display remains at the previously-set
-        /// fixed refresh rate and false is returned.
+        /// Windows DRR is exposed through CCD virtual refresh rate paths: the target path's
+        /// refreshRate is the virtual floor and BOOST_REFRESH_RATE lets Windows boost to the
+        /// selected physical timing.
         /// </summary>
+        public static bool IsDynamicRefreshAvailable()
+        {
+            return SetDynamicRefresh(enable: true, apply: false);
+        }
+
         public static bool EnableDynamicRefresh(bool enable)
+        {
+            return SetDynamicRefresh(enable, apply: true);
+        }
+
+        private static bool SetDynamicRefresh(bool enable, bool apply)
         {
             try
             {
-                var err = DisplayNative.GetDisplayConfigBufferSizes(
-                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS, out uint pathCount, out uint modeCount);
-                if (err != 0) return false;
+                var queryFlags =
+                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS |
+                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_VIRTUAL_MODE_AWARE |
+                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_VIRTUAL_REFRESH_RATE_AWARE;
+
+                int err = DisplayNative.GetDisplayConfigBufferSizes(queryFlags, out uint pathCount, out uint modeCount);
+                if (err != 0) throw new Win32Exception(err);
 
                 var paths = new DisplayNative.DISPLAYCONFIG_PATH_INFO[pathCount];
                 var modes = new DisplayNative.DISPLAYCONFIG_MODE_INFO[modeCount];
-                err = DisplayNative.QueryDisplayConfig(
-                    DisplayNative.QUERY_DEVICE_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
-                    ref pathCount, paths, ref modeCount, modes, nint.Zero);
-                if (err != 0) return false;
+                err = DisplayNative.QueryDisplayConfig(queryFlags, ref pathCount, paths, ref modeCount, modes, nint.Zero);
+                if (err != 0) throw new Win32Exception(err);
 
-                string? internalName = AppConfig.GetString("internal_display");
-
-                foreach (var path in paths)
+                int pathIndex = FindInternalPathIndex(paths, pathCount);
+                if (pathIndex < 0)
                 {
-                    var targetName = new DisplayNative.DISPLAYCONFIG_TARGET_DEVICE_NAME();
-                    targetName.header.type = DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
-                    targetName.header.size = (uint)Marshal.SizeOf(targetName);
-                    targetName.header.adapterId = path.targetInfo.adapterId;
-                    targetName.header.id = path.targetInfo.id;
-
-                    if (DisplayNative.DisplayConfigGetDeviceInfo(ref targetName) != 0) continue;
-
-                    bool isInternal = targetName.outputTechnology == DisplayNative.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY.DISPLAYCONFIG_OUTPUT_TECHNOLOGY_INTERNAL
-                        || targetName.outputTechnology == DisplayNative.DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY.DISPLAYCONFIG_OUTPUT_TECHNOLOGY_DISPLAYPORT_EMBEDDED
-                        || targetName.monitorFriendlyDeviceName == internalName;
-                    if (!isInternal) continue;
-
-                    var setPacket = new DisplayNative.DISPLAYCONFIG_SET_ADVANCED_COLOR_STATE();
-                    setPacket.header.type = (DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE)10; // DISPLAYCONFIG_DEVICE_INFO_SET_ADVANCED_COLOR_STATE
-                    setPacket.header.size = (uint)Marshal.SizeOf(setPacket);
-                    setPacket.header.adapterId = path.targetInfo.adapterId;
-                    setPacket.header.id = path.targetInfo.id;
-                    setPacket.value = enable ? 0x2u : 0x0u;
-
-                    int rc = DisplayNative.DisplayConfigSetDeviceInfo(ref setPacket);
-                    Logger.WriteLine("EnableDynamicRefresh(" + enable + ") = " + (rc == 0 ? "OK" : ("err " + rc)));
-                    return rc == 0;
+                    if (apply) Logger.WriteLine("EnableDynamicRefresh(" + enable + ") = no internal display path");
+                    return false;
                 }
+
+                if (!paths[pathIndex].flags.HasFlag(DisplayNative.DISPLAYCONFIG_PATH_FLAGS.DISPLAYCONFIG_PATH_SUPPORT_VIRTUAL_MODE))
+                {
+                    if (apply) Logger.WriteLine("EnableDynamicRefresh(" + enable + ") = virtual refresh not supported");
+                    return false;
+                }
+
+                if (enable)
+                {
+                    paths[pathIndex].flags |= DisplayNative.DISPLAYCONFIG_PATH_FLAGS.DISPLAYCONFIG_PATH_BOOST_REFRESH_RATE;
+                    paths[pathIndex].targetInfo.refreshRate = new DisplayNative.DISPLAYCONFIG_RATIONAL
+                    {
+                        Numerator = (uint)ScreenControl.MIN_RATE,
+                        Denominator = 1
+                    };
+                }
+                else
+                {
+                    paths[pathIndex].flags &= ~DisplayNative.DISPLAYCONFIG_PATH_FLAGS.DISPLAYCONFIG_PATH_BOOST_REFRESH_RATE;
+                }
+
+                var setFlags =
+                    DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_USE_SUPPLIED_DISPLAY_CONFIG |
+                    DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_ALLOW_CHANGES |
+                    DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_VIRTUAL_MODE_AWARE |
+                    DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_VIRTUAL_REFRESH_RATE_AWARE;
+
+                setFlags |= apply
+                    ? DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_APPLY | DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_SAVE_TO_DATABASE
+                    : DisplayNative.SET_DISPLAY_CONFIG_FLAGS.SDC_VALIDATE;
+
+                err = DisplayNative.SetDisplayConfig(pathCount, paths, modeCount, modes, setFlags);
+                if (apply) Logger.WriteLine("EnableDynamicRefresh(" + enable + ") = " + (err == 0 ? "OK" : ("err " + err)));
+                return err == 0;
             }
             catch (Exception ex)
             {
-                Logger.WriteLine("EnableDynamicRefresh: " + ex.Message);
+                if (apply) Logger.WriteLine("EnableDynamicRefresh: " + ex.Message);
+                return false;
+            }
+        }
+
+        private static int FindInternalPathIndex(DisplayNative.DISPLAYCONFIG_PATH_INFO[] paths, uint pathCount)
+        {
+            for (int i = 0; i < pathCount; i++)
+            {
+                var targetName = new DisplayNative.DISPLAYCONFIG_TARGET_DEVICE_NAME();
+                targetName.header.type = DisplayNative.DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+                targetName.header.size = (uint)Marshal.SizeOf(targetName);
+                targetName.header.adapterId = paths[i].targetInfo.adapterId;
+                targetName.header.id = paths[i].targetInfo.id;
+
+                if (DisplayNative.DisplayConfigGetDeviceInfo(ref targetName) != 0) continue;
+                if (IsInternalDisplay(targetName)) return i;
             }
 
-            return false;
+            return -1;
         }
 
         public static DisplayNative.DEVMODE CreateDevmode()

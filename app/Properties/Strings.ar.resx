@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>الذاكرة المخصصة لوحدة معالجة الرسومات</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>خدمات أسوس قيد التشغيل</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>حالة البطارية</value>
   </data>
@@ -769,9 +766,6 @@
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>إيقاف الخدمات</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>تبديل Aura</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>تبديل وضع الحاسوب المغلق تلقائيًا</value>

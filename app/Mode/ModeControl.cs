@@ -13,6 +13,13 @@ namespace OHelper.Mode
         private static bool customFans = false;
         private static int customPower = 0;
         private static bool _fanMaxActive = false;
+        private static System.Timers.Timer? fanCurveTimer;
+        private static readonly object fanCurveLock = new();
+        private static int lastCpuFanLevel = -1;
+        private static int lastGpuFanLevel = -1;
+        private static float? cpuFanAnchorTemp;
+        private static float? gpuFanAnchorTemp;
+        private static bool softwareFanCurveAutoMode = true;
 
         private int _cpuUV = 0;
         private int _igpuUV = 0;
@@ -48,6 +55,7 @@ namespace OHelper.Mode
         static System.Timers.Timer? reapplyTimer;
         static System.Timers.Timer modeToggleTimer = default!;
         static CancellationTokenSource _modeCts = new();
+        static CancellationTokenSource _autoModeCts = new();
 
         public ModeControl()
         {
@@ -84,8 +92,61 @@ namespace OHelper.Mode
             SetRyzenPower();
         }
 
+        public void ApplyAutoModeForPowerSource(bool notify = true)
+        {
+            if (!AppConfig.Is("auto_mode_enabled") || AppConfig.Is("manual_mode")) return;
+
+            PowerLineStatus powerLineStatus = SystemInformation.PowerStatus.PowerLineStatus;
+            if (powerLineStatus == PowerLineStatus.Unknown)
+            {
+                Logger.WriteLine("Auto power-source mode skipped: power source unknown");
+                return;
+            }
+
+            bool onAc = powerLineStatus == PowerLineStatus.Online;
+            int mode = AppConfig.Get(onAc ? "auto_mode_ac" : "auto_mode_dc", onAc ? 0 : 2);
+            if (!Modes.Exists(mode)) mode = onAc ? 0 : 2;
+
+            if (Modes.GetCurrent() == mode)
+            {
+                ApplyWindowsPowerMode(mode);
+                return;
+            }
+
+            Logger.WriteLine($"Auto power-source mode: {(onAc ? "AC" : "Battery")} -> {Modes.GetName(mode)}");
+            SetPerformanceMode(mode, notify);
+        }
+
+        private void ScheduleAutoModeForPowerSource()
+        {
+            if (!AppConfig.Is("auto_mode_enabled") || AppConfig.Is("manual_mode")) return;
+
+            _autoModeCts.Cancel();
+            _autoModeCts = new CancellationTokenSource();
+            var ct = _autoModeCts.Token;
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(AppConfig.Get("auto_mode_delay", 750)), ct);
+                    ApplyAutoModeForPowerSource();
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.WriteLine("Auto power-source mode apply cancelled");
+                }
+            }, ct);
+        }
+
         public void AutoPerformance(bool powerChanged = false)
         {
+            if (powerChanged && AppConfig.Is("auto_mode_enabled") && !AppConfig.Is("manual_mode"))
+            {
+                ScheduleAutoModeForPowerSource();
+                return;
+            }
+
             int mode = AppConfig.Get("performance_" + Program.PerformanceKey());
             Logger.WriteLine($"{Program.currentSource} Performance Mode: {Modes.GetName(mode == -1 ? Modes.GetCurrent() : mode)}");
 
@@ -104,7 +165,7 @@ namespace OHelper.Mode
 
             // Default power mode
             AppConfig.RemoveMode("powermode");
-            PowerNative.SetPowerMode(Modes.GetCurrentBase());
+            ApplyWindowsPowerMode(Modes.GetCurrent());
         }
 
         public void Toast()
@@ -177,22 +238,23 @@ namespace OHelper.Mode
 
             if (notify) Toast();
 
-            if (!AppConfig.Is("skip_powermode"))
-            {
-                // Windows power mode
-                if (AppConfig.GetModeString("powermode") is not null)
-                    PowerNative.SetPowerMode(AppConfig.GetModeString("powermode"));
-                else
-                    PowerNative.SetPowerMode(Modes.GetBase(mode));
-
-                if (AppConfig.IsAutoASPM()) PowerNative.SetBalancedASPM();
-            }
+            ApplyWindowsPowerMode(mode);
 
             // CPU Boost setting override
             if (AppConfig.GetMode("auto_boost") != -1)
                     PowerNative.SetCPUBoost(AppConfig.GetMode("auto_boost"));
 
             settings.FansInit();
+        }
+
+        private static void ApplyWindowsPowerMode(int mode)
+        {
+            if (AppConfig.Is("skip_powermode") || AppConfig.Is("no_windows_power_mode")) return;
+
+            string powerMode = AppConfig.GetString("powermode_" + mode);
+            PowerNative.SetPowerMode(powerMode ?? PowerNative.GetDefaultPowerMode(mode));
+
+            if (AppConfig.IsAutoASPM()) PowerNative.SetBalancedASPM();
         }
 
 
@@ -225,6 +287,7 @@ namespace OHelper.Mode
             _fanMaxActive = active;
             if (active)
             {
+                StopFanCurveLoop(false);
                 SetReapplyEnabled(false);
                 Logger.WriteLine("ModeControl: Fan curve reapply paused (Max Fans active)");
             }
@@ -249,7 +312,7 @@ namespace OHelper.Mode
             {
 
                 bool xgmFan = false;
-                if (AppConfig.Is("xgm_fan"))
+                if (AppConfig.IsASUS() && AppConfig.Is("xgm_fan"))
                 {
                     XGM.SetFan(AppConfig.GetFanConfig(HpFan.XGM));
 #pragma warning disable CS0618 // IsXGConnected is ASUS-only
@@ -273,12 +336,20 @@ namespace OHelper.Mode
                     // Something went wrong, resetting to default profile
                     if (cpuResult != 1 || gpuResult != 1)
                     {
-                        Program.acpi.DeviceSet(HpACPI.PerformanceMode, Modes.GetCurrentBase(), "Reset Mode");
-                        settings.LabelFansResult("Model doesn't support custom fan curves");
+                        StartFanCurveLoop();
+                        settings.LabelFansResult(Properties.Strings.SoftwareFanCurveActive);
+                        customFans = true;
+                    }
+                    else
+                    {
+                        StopFanCurveLoop(false);
+                        settings.LabelFansResult("");
+                        customFans = true;
                     }
                 }
                 else
                 {
+                    StopFanCurveLoop(false);
                     settings.LabelFansResult("");
                     customFans = true;
                 }
@@ -301,11 +372,173 @@ namespace OHelper.Mode
 
             } else
             {
+                StopFanCurveLoop(true);
                 XGM.Reset();
             }
 
             SetModeLabel();
 
+        }
+
+        private static void StartFanCurveLoop()
+        {
+            lock (fanCurveLock)
+            {
+                fanCurveTimer ??= new System.Timers.Timer(5000);
+                fanCurveTimer.Elapsed -= FanCurveTimer_Elapsed;
+                fanCurveTimer.Elapsed += FanCurveTimer_Elapsed;
+                fanCurveTimer.AutoReset = true;
+                fanCurveTimer.Start();
+                lastCpuFanLevel = -1;
+                lastGpuFanLevel = -1;
+                cpuFanAnchorTemp = null;
+                gpuFanAnchorTemp = null;
+                softwareFanCurveAutoMode = true;
+            }
+
+            Logger.WriteLine("ModeControl: software fan curve loop started");
+            ApplySoftwareFanCurve();
+        }
+
+        private static void StopFanCurveLoop(bool restoreAuto)
+        {
+            lock (fanCurveLock)
+            {
+                if (fanCurveTimer is not null) fanCurveTimer.Stop();
+                lastCpuFanLevel = -1;
+                lastGpuFanLevel = -1;
+                cpuFanAnchorTemp = null;
+                gpuFanAnchorTemp = null;
+                softwareFanCurveAutoMode = true;
+            }
+
+            if (restoreAuto && Program.acpi is not null)
+            {
+                Program.acpi.SetFanMode(0x30);
+                Program.acpi.DeviceSet(HpACPI.PerformanceMode, Modes.GetCurrentBase(), "Restore Mode");
+                Logger.WriteLine("ModeControl: software fan curve loop stopped, BIOS auto restored");
+            }
+        }
+
+        private static void FanCurveTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            ApplySoftwareFanCurve();
+        }
+
+        private static void ApplySoftwareFanCurve()
+        {
+            if (_fanMaxActive || !AppConfig.IsApplyFans())
+            {
+                StopFanCurveLoop(!_fanMaxActive);
+                return;
+            }
+
+            try
+            {
+                float? cpuTemp = HardwareControl.GetCPUTemp();
+                float? gpuTemp = HardwareControl.GetGPUTemp();
+                int cpuLevel = EvaluateFanCurve(AppConfig.GetFanConfig(HpFan.CPU), cpuTemp);
+                int gpuLevel = EvaluateFanCurve(AppConfig.GetFanConfig(HpFan.GPU), gpuTemp);
+                cpuLevel = ApplySoftwareHysteresis(cpuLevel, cpuTemp, ref cpuFanAnchorTemp, lastCpuFanLevel);
+                gpuLevel = ApplySoftwareHysteresis(gpuLevel, gpuTemp, ref gpuFanAnchorTemp, lastGpuFanLevel);
+                bool linkedFans = AppConfig.HasLinkedFanCurves();
+
+                if (linkedFans)
+                {
+                    int linked = Math.Max(cpuLevel, gpuLevel);
+                    cpuLevel = linked;
+                    gpuLevel = linked;
+                }
+
+                if (cpuLevel <= 0 && gpuLevel <= 0)
+                {
+                    if (!softwareFanCurveAutoMode)
+                    {
+                        Program.acpi.SetFanMode(0x30);
+                        softwareFanCurveAutoMode = true;
+                        lastCpuFanLevel = 0;
+                        lastGpuFanLevel = 0;
+                    }
+                    return;
+                }
+
+                if (cpuLevel == lastCpuFanLevel && gpuLevel == lastGpuFanLevel) return;
+
+                if (softwareFanCurveAutoMode)
+                {
+                    Program.acpi.SetFanMode(0x31);
+                    softwareFanCurveAutoMode = false;
+                }
+
+                int result = Program.acpi.SetFanLevel((byte)cpuLevel, (byte)gpuLevel);
+                if (result == 1)
+                {
+                    lastCpuFanLevel = cpuLevel;
+                    lastGpuFanLevel = gpuLevel;
+                    if (linkedFans)
+                        Logger.WriteLine($"Software fan curve linked target applied: cpuTemp={cpuTemp:0.#} gpuTemp={gpuTemp:0.#} level={cpuLevel}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WriteLine("Software fan curve exception: " + ex.Message);
+            }
+        }
+
+        private static int EvaluateFanCurve(byte[] curve, float? temperature)
+        {
+            if (curve.Length < 16 || temperature is null) return 0;
+
+            float temp = temperature.Value;
+            if (temp <= curve[0]) return ScaleFanLevel(curve[8]);
+
+            for (int i = 1; i < 8; i++)
+            {
+                float leftTemp = curve[i - 1];
+                float rightTemp = curve[i];
+                int leftFan = curve[i + 7];
+                int rightFan = curve[i + 8];
+
+                if (temp <= rightTemp)
+                {
+                    if (rightTemp <= leftTemp) return ScaleFanLevel(rightFan);
+                    float ratio = (temp - leftTemp) / (rightTemp - leftTemp);
+                    return ScaleFanLevel((int)Math.Round(leftFan + ((rightFan - leftFan) * ratio)));
+                }
+            }
+
+            return ScaleFanLevel(curve[15]);
+        }
+
+        private static int ScaleFanLevel(int percent)
+        {
+            percent = Math.Max(0, Math.Min(100, percent));
+            if (percent <= 0) return 0;
+            return Math.Max(1, (int)Math.Round(percent * Program.acpi.MaxFanLevel / 100.0));
+        }
+
+        private static int ApplySoftwareHysteresis(int desiredLevel, float? temperature, ref float? anchorTemp, int currentLevel)
+        {
+            if (temperature is null || currentLevel < 0)
+            {
+                anchorTemp = temperature;
+                return desiredLevel;
+            }
+
+            anchorTemp ??= temperature;
+            int hysteresisUp = Math.Max(0, AppConfig.GetMode("hysteresis_up"));
+            int hysteresisDown = Math.Max(0, AppConfig.GetMode("hysteresis_down"));
+
+            if (desiredLevel > currentLevel && hysteresisUp > 0 && temperature.Value < anchorTemp.Value + hysteresisUp)
+                return currentLevel;
+
+            if (desiredLevel < currentLevel && hysteresisDown > 0 && temperature.Value > anchorTemp.Value - hysteresisDown)
+                return currentLevel;
+
+            if (desiredLevel != currentLevel)
+                anchorTemp = temperature;
+
+            return desiredLevel;
         }
 
         public void AutoPower(bool launchAsAdmin = false)

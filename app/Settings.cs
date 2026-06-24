@@ -52,12 +52,14 @@ namespace OHelper
 
         bool sliderGammaIgnore = false;
         bool activateCheck = false;
+        RButton buttonDynamic = default!;
 
         public SettingsForm()
         {
 
             InitializeComponent();
             InitTheme(true);
+            InitDynamicRefreshButton();
 
             gpuControl = new GPUModeControl(this);
             updateControl = new AutoUpdateControl(this);
@@ -154,16 +156,12 @@ namespace OHelper
             buttonMiniled.BorderColor = colorTurbo;
 
             buttonEnergySaver.BackColor = colorEco;
-            buttonEnergySaver.ForeColor = SystemColors.ControlLightLight;
+            buttonEnergySaver.ForeColor = RForm.foreMain;
             buttonEnergySaver.Click += ButtonEnergySaver_Click;
 
             buttonAmdOled.BackColor = colorTurbo;
-            buttonAmdOled.ForeColor = SystemColors.ControlLightLight;
+            buttonAmdOled.ForeColor = RForm.foreMain;
             buttonAmdOled.Click += ButtonAmdOled_Click;
-
-            buttonArmoury.BackColor = colorTurbo;
-            buttonArmoury.ForeColor = SystemColors.ControlLightLight;
-            buttonArmoury.Click += ButtonArmoury_Click;
 
             buttonSilent.Click += ButtonSilent_Click;
             buttonBalanced.Click += ButtonBalanced_Click;
@@ -181,6 +179,7 @@ namespace OHelper
             button60Hz.Click += Button60Hz_Click;
             button120Hz.Click += Button120Hz_Click;
             buttonScreenAuto.Click += ButtonScreenAuto_Click;
+            buttonDynamic.Click += ButtonDynamic_Click;
             buttonMiniled.Click += ButtonMiniled_Click;
             buttonFHD.Click += ButtonFHD_Click;
             buttonHDRControl.Click += ButtonHDRControl_Click;
@@ -214,7 +213,7 @@ namespace OHelper
             checkStartup.CheckedChanged += CheckStartup_CheckedChanged;
 
             labelVersion.Click += LabelVersion_Click;
-            labelVersion.ForeColor = Color.FromArgb(128, Color.Gray);
+            labelVersion.ForeColor = Color.FromArgb(128, RForm.foreMain);
 
             buttonOptimized.MouseMove += ButtonOptimized_MouseHover;
             buttonOptimized.MouseLeave += ButtonGPU_MouseLeave;
@@ -242,6 +241,9 @@ namespace OHelper
             button120Hz.MouseMove += Button120Hz_MouseHover;
             button120Hz.MouseLeave += ButtonScreen_MouseLeave;
 
+            buttonDynamic.MouseMove += ButtonDynamic_MouseHover;
+            buttonDynamic.MouseLeave += ButtonScreen_MouseLeave;
+
             buttonFHD.MouseMove += ButtonFHD_MouseHover;
             buttonFHD.MouseLeave += ButtonScreen_MouseLeave;
 
@@ -249,7 +251,7 @@ namespace OHelper
             buttonMiniled.MouseLeave += ButtonScreen_MouseLeave;
 
             buttonUpdates.Click += ButtonUpdates_Click;
-            // Updates tab queries the ASUS ROG driver/BIOS API — useless on HP Omen, hide it
+            // Updates tab queries the ASUS ROG driver/BIOS API - useless on HP Omen, hide it
             if (!AppConfig.IsASUS()) buttonUpdates.Visible = false;
 
             sliderBattery.MouseUp += SliderBattery_MouseUp;
@@ -286,7 +288,7 @@ namespace OHelper
             buttonAutoTDP.Click += ButtonAutoTDP_Click;
             buttonAutoTDP.BorderColor = colorTurbo;
 
-            Text = "O-Helper " + (ProcessHelper.IsUserAdministrator() ? "�" : "-") + " " + AppConfig.GetModelShort();
+            Text = "O-Helper " + (ProcessHelper.IsUserAdministrator() ? "*" : "-") + " " + AppConfig.GetModelShort();
             TopMost = AppConfig.Is("topmost");
 
             //This will auto position the window again when it resizes. Might mess with position if people drag the window somewhere else.
@@ -305,17 +307,42 @@ namespace OHelper
             labelBacklight.Click += LabelBacklight_Click;
 
             InitMaxFans();
-
             panelPerformance.Focus();
             InitVisual();
         }
 
-        private void ButtonArmoury_Click(object? sender, EventArgs e)
+        private void InitDynamicRefreshButton()
         {
-            var dialogResult = MessageBox.Show(this, "Armoury Crate is active, download official uninstaller app?", "Armoury Crate", MessageBoxButtons.YesNo);
-            if (dialogResult == DialogResult.Yes) AsusService.RunArmouryUninstaller();
+            buttonDynamic = new RButton
+            {
+                Activated = false,
+                BackColor = RForm.buttonMain,
+                BorderColor = colorCustom,
+                BorderRadius = 5,
+                CausesValidation = false,
+                Dock = DockStyle.Fill,
+                FlatStyle = FlatStyle.Flat,
+                Margin = new Padding(4),
+                Name = "buttonDynamic",
+                Secondary = false,
+                TabIndex = 15,
+                Text = Properties.Strings.DynamicMode,
+                UseVisualStyleBackColor = false,
+                Visible = false
+            };
+            buttonDynamic.FlatAppearance.BorderSize = 0;
+            tableScreen.Controls.Add(buttonDynamic, 3, 0);
         }
 
+        private void SetScreenTableColumns(int count)
+        {
+            if (tableScreen.ColumnCount == count && tableScreen.ColumnStyles.Count == count) return;
+
+            tableScreen.ColumnStyles.Clear();
+            tableScreen.ColumnCount = count;
+            float width = 100F / count;
+            for (int i = 0; i < count; i++) tableScreen.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, width));
+        }
 
         private void ButtonAmdOled_Click(object? sender, EventArgs e)
         {
@@ -385,6 +412,18 @@ namespace OHelper
         {
 
             if (AppConfig.Is("hide_visual")) return;
+
+            if (!VisualControl.IsSplendidSupported())
+            {
+                panelGamma.Visible = false;
+                tableVisual.Visible = false;
+                buttonInstallColor.Visible = false;
+                comboVisual.Visible = false;
+                comboColorTemp.Visible = false;
+                comboGamut.Visible = false;
+                labelVisual.Visible = false;
+                return;
+            }
 
             if (AppConfig.IsOLED())
             {
@@ -525,14 +564,6 @@ namespace OHelper
             Invoke(delegate
             {
                 buttonAmdOled.Visible = status;
-            });
-        }
-
-        public void VisualiseArmoury(bool status = false)
-        {
-            Invoke(delegate
-            {
-                buttonArmoury.Visible = status;
             });
         }
 
@@ -727,6 +758,8 @@ namespace OHelper
 
         private void ButtonUpdates_Click(object? sender, EventArgs e)
         {
+            if (!AppConfig.IsASUS()) return;
+
             if (updatesForm == null || updatesForm.Text == "")
             {
                 updatesForm = new Updates();
@@ -857,6 +890,18 @@ namespace OHelper
                 contextMenuStrip.Items.Add(menuMode);
             }
 
+            var menuAutoPowerMode = new ToolStripMenuItem(Properties.Strings.AutoPowerSourceMode);
+            menuAutoPowerMode.Margin = padding;
+            menuAutoPowerMode.Checked = AppConfig.Is("auto_mode_enabled");
+            menuAutoPowerMode.Click += (sender, args) =>
+            {
+                bool enabled = !AppConfig.Is("auto_mode_enabled");
+                AppConfig.Set("auto_mode_enabled", enabled ? 1 : 0);
+                fansForm?.RefreshRuntimeSettings();
+                Program.modeControl.ApplyAutoModeForPowerSource();
+                SetContextMenu();
+            };
+            contextMenuStrip.Items.Add(menuAutoPowerMode);
             contextMenuStrip.Items.Add("-");
 
             if (isGpuSection)
@@ -943,6 +988,7 @@ namespace OHelper
 
         private void ButtonXGM_Click(object? sender, EventArgs e)
         {
+            if (!AppConfig.IsASUS()) return;
             gpuControl.ToggleXGM();
         }
 
@@ -1001,10 +1047,12 @@ namespace OHelper
 
         private void ButtonMiniled_MouseHover(object? sender, EventArgs e)
         {
-            if (AppConfig.HasDisplayModes())
-                labelTipScreen.Text = Properties.Strings.DynamicRefreshTooltip;
-            else
-                labelTipScreen.Text = Properties.Strings.ToggleMiniled;
+            labelTipScreen.Text = Properties.Strings.ToggleMiniled;
+        }
+
+        private void ButtonDynamic_MouseHover(object? sender, EventArgs e)
+        {
+            labelTipScreen.Text = Properties.Strings.DynamicRefreshTooltip;
         }
 
         private void ButtonUltimate_MouseHover(object? sender, EventArgs e)
@@ -1040,7 +1088,7 @@ namespace OHelper
             if (!buttonXGM.Visible) return;
 
             labelTipGPU.Text = buttonXGM.Bounds.Contains(table.PointToClient(Cursor.Position)) ?
-                "XGMobile toggle works only in Standard mode" : "";
+                Properties.Strings.XGMobileStandardModeOnly : "";
 
         }
 
@@ -1388,7 +1436,7 @@ namespace OHelper
         // but drive them with Omen semantics:
         //   * comboKeyboard  -> effect list (Static/Breathing/ColorCycle/Wave)
         //   * buttonKeyboardColor / pictureColor -> opens color picker for the
-        //     currently selected zone; clicking cycles Right→Middle→Left→WASD
+        //     currently selected zone; clicking cycles Right -> Middle -> Left -> WASD
         //   * pictureColor2 -> preview of the next zone (visual hint)
         // Brightness is handled by the existing backlight hotkey path
         // (InputDispatcher.SetBacklight -> OmenApplyBacklight).
@@ -1413,12 +1461,12 @@ namespace OHelper
 
             if (!hasBacklight && kbType < 0)
             {
-                // No keyboard reachable via WMI — hide the whole panel.
+                // No keyboard reachable via WMI - hide the whole panel.
                 panelKeyboard.Visible = false;
                 return;
             }
 
-            // Hide the ASUS "Extra" button — Omen uses the keyboard panel directly.
+            // Hide the ASUS "Extra" button - Omen uses the keyboard panel directly.
             buttonKeyboard.Visible = false;
 
             // Effect list keyed by integer (0=Static,1=Breathing,2=ColorCycle,3=Wave)
@@ -1441,7 +1489,7 @@ namespace OHelper
             // Load persisted zone colors (stored as ARGB ints under omen_kb_zone_<n>).
             for (int z = 0; z < HpACPI.KbZoneCount; z++)
             {
-                int argb = AppConfig.Get($"omen_kb_zone_{z}", Color.White.ToArgb());
+                int argb = AppConfig.Get($"omen_kb_zone_{z}", OmenDefaultZoneColor.ToArgb());
                 _omenZoneColors[z] = Color.FromArgb(argb);
             }
 
@@ -1452,8 +1500,11 @@ namespace OHelper
             VisualiseOmenKeyboard();
         }
 
-        private readonly Color[] _omenZoneColors = new Color[HpACPI.KbZoneCount]
-            { Color.White, Color.White, Color.White, Color.White };
+        private static readonly Color OmenDefaultZoneColor = Color.FromArgb(255, 255, 255);
+
+        private readonly Color[] _omenZoneColors = Enumerable
+            .Repeat(OmenDefaultZoneColor, HpACPI.KbZoneCount)
+            .ToArray();
 
         private void VisualiseOmenKeyboard()
         {
@@ -1713,12 +1764,12 @@ namespace OHelper
 
         private void ButtonMiniled_Click(object? sender, EventArgs e)
         {
-            if (AppConfig.HasDisplayModes())
-            {
-                ScreenControl.SetRefreshRateMode(RefreshRateMode.Dynamic);
-                return;
-            }
             ScreenControl.ToogleMiniled();
+        }
+
+        private void ButtonDynamic_Click(object? sender, EventArgs e)
+        {
+            ScreenControl.SetRefreshRateMode(RefreshRateMode.Dynamic);
         }
 
 
@@ -1731,6 +1782,7 @@ namespace OHelper
             ButtonEnabled(button120Hz, screenEnabled);
             ButtonEnabled(buttonScreenAuto, screenEnabled);
             ButtonEnabled(buttonMiniled, screenEnabled);
+            ButtonEnabled(buttonDynamic, screenEnabled);
 
             labelSreen.Text = screenEnabled
                 ? Properties.Strings.LaptopScreen + ": " + frequency + "Hz" + ((overdrive == 1) ? " + " + Properties.Strings.Overdrive : "")
@@ -1741,21 +1793,33 @@ namespace OHelper
             button60Hz.Activated = false;
             button120Hz.Activated = false;
             buttonScreenAuto.Activated = false;
+            buttonDynamic.Activated = false;
 
             // Refresh rate mode UI (Auto/60Hz/120Hz/Dynamic) for Transcend 14 and similar
             if (AppConfig.HasDisplayModes())
             {
                 var mode = ScreenControl.GetRefreshRateMode();
+                bool hasMiniled = miniled1 >= 0 || miniled2 >= 0;
+                SetScreenTableColumns(hasMiniled ? 5 : 4);
+                tableScreen.SetColumn(buttonScreenAuto, 0);
+                tableScreen.SetColumn(button60Hz, 1);
+                tableScreen.SetColumn(button120Hz, 2);
+                tableScreen.SetColumn(buttonDynamic, 3);
+                if (hasMiniled) tableScreen.SetColumn(buttonMiniled, 4);
 
                 buttonScreenAuto.Text = Properties.Strings.AutoMode;
                 button60Hz.Text = "60Hz";
                 button120Hz.Text = maxFrequency > ScreenControl.MIN_RATE ? maxFrequency + "Hz" : "120Hz";
 
-                buttonMiniled.Text = Properties.Strings.DynamicMode;
-                buttonMiniled.BorderColor = colorCustom;
-                buttonMiniled.Visible = true;
-                buttonMiniled.Enabled = screenEnabled;
-                buttonMiniled.Activated = false;
+                buttonDynamic.Text = Properties.Strings.DynamicMode;
+                buttonDynamic.BorderColor = colorCustom;
+                buttonDynamic.Visible = true;
+                bool dynamicRefreshAvailable = ScreenNative.IsDynamicRefreshAvailable();
+                buttonDynamic.Enabled = screenEnabled && dynamicRefreshAvailable;
+
+                buttonMiniled.Visible = hasMiniled;
+                buttonMiniled.Enabled = screenEnabled && !hdr;
+                buttonMiniled.Activated = miniled1 == 1 || miniled2 == 0 || miniled2 == 1 || hdr;
 
                 if (mode == RefreshRateMode.Auto)
                 {
@@ -1769,9 +1833,13 @@ namespace OHelper
                 {
                     button120Hz.Activated = true;
                 }
+                else if (mode == RefreshRateMode.Dynamic && dynamicRefreshAvailable)
+                {
+                    buttonDynamic.Activated = true;
+                }
                 else if (mode == RefreshRateMode.Dynamic)
                 {
-                    buttonMiniled.Activated = true;
+                    buttonScreenAuto.Activated = true;
                 }
 
                 panelScreen.Visible = true;
@@ -1794,6 +1862,12 @@ namespace OHelper
 
                 return;
             }
+
+            SetScreenTableColumns(4);
+            tableScreen.SetColumn(buttonMiniled, 3);
+            tableScreen.SetColumn(buttonFHD, 3);
+            tableScreen.SetColumn(buttonHDRControl, 3);
+            buttonDynamic.Visible = false;
 
             if (screenAuto)
             {
@@ -2150,19 +2224,24 @@ namespace OHelper
 
         public void VisualizeXGM(int GPUMode = -1)
         {
+            if (!AppConfig.IsASUS())
+            {
+                buttonXGM.Enabled = buttonXGM.Visible = false;
+                return;
+            }
 
+#pragma warning disable CS0618 // IsXGConnected is ASUS-only
             bool connected = Program.acpi.IsXGConnected();
+#pragma warning restore CS0618
             buttonXGM.Enabled = buttonXGM.Visible = connected;
 
             if (!connected) return;
 
-#pragma warning disable CS0618 // IsXGConnected is ASUS-only
             if (GPUMode != -1)
                 ButtonEnabled(buttonXGM, AppConfig.IsAMDiGPU() || GPUMode != HpACPI.GPUModeEco);
 
 
             int activated = Program.acpi.DeviceGet(HpACPI.GPUXG);
-#pragma warning restore CS0618
             Logger.WriteLine("XGM Activated flag: " + activated);
 
             buttonXGM.Activated = activated == 1;
@@ -2248,6 +2327,12 @@ namespace OHelper
             {
                 tableGPU.Visible = false;
                 labelGPU.Text = "GPU";
+                if (!AppConfig.IsASUS())
+                {
+                    VisualiseIcon();
+                    return;
+                }
+
 #pragma warning disable CS0618 // IsXGConnected is ASUS-only
                 if (Program.acpi.IsXGConnected())
 #pragma warning restore CS0618
@@ -2388,7 +2473,7 @@ namespace OHelper
             if (BatteryControl.chargeFull)
             {
                 buttonBatteryFull.BackColor = colorStandard;
-                buttonBatteryFull.ForeColor = SystemColors.ControlLightLight;
+                buttonBatteryFull.ForeColor = RForm.foreMain;
                 buttonBatteryFull.AccessibleName = Properties.Strings.BatteryChargeLimit + "100% on";
             }
             else
@@ -2600,7 +2685,7 @@ namespace OHelper
             if (AppConfig.Is("fn_lock"))
             {
                 buttonFnLock.BackColor = colorStandard;
-                buttonFnLock.ForeColor = SystemColors.ControlLightLight;
+                buttonFnLock.ForeColor = RForm.foreMain;
                 buttonFnLock.AccessibleName = "Fn-Lock on";
             }
             else

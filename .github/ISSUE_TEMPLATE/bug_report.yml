@@ -10,7 +10,7 @@ body:
     attributes:
       label: Rules
       options:
-        - label: I made myself familiar with the <a href='https://github.com/seerge/g-helper?tab=readme-ov-file'>Readme</a>, <a href='https://github.com/seerge/g-helper/wiki/FAQ'>FAQ</a> and <a href='https://github.com/seerge/g-helper/wiki/Troubleshooting'>Troubleshooting</a>.
+        - label: I checked the O-Helper README and existing issues before filing this report.
           required: true
         - label: I understand that, if insufficient information or no app logs will be provided, my issue will be closed without an answer.
           required: true
@@ -40,8 +40,8 @@ body:
     id: logs
     attributes:
       label: Logs
-      placeholder: Please drag and drop complete log file from ``%APPDATA%\GHelper\log.txt``
-      description: Please drag and drop complete log file from ``%APPDATA%\GHelper\log.txt``
+      placeholder: Please drag and drop the complete log file from ``%APPDATA%\OHelper\log.txt``
+      description: Please drag and drop the complete log file from ``%APPDATA%\OHelper\log.txt``
     validations:
       required: true
   - type: input
@@ -49,7 +49,7 @@ body:
     attributes:
       label: Device and Model
       description: Which laptop do you use?
-      placeholder: e.g. Asus Zephyrus G14 GA404RK
+      placeholder: e.g. HP OMEN 16-am2020ca / Product ID 8E41
     validations:
       required: true
   - type: textarea
@@ -60,24 +60,24 @@ body:
   - type: dropdown
     id: armoury
     attributes:
-      label: Armoury Crate
-      description: Do you have Armoury Crate installed?
+      label: OMEN Gaming Hub
+      description: Do you have OMEN Gaming Hub installed?
       options:
         - Uninstalled
         - Installed
         - Never installed
       default: 0   
   - type: input
-    id: asus
+    id: hp_services
     attributes:
-      label: Asus Services
-      description: How many Asus services do you have running (check ``Extra`` section in G-Helper)?
+      label: HP/OEM Services
+      description: Which HP/OEM services or vendor control apps are running?
       placeholder: e.g. None
   - type: input
     id: version
     attributes:
       label: Version
-      description: G-Helper version?
+      description: O-Helper version?
       placeholder: e.g. 0.146
   - type: input
     id: os

@@ -38,8 +38,6 @@ namespace OHelper
         public static int WM_TASKBARCREATED = 0;
 
         private static long lastAuto;
-        private static long lastTheme;
-
         public static InputDispatcher? inputDispatcher;
 
         // The main entry point for the application
@@ -51,16 +49,6 @@ namespace OHelper
 
             if (action == "charge")
             {
-                if (AppConfig.IsZ13())
-                {
-                    AsusHid.Write([
-                        [AsusHid.AURA_ID, 0xB9],
-                        Encoding.ASCII.GetBytes("]ASUS Tech.Inc."),
-                        [AsusHid.AURA_ID, 0x05, 0x20, 0x31, 0, 0x1A],
-                        [AsusHid.AURA_ID, 0xC0, 0x03, 0x01]
-                    ], "Init");
-                }
-
                 BatteryLimit();
                 try
                 {
@@ -126,7 +114,7 @@ namespace OHelper
                 return;
             }
 
-            ProcessHelper.KillSmartDisplayControl();
+            if (AppConfig.IsASUS()) ProcessHelper.KillSmartDisplayControl();
 
             Application.EnableVisualStyles();
 
@@ -156,9 +144,8 @@ namespace OHelper
             settingsForm.InitAura();
             settingsForm.InitMatrix();
 
-            XGM.Init();
-
             SetAutoModes(init: true);
+            modeControl.ApplyAutoModeForPowerSource(false);
 
             powerSettleTimer.Elapsed += OnPowerSettled;
 
@@ -178,8 +165,11 @@ namespace OHelper
             unRegSuspendResume = NativeMethods.RegisterSuspendResumeNotification(settingsForm.Handle, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
 
 
-            Task task = Task.Run((Action)PeripheralsProvider.DetectAllAsusMice);
-            PeripheralsProvider.RegisterForDeviceEvents();
+            if (AppConfig.IsASUS())
+            {
+                Task task = Task.Run((Action)PeripheralsProvider.DetectAllAsusMice);
+                PeripheralsProvider.RegisterForDeviceEvents();
+            }
 
             if (Environment.CurrentDirectory.Trim('\\') == Application.StartupPath.Trim('\\') || action.Length > 0)
             {
@@ -197,9 +187,7 @@ namespace OHelper
                     settingsForm.FansToggle(1);
                     break;
                 case "services":
-                    settingsForm.extraForm = new Extra();
-                    settingsForm.extraForm.Show();
-                    settingsForm.extraForm.ServiesToggle();
+                    Logger.WriteLine("Services action ignored: ASUS service management is not part of O-Helper");
                     break;
                 case "uv":
                     Startup.ReScheduleAdmin();
@@ -221,11 +209,6 @@ namespace OHelper
                     break;
             }
 
-            Task.Run(() =>
-            {
-                settingsForm.VisualiseArmoury(AsusService.IsArmouryRunning());
-            });
-
             if (AppConfig.IsOverlay())
                 hardwareOverlay?.StartOverlay();
 
@@ -246,7 +229,7 @@ namespace OHelper
             if (e.Reason == SessionSwitchReason.SessionLogon || e.Reason == SessionSwitchReason.SessionUnlock)
             {
                 Logger.WriteLine("Session:" + e.Reason.ToString());
-                ProcessHelper.KillSmartDisplayControl();
+                if (AppConfig.IsASUS()) ProcessHelper.KillSmartDisplayControl();
                 bool wasLocked = Aura.sessionLock;
                 Aura.sessionLock = false;
                 ScreenControl.AutoScreen();
@@ -266,8 +249,6 @@ namespace OHelper
         static void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
 
-            if (Math.Abs(DateTimeOffset.Now.ToUnixTimeMilliseconds() - lastTheme) < 2000) return;
-
             switch (e.Category)
             {
                 case UserPreferenceCategory.General:
@@ -280,7 +261,6 @@ namespace OHelper
                     if (changed)
                     {
                         Debug.WriteLine("Theme Changed");
-                        lastTheme = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                     }
 
                     if (settingsForm.fansForm is not null && settingsForm.fansForm.Text != "")
@@ -328,8 +308,6 @@ namespace OHelper
 
             settingsForm.matrixControl.SetDevice(true);
             InputDispatcher.InitStatusLed();
-            XGM.InitLight();
-
             if (AppConfig.IsAlly())
             {
                 allyControl.Init();
@@ -491,7 +469,6 @@ namespace OHelper
                 if (limit > 0 && limit < 100)
                 {
                     Logger.WriteLine($"------- Startup Battery Limit {limit} -------");
-                    ProcessHelper.StartEnableService("ATKWMIACPIIO", false);
                     Logger.WriteLine($"Connecting to ACPI");
                     acpi = new HpACPI();
                     Logger.WriteLine($"Setting Limit");

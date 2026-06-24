@@ -6,7 +6,7 @@ body:
     attributes:
       label: Rules
       options:
-        - label: I made myself familiar with the <a href='https://github.com/seerge/g-helper?tab=readme-ov-file'>Readme</a>, <a href='https://github.com/seerge/g-helper/wiki/FAQ'>FAQ</a> and <a href='https://github.com/seerge/g-helper/wiki/Troubleshooting'>Troubleshooting</a>.
+        - label: I checked the O-Helper README and existing issues before filing this request.
           required: true
         - label: I understand that, if insufficient information will be provided, my issue will be closed without an answer.
           required: true
@@ -36,7 +36,7 @@ body:
     attributes:
       label: Device and Model
       description: Which laptop do you use?
-      placeholder: e.g. Asus Zephyrus G14 GA404RK
+      placeholder: e.g. HP OMEN 16-am2020ca / Product ID 8E41
     validations:
       required: true
   - type: textarea

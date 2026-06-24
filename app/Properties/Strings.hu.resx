@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>A GPU-nak kiosztott memória</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Asus szolgáltatások futnak</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Akkuállapot</value>
   </data>
@@ -769,9 +766,6 @@ Folytatni szeretnéd?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Szolgáltatások leállítása</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>AURA ki-/bekapcsolása</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Alvás letiltása lecsukott fedélnél</value>

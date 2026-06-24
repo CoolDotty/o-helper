@@ -180,9 +180,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>Memory Assigned to GPU</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>OEM Services Running</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Battery State</value>
   </data>
@@ -782,9 +779,6 @@ Do you still want to continue?</value>
   <data name="StoppingServices" xml:space="preserve">
     <value>Stopping Services</value>
   </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Toggle Aura</value>
-  </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Auto Toggle Clamshell Mode</value>
   </data>
@@ -1020,5 +1014,38 @@ Recommended if you experience random hangs or unresponsive hardware.</value>
   </data>
   <data name="OmenKeyboardApplyAllZones" xml:space="preserve">
     <value>Apply to All Zones</value>
+  </data>
+  <data name="AutoPowerSourceMode" xml:space="preserve">
+    <value>Auto power-source mode</value>
+  </data>
+  <data name="ACPower" xml:space="preserve">
+    <value>AC</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeFlat" xml:space="preserve">
+    <value>Flat</value>
+  </data>
+  <data name="SoftwareFanCurveActive" xml:space="preserve">
+    <value>Software fan curve active</value>
+  </data>
+  <data name="UndervoltingUnsupportedPlatform" xml:space="preserve">
+    <value>No AMD/Ryzen undervolting on this platform</value>
+  </data>
+  <data name="DynamicRefreshUnsupported" xml:space="preserve">
+    <value>Dynamic refresh is not supported by this panel or driver</value>
+  </data>
+  <data name="XGMobileStandardModeOnly" xml:space="preserve">
+    <value>XG Mobile toggle works only in Standard mode</value>
   </data>
 </root>

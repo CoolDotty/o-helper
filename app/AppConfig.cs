@@ -221,6 +221,12 @@ public static class AppConfig
         return caps ?? ModelCapabilityDatabase.GetCapabilities(GetProductId());
     }
 
+    public static bool HasLinkedFanCurves()
+    {
+        return IsOmenTranscend14()
+            || GetModelCapabilities().SupportsIndependentFanCurves == false;
+    }
+
     public static OmenModelFamily GetModelFamily()
     {
         return GetModelCapabilities().Family;
@@ -242,6 +248,8 @@ public static class AppConfig
     {
         config = new Dictionary<string, object>();
         config["performance_mode"] = 0;
+        config["ui_mode"] = "windows";
+        config["theme"] = "";
         string jsonString = JsonSerializer.Serialize(config);
         File.WriteAllText(configFile, jsonString);
     }
@@ -339,7 +347,7 @@ public static class AppConfig
         if (curveString is not null)
             return StringToBytes(curveString);
 
-        // No saved curve for this mode/device — fall back to the built-in default
+        // No saved curve for this mode/device - fall back to the built-in default
         // so the correct per-mode curve is actually applied on a fresh install.
         return GetDefaultCurve(device);
     }
@@ -476,7 +484,7 @@ public static class AppConfig
 
     public static bool IsAlly()
     {
-        return ContainsModel("RC7");
+        return false;
     }
 
     public static bool IsAuraSync()
@@ -800,11 +808,11 @@ public static class AppConfig
 
     public static bool IsROG()
     {
-        return ContainsModel("ROG");
+        return false;
     }
     public static bool IsASUS()
     {
-        return ContainsModel("ROG") || ContainsModel("TUF") || ContainsModel("Vivobook") || ContainsModel("Zenbook");
+        return false;
     }
 
     // HP OMEN MODEL DETECTION
@@ -828,10 +836,12 @@ public static class AppConfig
         return IsOmenTranscend() && ContainsModel("14-fb");
     }
 
-    // Refresh rate mode support (Auto/60Hz/120Hz/Dynamic) — Transcend 14 OLED 120Hz
+    // Refresh rate mode support (Auto/60Hz/120Hz/Dynamic) - Transcend 14 OLED 120Hz
     public static bool HasDisplayModes()
     {
-        return IsOmenTranscend14();
+        return GetModelCapabilities().SupportsDynamicRefresh
+            || IsOmenTranscend14()
+            || Is("force_dynamic_refresh");
     }
 
     // OMEN 4-zone RGB keyboards

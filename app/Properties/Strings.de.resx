@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>GPU zugewiesener Speicher</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>ASUS Dienste laufen</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Batteriezustand</value>
   </data>
@@ -769,9 +766,6 @@ Trotzdem fortfahren?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Beende Dienste</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Aura umschalten</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Clamshell Modus automatisch aktivieren</value>

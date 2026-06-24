@@ -27,7 +27,6 @@ namespace OHelper
               {"mute", Properties.Strings.VolumeMute},
               {"screenshot", Properties.Strings.PrintScreen},
               {"play", Properties.Strings.PlayPause},
-              {"aura", Properties.Strings.ToggleAura},
               {"performance", Properties.Strings.PerformanceMode},
               {"screen", Properties.Strings.ToggleScreen},
               {"lock", Properties.Strings.LockScreen},
@@ -71,8 +70,7 @@ namespace OHelper
                     customActions.Remove("OHelper");
                     break;
                 case "fnf4":
-                    customActions[""] = Properties.Strings.ToggleAura;
-                    customActions.Remove("aura");
+                    customActions[""] = EMPTY;
                     break;
                 case "fnc":
                     customActions[""] = Properties.Strings.ToggleFnLock;
@@ -173,7 +171,7 @@ namespace OHelper
 
             // Accessible Labels
 
-            panelServices.AccessibleName = Properties.Strings.AsusServicesRunning;
+            panelServices.AccessibleName = string.Empty;
             panelBindings.AccessibleName = Properties.Strings.KeyBindings;
             tableBindings.AccessibleName = Properties.Strings.KeyBindings;
 
@@ -460,8 +458,6 @@ namespace OHelper
             }
 
             pictureHelp.Click += PictureHelp_Click;
-            buttonServices.Click += ButtonServices_Click;
-
             pictureLog.Click += PictureLog_Click;
 
             checkNVPlatform.Visible = Program.acpi.IsNVidiaGPU();
@@ -479,14 +475,9 @@ namespace OHelper
             toolTip.SetToolTip(checkNVPlatform, Properties.Strings.NVPlatformTooltip);
             toolTip.SetToolTip(checkAspm, Properties.Strings.DisablePCIeASPMTooltip);
 
-            // ASUS Services panel is meaningless on HP Omen — hide it and skip init
-            if (!AppConfig.IsASUS())
-            {
-                panelServices.Visible = false;
-            }
+            panelServices.Visible = false;
 
             InitCores();
-            if (AppConfig.IsASUS()) InitServices();
             InitHibernate();
 
             InitACPITesting();
@@ -672,66 +663,6 @@ namespace OHelper
             sliderBrightness.AccessibleName = Properties.Strings.LaptopBacklight + ": " + sliderBrightness.Value;
         }
 
-        private void InitServices()
-        {
-
-            int servicesCount = AsusService.GetRunningCount();
-
-            if (servicesCount > 0)
-            {
-                buttonServices.Text = Properties.Strings.Stop;
-                labelServices.ForeColor = colorTurbo;
-            }
-            else
-            {
-                buttonServices.Text = Properties.Strings.Start;
-                labelServices.ForeColor = colorStandard;
-            }
-
-            labelServices.Text = Properties.Strings.AsusServicesRunning + ":  " + servicesCount;
-            buttonServices.Enabled = true;
-
-        }
-
-        public void ServiesToggle()
-        {
-            buttonServices.Enabled = false;
-
-            if (AsusService.GetRunningCount() > 0)
-            {
-                labelServices.Text = Properties.Strings.StoppingServices + " ...";
-                Task.Run(() =>
-                {
-                    AsusService.StopAsusServices();
-                    Program.inputDispatcher.Init();
-                    BeginInvoke(delegate
-                    {
-                        InitServices();
-                    });
-                });
-            }
-            else
-            {
-                labelServices.Text = Properties.Strings.StartingServices + " ...";
-                Task.Run(() =>
-                {
-                    AsusService.StartAsusServices();
-                    BeginInvoke(delegate
-                    {
-                        InitServices();
-                    });
-                });
-            }
-        }
-
-        private void ButtonServices_Click(object? sender, EventArgs e)
-        {
-            if (ProcessHelper.IsUserAdministrator())
-                ServiesToggle();
-            else
-                ProcessHelper.RunAsAdmin("services");
-        }
-
         private void CheckGpuApps_CheckedChanged(object? sender, EventArgs e)
         {
             AppConfig.Set("kill_gpu_apps", (checkGpuApps.Checked ? 1 : 0));
@@ -855,9 +786,5 @@ namespace OHelper
 
         }
 
-        private void panelAPU_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
     }
 }

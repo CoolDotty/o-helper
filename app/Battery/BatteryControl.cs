@@ -75,7 +75,7 @@ namespace OHelper.Battery
                 else if (limit < 60) limit = 60;
             }
 
-            if (setLimit > 0) SetAsusChargeLimit(limit);
+            if (setLimit > 0 && AppConfig.IsASUS()) SetAsusChargeLimit(limit);
 
             Program.acpi.DeviceSet(HpACPI.BatteryLimit, limit, "BatteryLimit");
 

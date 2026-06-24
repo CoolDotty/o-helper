@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>分配給 GPU 的記憶體</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>執行中的華碩服務</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>電池狀態</value>
   </data>
@@ -769,9 +766,6 @@
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>正在停止服務</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>切換 Aura 模式</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>翻蓋模式 (蓋上筆電但有外接螢幕時，系統仍會持續運行)</value>

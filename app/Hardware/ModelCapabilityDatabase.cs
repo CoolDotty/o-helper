@@ -24,12 +24,14 @@ public class ModelCapabilities
     public bool SupportsIndependentFanCurves { get; set; } = true;
     public bool SupportsRpmReadback { get; set; } = true;
     public int FanZoneCount { get; set; } = 2;
+    public int? MaxFanLevel { get; set; }
 
     public bool SupportsPerformanceModes { get; set; } = true;
     public string[] PerformanceModes { get; set; } = new[] { "Default", "Performance", "Cool" };
 
     public bool HasMuxSwitch { get; set; } = false;
     public bool SupportsGpuPowerBoost { get; set; } = true;
+    public bool SupportsDynamicRefresh { get; set; } = false;
 
     public bool HasKeyboardBacklight { get; set; } = true;
     public bool HasFourZoneRgb { get; set; } = true;
@@ -71,6 +73,7 @@ public static class ModelCapabilityDatabase
         SupportsIndependentFanCurves = true,
         SupportsRpmReadback = true,
         FanZoneCount = 2,
+        MaxFanLevel = 55,
         SupportsPerformanceModes = true,
         PerformanceModes = new[] { "Default", "Performance", "Cool" },
         SupportsGpuPowerBoost = true,
@@ -329,8 +332,10 @@ public static class ModelCapabilityDatabase
             SupportsFanCurves = true,
             SupportsIndependentFanCurves = false,
             FanZoneCount = 1,
+            MaxFanLevel = 65,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
+            SupportsDynamicRefresh = true,
             HasFourZoneRgb = true,
             HasPerKeyRgb = false,
             Notes = "Transcend uses different WMI interface - may require OGH proxy for fan control"
@@ -363,8 +368,10 @@ public static class ModelCapabilityDatabase
             SupportsFanCurves = false,
             SupportsIndependentFanCurves = false,
             FanZoneCount = 1,
+            MaxFanLevel = 65,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
+            SupportsDynamicRefresh = true,
             HasFourZoneRgb = true,
             HasPerKeyRgb = false,
             SupportsUndervolt = false,
@@ -384,6 +391,7 @@ public static class ModelCapabilityDatabase
             SupportsFanCurves = false,
             SupportsIndependentFanCurves = false,
             FanZoneCount = 1,
+            MaxFanLevel = 65,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
             HasFourZoneRgb = true,
@@ -405,13 +413,61 @@ public static class ModelCapabilityDatabase
             SupportsFanCurves = false,
             SupportsIndependentFanCurves = false,
             FanZoneCount = 1,
+            MaxFanLevel = 65,
             HasMuxSwitch = true,
             SupportsGpuPowerBoost = true,
+            SupportsDynamicRefresh = true,
             HasFourZoneRgb = true,
             HasPerKeyRgb = false,
             SupportsUndervolt = false,
             UserVerified = false,
             Notes = "Transcend 14 (2025). 4-zone RGB keyboard, no per-key. WMI BIOS paths."
+        });
+
+        AddModel(new ModelCapabilities
+        {
+            ProductId = "8D41",
+            ModelName = "OMEN MAX 16 (2025) ah0xxx Intel",
+            ModelNamePattern = "16-ah0",
+            ModelYear = 2025,
+            Family = OmenModelFamily.OMEN2024Plus,
+            SupportsFanControlWmi = true,
+            SupportsFanControlEc = false,
+            SupportsFanCurves = false,
+            SupportsIndependentFanCurves = false,
+            SupportsRpmReadback = true,
+            FanZoneCount = 2,
+            MaxFanLevel = 60,
+            HasMuxSwitch = true,
+            SupportsGpuPowerBoost = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = true,
+            SupportsOverboost = true,
+            UserVerified = true,
+            Notes = "OMEN MAX 16 ah0xxx uses WMI fan control with a 60-level ceiling."
+        });
+
+        AddModel(new ModelCapabilities
+        {
+            ProductId = "8D87",
+            ModelName = "OMEN MAX 16 (2025) ak0xxx AMD",
+            ModelNamePattern = "16-ak0",
+            ModelYear = 2025,
+            Family = OmenModelFamily.OMEN2024Plus,
+            SupportsFanControlWmi = true,
+            SupportsFanControlEc = false,
+            SupportsFanCurves = true,
+            SupportsIndependentFanCurves = false,
+            SupportsRpmReadback = true,
+            FanZoneCount = 2,
+            MaxFanLevel = 60,
+            HasMuxSwitch = true,
+            SupportsGpuPowerBoost = true,
+            HasFourZoneRgb = true,
+            HasPerKeyRgb = true,
+            SupportsUndervolt = false,
+            UserVerified = false,
+            Notes = "OMEN MAX 16 ak0xxx uses WMI fan control with a 60-level ceiling."
         });
 
         // HP Victus
@@ -425,6 +481,7 @@ public static class ModelCapabilityDatabase
             HasPerKeyRgb = false,
             SupportsFanControlWmi = true,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -437,6 +494,7 @@ public static class ModelCapabilityDatabase
             HasPerKeyRgb = false,
             SupportsFanControlWmi = true,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -448,6 +506,7 @@ public static class ModelCapabilityDatabase
             HasFourZoneRgb = false,
             HasPerKeyRgb = false,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -459,6 +518,7 @@ public static class ModelCapabilityDatabase
             HasFourZoneRgb = false,
             HasPerKeyRgb = false,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -470,6 +530,7 @@ public static class ModelCapabilityDatabase
             HasFourZoneRgb = false,
             HasPerKeyRgb = false,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -481,6 +542,7 @@ public static class ModelCapabilityDatabase
             HasFourZoneRgb = false,
             HasPerKeyRgb = false,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         AddModel(new ModelCapabilities
@@ -492,6 +554,7 @@ public static class ModelCapabilityDatabase
             HasFourZoneRgb = false,
             HasPerKeyRgb = false,
             SupportsFanCurves = false,
+            SupportsGpuPowerBoost = false,
         });
 
         // OMEN Desktop
@@ -618,10 +681,12 @@ public static class ModelCapabilityDatabase
                     SupportsIndependentFanCurves = model.SupportsIndependentFanCurves,
                     SupportsRpmReadback = model.SupportsRpmReadback,
                     FanZoneCount = model.FanZoneCount,
+                    MaxFanLevel = model.MaxFanLevel,
                     SupportsPerformanceModes = model.SupportsPerformanceModes,
                     PerformanceModes = model.PerformanceModes,
                     HasMuxSwitch = model.HasMuxSwitch,
                     SupportsGpuPowerBoost = model.SupportsGpuPowerBoost,
+                    SupportsDynamicRefresh = model.SupportsDynamicRefresh,
                     HasKeyboardBacklight = model.HasKeyboardBacklight,
                     HasFourZoneRgb = model.HasFourZoneRgb,
                     HasPerKeyRgb = model.HasPerKeyRgb,

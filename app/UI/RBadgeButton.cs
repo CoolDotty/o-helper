@@ -47,7 +47,8 @@ namespace OHelper.UI
                     SizeF textSize = pevent.Graphics.MeasureString(text, badgeFont, PointF.Empty, sf);
                     float x = badgeRect.X + (badgeRect.Width - textSize.Width) / 2f;
                     float y = badgeRect.Y + (badgeRect.Height - textSize.Height) / 2f;
-                    pevent.Graphics.DrawString(text, badgeFont, Brushes.White, x, y, sf);
+                    using Brush textBrush = new SolidBrush(RForm.foreMain);
+                    pevent.Graphics.DrawString(text, badgeFont, textBrush, x, y, sf);
                 }
             }
         }

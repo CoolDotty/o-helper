@@ -123,6 +123,7 @@ public static class ControlHelper
             if (sl != null)
             {
                 sl.borderColor = RForm.buttonMain;
+                sl.accentColor = RForm.colorStandard;
             }
 
             var chk = control as CheckBox;

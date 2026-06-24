@@ -211,7 +211,7 @@ namespace OHelper.Mode
                     return POWER_SILENT;
                 case 4: // unleashed
                     return POWER_TURBO;
-                default: // balanced
+                default: // balanced and custom modes
                     return POWER_BALANCED;
             }
         }

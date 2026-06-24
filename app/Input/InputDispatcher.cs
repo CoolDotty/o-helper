@@ -19,7 +19,6 @@ namespace OHelper.Input
         public static bool lidClose = false;
         public static bool tentMode = false;
         private static bool? _fnLock = null;
-        private static string? _asusPath = null;
 
         private static long lastSleep;
 
@@ -31,7 +30,6 @@ namespace OHelper.Input
         public static Keys keyProfile2 = (Keys)AppConfig.Get("keybind_profile_2", (int)Keys.F16);
         public static Keys keyProfile3 = (Keys)AppConfig.Get("keybind_profile_3", (int)Keys.F19);
         public static Keys keyProfile4 = (Keys)AppConfig.Get("keybind_profile_4", (int)Keys.F20);
-        public static Keys keyXGM = (Keys)AppConfig.Get("keybind_xgm", (int)Keys.F21);
         public static Keys keyOverlay = (Keys)AppConfig.Get("keybind_overlay", (int)Keys.O);
 
         public static ModifierKeys keyModifier = GetModifierKeys("modifier_keybind", ModifierKeys.Shift | ModifierKeys.Control);
@@ -39,7 +37,6 @@ namespace OHelper.Input
 
         static ModeControl modeControl = Program.modeControl;
 
-        KeyboardListener listener;
         KeyboardHook hook = new KeyboardHook();
 
         public InputDispatcher()
@@ -77,7 +74,7 @@ namespace OHelper.Input
                 backlightActivity = false;
                 if (AppConfig.IsOmenKeyboardSupported())
                     OmenApplyBacklight(0, "Timeout");
-                else
+                else if (UseAsusAuraBacklight())
                     Aura.ApplyBrightness(0, "Timeout");
             }
 
@@ -92,19 +89,7 @@ namespace OHelper.Input
 
         public void Init()
         {
-            if (listener is not null) listener.Dispose();
-
             Program.acpi.DeviceInit();
-
-            if (!AsusService.IsAsusOptimizationRunning())
-            {
-                Program.acpi.DeviceGet(HpACPI.CameraShutter);
-                listener = new KeyboardListener(HandleEvent);
-            }
-            else
-            {
-                Logger.WriteLine("Optimization service is running");
-            }
 
             InitBacklightTimer();
             MuteLEDInit();
@@ -114,7 +99,7 @@ namespace OHelper.Input
         public static void InitFNLock()
         {
             if (!IsHardwareFnLock()) return;
-            AsusHid.InitInput();
+            if (AppConfig.IsASUS()) AsusHid.InitInput();
             HardwareFnLock(AppConfig.Is("fn_lock"));
         }
 
@@ -145,6 +130,7 @@ namespace OHelper.Input
         public void RegisterKeys()
         {
             hook.UnregisterAll();
+            hook.SetWinLock(AppConfig.Is("win_lock"));
 
             string actionM1 = AppConfig.GetString("m1");
             string actionM2 = AppConfig.GetString("m2");
@@ -175,8 +161,6 @@ namespace OHelper.Input
                 hook.RegisterHotKey(keyModifierAlt, keyProfile2);
                 hook.RegisterHotKey(keyModifierAlt, keyProfile3);
                 hook.RegisterHotKey(keyModifierAlt, keyProfile4);
-                hook.RegisterHotKey(keyModifierAlt, keyXGM);
-
                 hook.RegisterHotKey(ModifierKeys.Control, Keys.VolumeDown);
                 hook.RegisterHotKey(ModifierKeys.Control, Keys.VolumeUp);
                 hook.RegisterHotKey(ModifierKeys.Shift, Keys.VolumeDown);
@@ -216,7 +200,7 @@ namespace OHelper.Input
                 hook.RegisterHotKey(ModifierKeys.None, Keys.Down);
             }
 
-            // Win-lock group — suppress Left/Right Windows keys when locked
+            // Win-lock group - suppress Left/Right Windows keys when locked
             if (AppConfig.Is("win_lock"))
             {
                 hook.RegisterHotKey(ModifierKeys.None, Keys.LWin);
@@ -490,7 +474,6 @@ namespace OHelper.Input
                 if (e.Key == keyProfile2) modeControl.SetPerformanceMode(2, true);
                 if (e.Key == keyProfile3) modeControl.SetPerformanceMode(3, true);
                 if (e.Key == keyProfile4) modeControl.SetPerformanceMode(4, true);
-                if (e.Key == keyXGM) Program.settingsForm.gpuControl.ToggleXGM(true);
                 if (e.Key == keyOverlay) Program.settingsForm.BeginInvoke(() => Program.settingsForm.ToggleOverlay(true));
 
                 switch (e.Key)
@@ -500,9 +483,6 @@ namespace OHelper.Input
                         break;
                     case Keys.F2:
                         SetBrightness(true);
-                        break;
-                    case Keys.F3:
-                        Program.settingsForm.gpuControl.ToggleXGM(true);
                         break;
                     case Keys.F4:
                         Program.settingsForm.BeginInvoke(Program.settingsForm.allyControl.ToggleModeHotkey);
@@ -576,10 +556,10 @@ namespace OHelper.Input
                 if (name == "m4")
                     action = "OHelper";
                 if (name == "fnf4")
-                    action = "aura";
+                    action = "";
                 if (name == "fnf5")
                     action = "performance";
-                if (name == "m3" && !AsusService.IsAsusOptimizationRunning())
+                if (name == "m3")
                     action = "micmute";
                 if (name == "fnc")
                     action = "fnlock";
@@ -730,13 +710,7 @@ namespace OHelper.Input
 
         static void ToggleTouchpad()
         {
-            if (AppConfig.IsROG())
-            {
-                AsusHid.WriteInput([AsusHid.INPUT_ID, 0xF4, 0x6B], "USB Touchpad");
-            } else
-            {
-                KeyboardHook.KeyKeyKeyPress(Keys.LWin, Keys.LControlKey, Keys.F24, 50);
-            }
+            KeyboardHook.KeyKeyKeyPress(Keys.LWin, Keys.LControlKey, Keys.F24, 50);
 
         }
 
@@ -771,7 +745,6 @@ namespace OHelper.Input
         public static void HardwareFnLock(bool fnLock)
         {
             Program.acpi.DeviceSet(HpACPI.FnLock, fnLock ^ AppConfig.IsInvertedFNLock() ? 1 : 0, "FnLock");
-            AsusHid.WriteInput([AsusHid.INPUT_ID, 0xD0, 0x4E, fnLock ? (byte)0x00 : (byte)0x01], "USB FnLock");
         }
 
         public static void ToggleFnLock()
@@ -815,9 +788,16 @@ namespace OHelper.Input
         {
             if (AppConfig.Is("disable_tablet")) return;
 
-            bool touchpadState = GetTouchpadState();
-            bool tabletState = Program.acpi.DeviceGet(HpACPI.TabletState) > 0;
+            int tabletStateValue = Program.acpi.DeviceGet(HpACPI.TabletState);
             int slateState = Program.acpi.DeviceGet(HpACPI.SlateMode);
+            if (tabletStateValue < 0 && slateState < 0)
+            {
+                Logger.WriteLine("Tablet/slate state unsupported");
+                return;
+            }
+
+            bool touchpadState = GetTouchpadState();
+            bool tabletState = tabletStateValue > 0;
 
             Logger.WriteLine($"Tablet: {tabletState} | SlateMode: {slateState} | Touchpad: {touchpadState}");
 
@@ -839,7 +819,7 @@ namespace OHelper.Input
             var tentState = GetTentState();
             if (tentState < 0) return;
             tentMode = tentState > 0;
-            Aura.ApplyBrightness(tentMode ? 0 : GetBacklight(), "Tent");
+            if (UseAsusAuraBacklight()) Aura.ApplyBrightness(tentMode ? 0 : GetBacklight(), "Tent");
         }
 
         static void HandleEvent(int EventID)
@@ -943,12 +923,11 @@ namespace OHelper.Input
                 }
             }
 
-            if (!AsusService.IsAsusOptimizationRunning())
-                HandleOptimizationEvent(EventID);
+            HandleOptimizationEvent(EventID);
 
         }
 
-        // Asus Optimization service Events 
+        // Firmware hotkey events
         static void HandleOptimizationEvent(int EventID)
         {
             switch (EventID)
@@ -1072,13 +1051,18 @@ namespace OHelper.Input
                 Logger.WriteLine("AutoKeyboard: Omen path (IsOmenKeyboardSupported)");
                 SetBacklightAuto();
             }
-            else if (!AppConfig.Is("skip_aura"))
+            else if (UseAsusAuraBacklight())
             {
                 Aura.Init();
                 Aura.ApplyPower();
                 SetBacklightAuto();
                 Aura.ApplyAura();
-            } else
+            }
+            else if (AppConfig.IsOmen())
+            {
+                Logger.WriteLine("AutoKeyboard: Omen keyboard control unsupported");
+            }
+            else
             {
                 Logger.WriteLine("Skipping Aura");
             }
@@ -1090,7 +1074,7 @@ namespace OHelper.Input
             if (lidClose || tentMode) return;
             if (AppConfig.IsOmenKeyboardSupported())
                 OmenApplyBacklight(GetBacklight(), "Auto");
-            else
+            else if (UseAsusAuraBacklight())
                 Aura.ApplyBrightness(GetBacklight(), "Auto");
             backlightActivity = true;
         }
@@ -1102,7 +1086,8 @@ namespace OHelper.Input
                 OmenApplyBacklight(GetBacklight(), "Startup");
                 return;
             }
-            Aura.DirectBrightness(GetBacklight(), "Startup");
+            if (UseAsusAuraBacklight()) Aura.DirectBrightness(GetBacklight(), "Startup");
+            else if (AppConfig.IsOmen()) Logger.WriteLine("StartupBacklight: Omen keyboard control unsupported");
         }
 
         public static void SetBacklight(int delta, bool force = false)
@@ -1128,23 +1113,28 @@ namespace OHelper.Input
             {
                 OmenApplyBacklight(backlight, "HotKey");
             }
-            else if (force || !AsusService.IsAsusOptimizationRunning())
+            else if (UseAsusAuraBacklight() && force)
             {
                 Aura.ApplyBrightness(backlight, "HotKey");
             }
 
-            if (!AppConfig.IsOmenKeyboardSupported() && !AsusService.IsOSDRunning())
+            if (UseAsusAuraBacklight())
             {
                 string[] backlightNames = new string[] { Properties.Strings.BacklightOff, Properties.Strings.BacklightLow, Properties.Strings.BacklightMid, Properties.Strings.BacklightMax };
                 Program.toast.RunToast(backlightNames[backlight], delta > 0 ? ToastIcon.BacklightUp : ToastIcon.BacklightDown);
             }
             else if (AppConfig.IsOmenKeyboardSupported())
             {
-                // Omen has no OSD service — always show our own toast.
+                // Omen has no OSD service - always show our own toast.
                 string[] backlightNames = new string[] { Properties.Strings.BacklightOff, Properties.Strings.BacklightLow, Properties.Strings.BacklightMid, Properties.Strings.BacklightMax };
                 Program.toast.RunToast(backlightNames[backlight], delta > 0 ? ToastIcon.BacklightUp : ToastIcon.BacklightDown);
             }
 
+        }
+
+        static bool UseAsusAuraBacklight()
+        {
+            return AppConfig.IsASUS() && !AppConfig.Is("skip_aura");
         }
 
         // Translate the 0..3 backlight level the rest of the app uses into the
@@ -1195,36 +1185,15 @@ namespace OHelper.Input
             ScreenControl.ToggleScreenRate();
         }
 
-
-        private static string GetAsusPath()
-        {
-            if (_asusPath == null)
-            {
-                try
-                {
-                    using (var searcher = new ManagementObjectSearcher(@"Select * from Win32_SystemDriver WHERE Name='ATKWMIACPIIO'"))
-                    {
-                        foreach (var driver in searcher.Get())
-                        {
-                            string path = driver["PathName"].ToString();
-                            _asusPath = Path.GetDirectoryName(path);
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.WriteLine(ex.Message);
-                }
-            }
-
-            return _asusPath;
-        }
-
         public static void ToggleCamera()
         {
             int cameraShutter = Program.acpi.DeviceGet(HpACPI.CameraShutter);
             Logger.WriteLine("Camera Shutter status: " + cameraShutter);
+            if (cameraShutter < 0)
+            {
+                Logger.WriteLine("Camera shutter unsupported");
+                return;
+            }
 
             int state = cameraShutter & 1;
             int feature = cameraShutter & ~1;
@@ -1254,31 +1223,11 @@ namespace OHelper.Input
 
         private static void SetCamera(int status, bool toast = true)
         {
-            string asusPath = GetAsusPath();
-
-            var cameraStatus = AppConfig.Get("camera_status");
-            if (status == 2 && cameraStatus >= 0) status = cameraStatus > 0 ? 0 : 1;
-
-            var result = ProcessHelper.RunCMD($"{asusPath}\\AsusHotkey.exe", $"-MFCameraCommand {status} 1 0", asusPath);
-            var cameraLedStatus = Program.acpi.DeviceGet(HpACPI.CameraLed);
-            Logger.WriteLine("Camera LED: " + cameraLedStatus);
-            AppConfig.Set("camera_status", cameraLedStatus);
-            if (toast)
-            {
-                string statusText = cameraLedStatus switch
-                {
-                    0 => "On",
-                    1 => "Off",
-                    _ => "Toggled"
-                };
-                Program.toast.RunToast($"Camera {statusText}");
-            }
+            Logger.WriteLine("Camera hotkey fallback unsupported on HP Omen");
         }
 
         private static void InitCamera()
         {
-            var cameraStatus = AppConfig.Get("camera_status");
-            if (cameraStatus >= 0) SetCamera(cameraStatus, false);
         }
 
         private static System.Threading.Timer screenpadActionTimer;

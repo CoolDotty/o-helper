@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>Mémoire attribuée au GPU</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Services Asus actifs </value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>État de la batterie</value>
   </data>
@@ -769,9 +766,6 @@ Voulez-vous continuer ?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Arrêt des services</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Activer Aura</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Basculer automatiquement en mode Clamshell</value>

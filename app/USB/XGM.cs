@@ -14,6 +14,8 @@ namespace OHelper.USB
 
         public static HidDevice? GetDevice()
         {
+            if (!AppConfig.IsASUS()) return null;
+
             try
             {
                 /*
@@ -42,11 +44,14 @@ namespace OHelper.USB
 
         public static bool IsConnected()
         {
+            if (!AppConfig.IsASUS()) return false;
             return GetDevice() is not null;
         }
 
         public static void Write(byte[] data)
         {
+            if (!AppConfig.IsASUS()) return;
+
             try
             {
                 HidDevice? device = GetDevice();
@@ -73,6 +78,8 @@ namespace OHelper.USB
 
         public static void Init()
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (IsConnected())
@@ -85,12 +92,16 @@ namespace OHelper.USB
 
         public static void Light(bool status)
         {
+            if (!AppConfig.IsASUS()) return;
+
             Write([XGM_REPORT_ID, 0xc5, status ? (byte)0x50 : (byte)0]);
             Write([XGM_REPORT_ID, 0xbd, 0x00, status ? (byte)0x01 : (byte)0x00]);
         }
 
         public static void LightBrightness(int brightness)
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (IsConnected())
@@ -102,6 +113,8 @@ namespace OHelper.USB
 
         public static void LightMode(AuraMode mode, Color color, Color color2, int speed)
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (IsConnected())
@@ -117,6 +130,8 @@ namespace OHelper.USB
 
         public static void InitLight()
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (IsConnected()) Light(AppConfig.Is("xmg_light"));
@@ -125,6 +140,8 @@ namespace OHelper.USB
 
         public static void Reset()
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (IsConnected()) Write([XGM_REPORT_ID, 0xd1, 0x02]);
@@ -133,6 +150,8 @@ namespace OHelper.USB
 
         public static void SetFan(byte[] curve)
         {
+            if (!AppConfig.IsASUS()) return;
+
             Task.Run(() =>
             {
                 if (HpACPI.IsInvalidCurve(curve)) return;

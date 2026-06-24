@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>Atmintis priskirta vaizdo plokštei</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Veikiančios Asus tarnybos</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>Būsena</value>
   </data>
@@ -769,9 +766,6 @@ Vis tiek norite tęsti?</value>
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>Stabdomos tarnybos</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Perjungti Aura</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>Automatiškai perjungti Clamshell režimą</value>

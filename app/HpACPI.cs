@@ -81,6 +81,19 @@ public class HpACPI
     const uint DEVS = 0x53564544;
     const uint INIT = 0x54494E49;
     const uint WDOG = 0x474F4457;
+    public int MaxFanLevel
+    {
+        get
+        {
+            int userOverride = AppConfig.Get("max_fan_level", 0);
+            if (userOverride > 0 && userOverride <= 100) return userOverride;
+
+            int? modelMax = AppConfig.GetModelCapabilities()?.MaxFanLevel;
+            if (modelMax.HasValue && modelMax.Value > 0 && modelMax.Value <= 100) return modelMax.Value;
+
+            return (AppConfig.ContainsModel("16-ah") || AppConfig.ContainsModel("16-ak") || AppConfig.ContainsModel("OMEN MAX")) ? 60 : 55;
+        }
+    }
 
     public const uint UniversalControl = 0x00100021;
 
@@ -215,7 +228,7 @@ public class HpACPI
     public static int MaxGPUBoost = 25;
 
     public static int MinGPUPower = 0;
-    public static int MaxGPUPower = 70;
+    public static int MaxGPUPower = 4;
 
     public const int MinGPUTemp = 75;
     public const int MaxGPUTemp = 87;
@@ -547,7 +560,6 @@ public class HpACPI
 
     private static string GetWmiMethodName(int returnDataSize)
     {
-        if (returnDataSize <= 0) return "hpqBIOSInt0";
         if (returnDataSize <= 4) return "hpqBIOSInt4";
         if (returnDataSize <= 128) return "hpqBIOSInt128";
         if (returnDataSize <= 1024) return "hpqBIOSInt1024";
@@ -595,7 +607,7 @@ public class HpACPI
 
     #endregion
 
-    #region DeviceSet/DeviceGet — WMI-mapped implementations
+    #region DeviceSet/DeviceGet - WMI-mapped implementations
 
     public void Control(uint dwIoControlCode, byte[] lpInBuffer, byte[] lpOutBuffer)
     {
@@ -624,6 +636,12 @@ public class HpACPI
         return new byte[16];
     }
 
+    private static int UnsupportedDeviceSet(uint deviceId, string? logName)
+    {
+        Logger.WriteLine($"HpACPI: Unsupported DeviceSet 0x{deviceId:X}" + (string.IsNullOrEmpty(logName) ? "" : $" ({logName})"));
+        return 0;
+    }
+
     public int DeviceSet(uint DeviceID, int Status, string? logName)
     {
         if (logName != null)
@@ -649,34 +667,35 @@ public class HpACPI
             return 1;
 
         if (DeviceID == UniversalControl)
-            return 1;
+            return UnsupportedDeviceSet(DeviceID, logName);
 
         if (DeviceID == MicMuteLed || DeviceID == SoundMuteLed)
-            return 1;
+            return UnsupportedDeviceSet(DeviceID, logName);
 
         if (DeviceID == ScreenMiniled1 || DeviceID == ScreenMiniled2 || DeviceID == ScreenFHD
             || DeviceID == ScreenHDRControl || DeviceID == ScreenOptimalBrightness)
-            return 1;
+            return UnsupportedDeviceSet(DeviceID, logName);
 
         if (DeviceID == PPT_APUA0 || DeviceID == PPT_APUA3 || DeviceID == PPT_APUC1
-            || DeviceID == PPT_CPUB0 || DeviceID == PPT_CPUB1)
+            || DeviceID == PPT_CPUB0 || DeviceID == PPT_CPUB1
+            || DeviceID == PPT_GPUC0 || DeviceID == PPT_GPUC2)
             return SetPowerLimit(DeviceID, Status);
-
-        if (DeviceID == PPT_GPUC0 || DeviceID == PPT_GPUC2)
-            return SetGpuPowerLimit(DeviceID, Status);
 
         if (DeviceID == GPU_POWER || DeviceID == GPU_BASE)
             return SetGpuPowerLimit(DeviceID, Status);
 
         if (DeviceID == BootSound)
-            return 1;
+            return UnsupportedDeviceSet(DeviceID, logName);
 
         if (DeviceID == CameraShutter || DeviceID == StatusLed
             || DeviceID == ScreenPadToggle || DeviceID == ScreenPadBrightness || DeviceID == ScreenInit)
-            return 1;
+            return UnsupportedDeviceSet(DeviceID, logName);
+
+        if (DeviceID == FnLock || DeviceID == SlateMode || DeviceID == TabletState || DeviceID == TentState)
+            return UnsupportedDeviceSet(DeviceID, logName);
 
         Logger.WriteLine($"HpACPI: Unmapped DeviceSet 0x{DeviceID:X} = {Status}");
-        return 1;
+        return 0;
     }
 
     public int DeviceSet(uint DeviceID, byte[] Params, string? logName)
@@ -690,7 +709,10 @@ public class HpACPI
         if (DeviceID == DevsCPUFanCurve || DeviceID == DevsGPUFanCurve || DeviceID == DevsMidFanCurve)
         {
             if (Params != null && Params.Length >= 2)
-                return SetFanTargetBlob(Params[0], Params[1]);
+            {
+                var result = SetFanTargetBlob(Params[0], Params[1]);
+                return result.Success && result.ReturnCode == 0 ? 1 : 0;
+            }
             return 1;
         }
 
@@ -707,10 +729,10 @@ public class HpACPI
         }
 
         if (DeviceID == FanHysteresis)
-            return 1;
+            return 0;
 
         Logger.WriteLine($"HpACPI: Unmapped DeviceSet(buf) 0x{DeviceID:X}");
-        return 1;
+        return 0;
     }
 
     public int DeviceGet(uint DeviceID)
@@ -737,25 +759,34 @@ public class HpACPI
             return GetGpuTemp();
 
         if (DeviceID == GPU_BASE)
+        {
+            if (!AppConfig.GetModelCapabilities().SupportsGpuPowerBoost) return -1;
             return GetGpuBasePower();
+        }
+
+        if (DeviceID == GPU_POWER)
+        {
+            if (!AppConfig.GetModelCapabilities().SupportsGpuPowerBoost) return -1;
+            return GetGpuPowerPreset();
+        }
 
         if (DeviceID == ScreenMiniled1 || DeviceID == ScreenMiniled2)
-            return 0;
+            return -1;
 
         if (DeviceID == ScreenFHD || DeviceID == ScreenHDRControl || DeviceID == ScreenOptimalBrightness)
-            return 0;
+            return -1;
 
         if (DeviceID == BootSound)
-            return 0;
+            return -1;
 
         if (DeviceID == FnLock)
-            return 0;
+            return -1;
 
         if (DeviceID == SlateMode || DeviceID == TabletState || DeviceID == TentState)
-            return Tablet_Notebook;
+            return -1;
 
         if (DeviceID == CameraShutter || DeviceID == CameraLed || DeviceID == StatusLed)
-            return 0;
+            return -1;
 
         Logger.WriteLine($"HpACPI: Unmapped DeviceGet 0x{DeviceID:X}");
         return -1;
@@ -1031,7 +1062,8 @@ public class HpACPI
 
     private int SetGpuXg(int status)
     {
-        return 1;
+        Logger.WriteLine("SetGpuXg unsupported on HP Omen; XG Mobile is ASUS-only");
+        return 0;
     }
 
     #endregion
@@ -1147,125 +1179,117 @@ public class HpACPI
 
     public int SetFanRange(HpFan device, byte[] curve)
     {
-        if (!IsWmiReady()) return 1;
-        
-        try
-        {
-            // For models that support custom fan curves, use command 0x2E (0x46 in WMI)
-            // If this isn't supported, fall back to set fan level approach
-            
-            if (curve != null && curve.Length >= 16)
-            {
-                // For Transcend 14 and similar models that don't support custom curves,
-                // we need to use SetFanMode presets only
-                if (!AppConfig.GetModelCapabilities()?.SupportsFanCurves ?? true)
-                {
-                    // Fallback to mode-based approach for unsupported models
-                    return 1;
-                }
-                
-                // Set custom fan curve via 0x46 (DevsCPUFanCurve)
-                byte[][] fanCurves = new byte[4][];
-                for (int i = 0; i < 4; i++)
-                    fanCurves[i] = new byte[128];
-
-                int maxRpm = 55; // default to 55krpm for legacy models
-                if (curve.Length >= 16)
-                {
-                    int cpuRpm = 0;
-                    int gpuRpm = 0;
-                    for (int i = 7; i >= 0; i--)
-                    {
-                        if (curve[i + 8] > 0)
-                        {
-                            cpuRpm = (int)(curve[i + 8] / 100.0 * maxRpm);
-                            gpuRpm = cpuRpm;
-                            break;
-                        }
-                    }
-
-                    fanCurves[(int)device][0] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(cpuRpm * 100) / 100));
-                    fanCurves[(int)device][1] = (byte)Math.Min(65, Math.Max(0, NormalizeRpm(gpuRpm * 100) / 100));
-                }
-
-                var result = ExecuteBiosCommand(
-                    (uint)HpBiosCommand.Default,
-                    (int)HpBiosCommandType.FanCurve,
-                    fanCurves[(int)device],
-                    128);
-
-                return result.Success && result.ReturnCode == 0 ? 1 : 0;
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine("SetFanRange exception: " + ex.Message);
-        }
-
-        return 1;
+        Logger.WriteLine("SetFanRange unsupported by confirmed HP WMI command; software fan loop will write target blobs");
+        return 0;
     }
 
     public int SetFanCurve(HpFan device, byte[] curve)
     {
-        if (!IsWmiReady()) return 1;
-
-        // No valid curve to apply — report failure so AutoFans can fall back
-        // to SetFanRange / firmware-default handling instead of silently no-opping.
-        if (curve == null || curve.Length < 16)
-            return 0;
-
-        try
-        {
-            // Check if this device model supports custom fan curves
-            var modelCaps = AppConfig.GetModelCapabilities();
-            bool supportsCurves = modelCaps?.SupportsFanCurves ?? false;
-
-            if (supportsCurves)
-            {
-                // Use custom fan curve approach with command 0x2E
-                var result = ExecuteBiosCommand(
-                    (uint)HpBiosCommand.Default,
-                    (int)HpBiosCommandType.FanSetLevel,
-                    new byte[]{
-                        curve[0], curve[1], curve[2], curve[3],
-                        curve[4], curve[5], curve[6], curve[7],
-                        curve[8], curve[9], curve[10], curve[11],
-                        curve[12], curve[13], curve[14], curve[15]
-                    },
-                    4);
-
-                return result.Success && result.ReturnCode == 0 ? 1 : 0;
-            }
-            else
-            {
-                // For models without curve support, apply fan mode presets instead
-                // This will be handled by the set fan mode logic with 0x1A command
-                return 1;
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine("SetFanCurve exception: " + ex.Message);
-        }
-
+        Logger.WriteLine("SetFanCurve unsupported by confirmed HP WMI command; software fan loop will write target blobs");
         return 0;
     }
 
-    private int SetFanTargetBlob(byte cpuFanLevel, byte gpuFanLevel)
+    private WmiBiosResult SetFanTargetDirect(byte cpuFanLevel, byte gpuFanLevel)
+    {
+        byte[] payload = new byte[4];
+        payload[0] = (byte)Math.Max(0, Math.Min(65, (int)cpuFanLevel));
+        payload[1] = (byte)Math.Max(0, Math.Min(65, (int)gpuFanLevel));
+
+        return ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.FanSetLevel,
+            payload,
+            4);
+    }
+
+    private WmiBiosResult SetFanTargetBlob(byte cpuFanLevel, byte gpuFanLevel)
     {
         byte[] blob = new byte[128];
         blob[0] = (byte)Math.Max(0, Math.Min(65, (int)cpuFanLevel));
         blob[1] = (byte)Math.Max(0, Math.Min(65, (int)gpuFanLevel));
 
-        var result = ExecuteBiosCommand(
+        return ExecuteBiosCommand(
             (uint)HpBiosCommand.Default,
             (int)HpBiosCommandType.StatusWrite,
             blob,
             4);
+    }
+    public int SetFanMode(byte modeByte)
+    {
+        if (!IsWmiReady()) return 0;
 
-        return result.Success && result.ReturnCode == 0 ? 1 : 0;
+        try
+        {
+            var result = ExecuteBiosCommand(
+                (uint)HpBiosCommand.Default,
+                (int)HpBiosCommandType.PerformanceMode,
+                new byte[] { 0xFF, modeByte, 0x00, 0x00 },
+                4);
+
+            Logger.WriteLine($"HpACPI SetFanMode: 0x{modeByte:X2} success={result.Success} rc={result.ReturnCode}");
+            return result.Success && result.ReturnCode == 0 ? 1 : 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("SetFanMode exception: " + ex.Message);
+            return 0;
+        }
     }
 
+    public int SetFanLevel(byte cpuLevel, byte gpuLevel)
+    {
+        if (!IsWmiReady()) return 0;
+
+        try
+        {
+            if (AppConfig.HasLinkedFanCurves())
+            {
+                byte linked = Math.Max(cpuLevel, gpuLevel);
+                cpuLevel = gpuLevel = linked;
+            }
+
+            cpuLevel = (byte)Math.Min(cpuLevel, MaxFanLevel);
+            gpuLevel = (byte)Math.Min(gpuLevel, MaxFanLevel);
+
+            if (cpuLevel == 0 && gpuLevel == 0)
+            {
+                Logger.WriteLine("HpACPI SetFanLevel(0,0): restoring BIOS auto fan control instead of writing manual zero");
+                SetFanMax(false);
+                int result = SetFanMode(0x30);
+                Logger.WriteLine($"HpACPI SetFanLevel result={result} path=auto");
+                return result;
+            }
+
+            if (cpuLevel >= MaxFanLevel && gpuLevel >= MaxFanLevel)
+            {
+                int result = SetFanMax(true);
+                Logger.WriteLine($"HpACPI SetFanLevel result={result} path=max");
+                return result;
+            }
+
+            SetFanMax(false);
+            var directResult = SetFanTargetDirect(cpuLevel, gpuLevel);
+            bool directSuccess = directResult.Success && directResult.ReturnCode == 0;
+            Logger.WriteLine($"HpACPI SetFanLevel path=direct 0x2E cpu={cpuLevel} gpu={gpuLevel} approxRpm={cpuLevel * 100}/{gpuLevel * 100} success={directResult.Success} rc={directResult.ReturnCode}");
+
+            if (directSuccess)
+            {
+                Logger.WriteLine($"HpACPI SetFanLevel result=1 path=direct 0x2E cpu={cpuLevel} gpu={gpuLevel} approxRpm={cpuLevel * 100}/{gpuLevel * 100}");
+                return 1;
+            }
+
+            var blobResult = SetFanTargetBlob(cpuLevel, gpuLevel);
+            bool blobSuccess = blobResult.Success && blobResult.ReturnCode == 0;
+            Logger.WriteLine($"HpACPI SetFanLevel path=blob 0x46 cpu={cpuLevel} gpu={gpuLevel} approxRpm={cpuLevel * 100}/{gpuLevel * 100} success={blobResult.Success} rc={blobResult.ReturnCode}");
+            Logger.WriteLine($"HpACPI SetFanLevel result={(blobSuccess ? 1 : 0)} path=blob 0x46 cpu={cpuLevel} gpu={gpuLevel} approxRpm={cpuLevel * 100}/{gpuLevel * 100}");
+            return blobSuccess ? 1 : 0;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("SetFanLevel exception: " + ex.Message);
+            return 0;
+        }
+    }
     public byte[] GetFanCurve(HpFan device, int mode = 0)
     {
         // Return default fan curve for the model and mode
@@ -1307,30 +1331,13 @@ public class HpACPI
 
     public (int up, int down) GetFanHysteresis()
     {
-        // In HP BIOS, hysteresis is typically handled by the firmware
-        // This is a stub - in reality, we'd read from WMI or device settings
-        // For now, return defaults that match common HP behavior
-        return (5, 3); // 5°C up, 3°C down hysteresis
+        return (-1, -1);
     }
 
     public int SetFanHysteresis(int up, int down)
     {
-        if (!IsWmiReady()) return 1;
-        
-        try
-        {
-            // For models that support direct hysteresis setting, we'd send a command here
-            // HP BIOS doesn't typically expose hysteresis via WMI directly
-            
-            // For now, just return success since we can't set it via WMI
-            return 1;
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine("SetFanHysteresis exception: " + ex.Message);
-        }
-        
-        return 1;
+        Logger.WriteLine("SetFanHysteresis unsupported by confirmed HP WMI command; software fan loop applies hysteresis locally");
+        return 0;
     }
 
     public int SetFanMax(bool enabled)
@@ -1449,17 +1456,24 @@ public class HpACPI
     private int SetGpuPowerLimit(uint deviceId, int value)
     {
         if (!IsWmiReady()) return 0;
+        if (!AppConfig.GetModelCapabilities().SupportsGpuPowerBoost)
+        {
+            Logger.WriteLine("SetGpuPowerLimit skipped: GPU Power Boost unsupported by model capability database");
+            return 0;
+        }
 
         try
         {
-            bool customTgp = value > 0;
-            bool ppab = value > 0;
+            // OMEN exposes GPU power as preset flags, not a raw watt value:
+            // 0 = base TGP, 1 = custom TGP, 2+ = custom TGP + PPAB levels.
+            byte customTgp = value > 0 ? (byte)1 : (byte)0;
+            byte ppab = value > 1 ? (byte)Math.Min(value - 1, byte.MaxValue) : (byte)0;
 
             var result = ExecuteBiosCommand(
                 (uint)HpBiosCommand.Default,
                 (int)HpBiosCommandType.GpuSetPower,
-                new byte[] { customTgp ? (byte)1 : (byte)0, ppab ? (byte)1 : (byte)0, 0x01, 0x00 },
-                0);
+                new byte[] { customTgp, ppab, 0x01, 0x00 },
+                4);
             return result.Success && result.ReturnCode == 0 ? 1 : 0;
         }
         catch { }
@@ -1477,10 +1491,29 @@ public class HpACPI
             new byte[4],
             4);
 
-        if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 2)
-            return result.Data[0]; // customTgp flag
+        if (result.Success && result.ReturnCode == 0 && result.Data.Length >= 1)
+            return 0;
 
         return -1;
+    }
+
+    private int GetGpuPowerPreset()
+    {
+        if (!IsWmiReady()) return -1;
+
+        var result = ExecuteBiosCommand(
+            (uint)HpBiosCommand.Default,
+            (int)HpBiosCommandType.GpuGetPower,
+            new byte[4],
+            4);
+
+        if (!result.Success || result.ReturnCode != 0 || result.Data.Length < 2)
+            return -1;
+
+        bool customTgp = result.Data[0] != 0;
+        int ppabLevel = result.Data[1];
+        if (!customTgp) return 0;
+        return Math.Max(1, Math.Min(MaxGPUPower, ppabLevel + 1));
     }
 
     #endregion
@@ -1590,6 +1623,7 @@ public class HpACPI
 
     public void SetAPUMem(int memory = 4)
     {
+        Logger.WriteLine("SetAPUMem unsupported by confirmed HP WMI command");
     }
 
     public int GetAPUMem()
@@ -1604,6 +1638,7 @@ public class HpACPI
 
     public void SetCores(int eCores, int pCores)
     {
+        Logger.WriteLine("SetCores unsupported by confirmed HP WMI command");
     }
 
     public bool IsNVidiaGPU()
@@ -1653,16 +1688,9 @@ public class HpACPI
 
         if (deviceId == GPU_POWER || deviceId == GPU_BASE)
         {
-            var result = ExecuteBiosCommand(
-                (uint)HpBiosCommand.Default,
-                (int)HpBiosCommandType.GpuGetPower,
-                new byte[4],
-                4);
-            return result.Success && result.ReturnCode == 0;
-        }
+            if (!AppConfig.GetModelCapabilities().SupportsGpuPowerBoost)
+                return false;
 
-        if (deviceId == PPT_GPUC0 || deviceId == PPT_GPUC2)
-        {
             var result = ExecuteBiosCommand(
                 (uint)HpBiosCommand.Default,
                 (int)HpBiosCommandType.GpuGetPower,
@@ -1675,7 +1703,8 @@ public class HpACPI
             return false;
 
         if (deviceId == PPT_APUA0 || deviceId == PPT_APUA3 || deviceId == PPT_APUC1
-            || deviceId == PPT_CPUB0 || deviceId == PPT_CPUB1)
+            || deviceId == PPT_CPUB0 || deviceId == PPT_CPUB1
+            || deviceId == PPT_GPUC0 || deviceId == PPT_GPUC2)
         {
             var result = ExecuteBiosCommand(
                 (uint)HpBiosCommand.Default,

@@ -207,15 +207,15 @@ namespace OHelper
             labelServices.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
             labelServices.Location = new Point(57, 19);
             labelServices.Name = "labelServices";
-            labelServices.Size = new Size(273, 32);
+            labelServices.Size = new Size(296, 32);
             labelServices.TabIndex = 20;
-            labelServices.Text = "Asus Services Running";
+            labelServices.Text = "OEM Services Running";
             // 
             // buttonServices
             // 
             buttonServices.Activated = false;
             buttonServices.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonServices.BackColor = SystemColors.ButtonHighlight;
+            buttonServices.BackColor = RForm.buttonMain;
             buttonServices.BorderColor = Color.Transparent;
             buttonServices.BorderRadius = 2;
             buttonServices.FlatStyle = FlatStyle.Flat;
@@ -231,7 +231,7 @@ namespace OHelper
             // panelBindingsHeader
             // 
             panelBindingsHeader.AutoSize = true;
-            panelBindingsHeader.BackColor = SystemColors.ControlLight;
+            panelBindingsHeader.BackColor = RForm.buttonSecond;
             panelBindingsHeader.Controls.Add(pictureBindings);
             panelBindingsHeader.Controls.Add(pictureHelp);
             panelBindingsHeader.Controls.Add(labelBindings);
@@ -351,8 +351,8 @@ namespace OHelper
             // 
             // comboFNE
             // 
-            comboFNE.BorderColor = Color.White;
-            comboFNE.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboFNE.BorderColor = RForm.borderMain;
+            comboFNE.ButtonColor = RForm.buttonMain;
             comboFNE.Dock = DockStyle.Top;
             comboFNE.FormattingEnabled = true;
             comboFNE.Location = new Point(205, 336);
@@ -385,8 +385,8 @@ namespace OHelper
             // 
             // comboFNV
             // 
-            comboFNV.BorderColor = Color.White;
-            comboFNV.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboFNV.BorderColor = RForm.borderMain;
+            comboFNV.ButtonColor = RForm.buttonMain;
             comboFNV.Dock = DockStyle.Top;
             comboFNV.FormattingEnabled = true;
             comboFNV.Location = new Point(205, 290);
@@ -419,8 +419,8 @@ namespace OHelper
             // 
             // comboFNC
             // 
-            comboFNC.BorderColor = Color.White;
-            comboFNC.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboFNC.BorderColor = RForm.borderMain;
+            comboFNC.ButtonColor = RForm.buttonMain;
             comboFNC.Dock = DockStyle.Top;
             comboFNC.FormattingEnabled = true;
             comboFNC.Location = new Point(205, 244);
@@ -453,8 +453,8 @@ namespace OHelper
             // 
             // comboFNF4
             // 
-            comboFNF4.BorderColor = Color.White;
-            comboFNF4.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboFNF4.BorderColor = RForm.borderMain;
+            comboFNF4.ButtonColor = RForm.buttonMain;
             comboFNF4.Dock = DockStyle.Top;
             comboFNF4.FormattingEnabled = true;
             comboFNF4.Location = new Point(205, 198);
@@ -476,8 +476,8 @@ namespace OHelper
             // 
             // comboM4
             // 
-            comboM4.BorderColor = Color.White;
-            comboM4.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboM4.BorderColor = RForm.borderMain;
+            comboM4.ButtonColor = RForm.buttonMain;
             comboM4.Dock = DockStyle.Top;
             comboM4.FormattingEnabled = true;
             comboM4.Items.AddRange(new object[] { Strings.PerformanceMode, Strings.OpenOHelper, Strings.Custom });
@@ -511,11 +511,11 @@ namespace OHelper
             // 
             // comboM3
             // 
-            comboM3.BorderColor = Color.White;
-            comboM3.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboM3.BorderColor = RForm.borderMain;
+            comboM3.ButtonColor = RForm.buttonMain;
             comboM3.Dock = DockStyle.Top;
             comboM3.FormattingEnabled = true;
-            comboM3.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.ToggleAura, Strings.Custom });
+            comboM3.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.Custom });
             comboM3.Location = new Point(205, 106);
             comboM3.Margin = new Padding(5, 3, 5, 3);
             comboM3.Name = "comboM3";
@@ -568,11 +568,11 @@ namespace OHelper
             // 
             // comboM2
             // 
-            comboM2.BorderColor = Color.White;
-            comboM2.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboM2.BorderColor = RForm.borderMain;
+            comboM2.ButtonColor = RForm.buttonMain;
             comboM2.Dock = DockStyle.Top;
             comboM2.FormattingEnabled = true;
-            comboM2.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.ToggleAura, Strings.Custom });
+            comboM2.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.Custom });
             comboM2.Location = new Point(205, 60);
             comboM2.Margin = new Padding(5, 3, 5, 3);
             comboM2.Name = "comboM2";
@@ -592,11 +592,11 @@ namespace OHelper
             // 
             // comboM1
             // 
-            comboM1.BorderColor = Color.White;
-            comboM1.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboM1.BorderColor = RForm.borderMain;
+            comboM1.ButtonColor = RForm.buttonMain;
             comboM1.Dock = DockStyle.Top;
             comboM1.FormattingEnabled = true;
-            comboM1.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.ToggleAura, Strings.Custom });
+            comboM1.Items.AddRange(new object[] { Strings.Default, Strings.VolumeMute, Strings.PlayPause, Strings.PrintScreen, Strings.Custom });
             comboM1.Location = new Point(205, 14);
             comboM1.Margin = new Padding(5, 3, 5, 3);
             comboM1.Name = "comboM1";
@@ -635,7 +635,7 @@ namespace OHelper
             // panelBacklightHeader
             // 
             panelBacklightHeader.AutoSize = true;
-            panelBacklightHeader.BackColor = SystemColors.ControlLight;
+            panelBacklightHeader.BackColor = RForm.buttonSecond;
             panelBacklightHeader.Controls.Add(sliderBrightness);
             panelBacklightHeader.Controls.Add(pictureBacklight);
             panelBacklightHeader.Controls.Add(labelBacklightTitle);
@@ -756,8 +756,8 @@ namespace OHelper
             // comboKeyboardSpeed
             // 
             comboKeyboardSpeed.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            comboKeyboardSpeed.BorderColor = Color.White;
-            comboKeyboardSpeed.ButtonColor = SystemColors.ControlLight;
+            comboKeyboardSpeed.BorderColor = RForm.borderMain;
+            comboKeyboardSpeed.ButtonColor = RForm.buttonMain;
             comboKeyboardSpeed.FlatStyle = FlatStyle.Flat;
             comboKeyboardSpeed.Font = new Font("Segoe UI", 9F);
             comboKeyboardSpeed.FormattingEnabled = true;
@@ -1128,7 +1128,7 @@ namespace OHelper
             // panelSettingsHeader
             // 
             panelSettingsHeader.AutoSize = true;
-            panelSettingsHeader.BackColor = SystemColors.ControlLight;
+            panelSettingsHeader.BackColor = RForm.buttonSecond;
             panelSettingsHeader.Controls.Add(pictureScan);
             panelSettingsHeader.Controls.Add(pictureLog);
             panelSettingsHeader.Controls.Add(pictureSettings);
@@ -1398,13 +1398,12 @@ namespace OHelper
             panelAPU.Size = new Size(949, 57);
             panelAPU.TabIndex = 46;
             panelAPU.Visible = false;
-            panelAPU.Paint += panelAPU_Paint;
             // 
             // comboAPU
             // 
             comboAPU.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            comboAPU.BorderColor = Color.White;
-            comboAPU.ButtonColor = SystemColors.ControlLight;
+            comboAPU.BorderColor = RForm.borderMain;
+            comboAPU.ButtonColor = RForm.buttonMain;
             comboAPU.FlatStyle = FlatStyle.Flat;
             comboAPU.Font = new Font("Segoe UI", 9F);
             comboAPU.FormattingEnabled = true;
@@ -1456,7 +1455,7 @@ namespace OHelper
             // 
             buttonCores.Activated = false;
             buttonCores.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonCores.BackColor = SystemColors.ButtonHighlight;
+            buttonCores.BackColor = RForm.buttonMain;
             buttonCores.BorderColor = Color.Transparent;
             buttonCores.BorderRadius = 2;
             buttonCores.FlatStyle = FlatStyle.Flat;
@@ -1472,8 +1471,8 @@ namespace OHelper
             // comboCoresP
             // 
             comboCoresP.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            comboCoresP.BorderColor = Color.White;
-            comboCoresP.ButtonColor = SystemColors.ControlLight;
+            comboCoresP.BorderColor = RForm.borderMain;
+            comboCoresP.ButtonColor = RForm.buttonMain;
             comboCoresP.FlatStyle = FlatStyle.Flat;
             comboCoresP.Font = new Font("Segoe UI", 9F);
             comboCoresP.FormattingEnabled = true;
@@ -1487,8 +1486,8 @@ namespace OHelper
             // comboCoresE
             // 
             comboCoresE.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            comboCoresE.BorderColor = Color.White;
-            comboCoresE.ButtonColor = SystemColors.ControlLight;
+            comboCoresE.BorderColor = RForm.borderMain;
+            comboCoresE.ButtonColor = RForm.buttonMain;
             comboCoresE.FlatStyle = FlatStyle.Flat;
             comboCoresE.Font = new Font("Segoe UI", 9F);
             comboCoresE.FormattingEnabled = true;
@@ -1559,7 +1558,7 @@ namespace OHelper
             // 
             buttonACPISend.Activated = false;
             buttonACPISend.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            buttonACPISend.BackColor = SystemColors.ButtonHighlight;
+            buttonACPISend.BackColor = RForm.buttonMain;
             buttonACPISend.BorderColor = Color.Transparent;
             buttonACPISend.BorderRadius = 2;
             buttonACPISend.FlatStyle = FlatStyle.Flat;
@@ -1609,8 +1608,8 @@ namespace OHelper
             // comboOptimalBrightness
             // 
             comboOptimalBrightness.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            comboOptimalBrightness.BorderColor = Color.White;
-            comboOptimalBrightness.ButtonColor = SystemColors.ControlLight;
+            comboOptimalBrightness.BorderColor = RForm.borderMain;
+            comboOptimalBrightness.ButtonColor = RForm.buttonMain;
             comboOptimalBrightness.FlatStyle = FlatStyle.Flat;
             comboOptimalBrightness.Font = new Font("Segoe UI", 9F);
             comboOptimalBrightness.FormattingEnabled = true;

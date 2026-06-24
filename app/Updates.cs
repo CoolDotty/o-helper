@@ -13,7 +13,7 @@ namespace OHelper
         const int DRIVER_NOT_FOUND = 2;
         const int DRIVER_NEWER = 1;
 
-        const string SYMBOL_UPDATED = "•";
+        const string SYMBOL_UPDATED = "â€¢";
         const string SYMBOL_NEW = "?";
 
         //static int rowCount = 0;
@@ -87,15 +87,13 @@ namespace OHelper
             ClearTable(tableBios);
             ClearTable(tableDrivers);
 
-            string rogParam = AppConfig.IsROG() ? "&systemCode=rog" : "";
+
 
             _cts.Cancel();
             _cts.Dispose();
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
 
-            _ = Task.Run(() => DriversAsync($"https://rog.asus.com/support/webapi/product/GetPDBIOS?website=global&model={model}&cpu={model}{rogParam}", 1, tableBios, token), token);
-            _ = Task.Run(() => DriversAsync($"https://rog.asus.com/support/webapi/product/GetPDDrivers?website=global&model={model}&cpu={model}&osid=52{rogParam}", 0, tableDrivers, token), token);
             _ = Task.Run(LaptopSerialNumber, token);
 
             textSerial.BackColor = panelBios.BackColor;
@@ -365,7 +363,7 @@ namespace OHelper
                 var groups = data.GetProperty("Result").GetProperty("Obj");
 
 
-                List<string> skipList = new() { "Armoury Crate & Aura Creator Installer", "MyASUS", "ASUS Smart Display Control", "Aura Wallpaper", "Virtual Pet", "Virtual Pet- Ultimate Edition", "ROG Font V1.5", "Armoury Crate Control Interface", "Virtual Assistant" };
+                List<string> skipList = new();
                 List<DriverDownload> drivers = new();
 
                 for (int i = 0; i < groups.GetArrayLength(); i++)

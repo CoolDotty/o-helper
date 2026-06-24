@@ -69,7 +69,7 @@ namespace OHelper
             // 
             // pictureMatrix
             // 
-            pictureMatrix.BackColor = Color.Black;
+            pictureMatrix.BackColor = RForm.chartMain;
             pictureMatrix.Cursor = Cursors.SizeAll;
             pictureMatrix.Location = new Point(731, 27);
             pictureMatrix.Name = "pictureMatrix";
@@ -94,7 +94,7 @@ namespace OHelper
             // buttonPicture
             // 
             buttonPicture.Activated = false;
-            buttonPicture.BackColor = SystemColors.ControlLight;
+            buttonPicture.BackColor = RForm.buttonSecond;
             buttonPicture.BorderColor = Color.Transparent;
             buttonPicture.BorderRadius = 5;
             buttonPicture.FlatAppearance.BorderSize = 0;
@@ -112,7 +112,7 @@ namespace OHelper
             // 
             // panelPicture
             // 
-            panelPicture.BackColor = Color.Black;
+            panelPicture.BackColor = RForm.chartMain;
             panelPicture.Controls.Add(pictureMatrix);
             panelPicture.Dock = DockStyle.Top;
             panelPicture.Location = new Point(0, 0);
@@ -149,7 +149,7 @@ namespace OHelper
             // buttonReset
             // 
             buttonReset.Activated = false;
-            buttonReset.BackColor = SystemColors.ControlLight;
+            buttonReset.BackColor = RForm.buttonSecond;
             buttonReset.BorderColor = Color.Transparent;
             buttonReset.BorderRadius = 5;
             buttonReset.FlatAppearance.BorderSize = 0;
@@ -270,8 +270,8 @@ namespace OHelper
             // 
             // comboRotation
             // 
-            comboRotation.BorderColor = Color.White;
-            comboRotation.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboRotation.BorderColor = RForm.borderMain;
+            comboRotation.ButtonColor = RForm.buttonMain;
             comboRotation.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             comboRotation.FormattingEnabled = true;
             comboRotation.Items.AddRange(new object[] { "Straight", "Diagonal" });
@@ -303,8 +303,8 @@ namespace OHelper
             // 
             // comboScaling
             // 
-            comboScaling.BorderColor = Color.White;
-            comboScaling.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboScaling.BorderColor = RForm.borderMain;
+            comboScaling.ButtonColor = RForm.buttonMain;
             comboScaling.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             comboScaling.FormattingEnabled = true;
             comboScaling.Items.AddRange(new object[] { "Default", "Low", "High", "Bilinear", "Bicubic", "NearestNeighbor", "HighQualityBilinear", "HighQualityBicubic" });

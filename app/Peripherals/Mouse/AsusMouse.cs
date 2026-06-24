@@ -299,7 +299,7 @@ namespace OHelper.Peripherals.Mouse
             return true;
         }
 
-        //GMP1 = G-Helper Mouse Profile Version 1 :D
+        // GMP1 = O-Helper mouse profile version 1.
         private static readonly byte[] MAGIC = { (byte)'G', (byte)'M', (byte)'P', (byte)'1' };
 
         public byte[] Export()
@@ -498,7 +498,7 @@ namespace OHelper.Peripherals.Mouse
         }
 
         //Override this for non battery devices to check whether the connection is still there
-        //This function should automatically disconnect the device in GHelper if the device is no longer there or the pipe is broken.
+        // Disconnect the device if it is no longer present or the pipe is broken.
         public virtual void CheckConnection()
         {
             ReadBattery();
@@ -1091,7 +1091,7 @@ namespace OHelper.Peripherals.Mouse
                 if (HasAngleTuning())
                     AngleAdjustmentDegrees = ParseAngleAdjustment(response);
 
-                Logger.WriteLine(GetDisplayName() + ": Angle Snapping enabled: " + AngleSnapping + ", Angle Adjustment: " + AngleAdjustmentDegrees + "°");
+                Logger.WriteLine(GetDisplayName() + ": Angle Snapping enabled: " + AngleSnapping + ", Angle Adjustment: " + AngleAdjustmentDegrees + "Â°");
             }
         }
 
@@ -2340,7 +2340,7 @@ namespace OHelper.Peripherals.Mouse
 
         public virtual bool HasButtonBindings() => true;
 
-        // Slots whose bindings cannot be read back from device — always written, never reliably read.
+        // Slots whose bindings cannot be read back from device â€” always written, never reliably read.
         public virtual HashSet<int> WriteOnlySlots => [];
 
         private string WriteOnlySlotConfigKey(int slot) =>
@@ -2373,7 +2373,7 @@ namespace OHelper.Peripherals.Mouse
             // Validate packet structure: expect 0x12 0x05 header
             if (response.Length < 6 || response[1] != 0x12 || response[2] != 0x05)
             {
-                Logger.WriteLine(GetDisplayName() + ": Button bindings packet header mismatch — hiding bindings panel");
+                Logger.WriteLine(GetDisplayName() + ": Button bindings packet header mismatch â€” hiding bindings panel");
                 return;
             }
 
@@ -2436,7 +2436,7 @@ namespace OHelper.Peripherals.Mouse
             if (slot < 0 || !slots.TryGetValue(slot, out var slotDef))
             {
                 Logger.WriteLine(GetDisplayName()
-                    + $": SetButtonBinding: slot {slot} out of range (0–{slots.Count - 1}).");
+                    + $": SetButtonBinding: slot {slot} out of range (0â€“{slots.Count - 1}).");
                 return;
             }
 

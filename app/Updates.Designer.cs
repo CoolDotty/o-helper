@@ -127,7 +127,7 @@ namespace OHelper
             // 
             buttonRefresh.Activated = false;
             buttonRefresh.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonRefresh.BackColor = SystemColors.ControlLight;
+            buttonRefresh.BackColor = RForm.buttonSecond;
             buttonRefresh.BorderColor = Color.Transparent;
             buttonRefresh.BorderRadius = 5;
             buttonRefresh.FlatAppearance.BorderSize = 0;
@@ -259,7 +259,7 @@ namespace OHelper
             labelLegendGreen.AutoSize = true;
             labelLegendGreen.BackColor = Color.Green;
             labelLegendGreen.Dock = DockStyle.Top;
-            labelLegendGreen.ForeColor = Color.White;
+            labelLegendGreen.ForeColor = RForm.foreMain;
             labelLegendGreen.Location = new Point(204, 8);
             labelLegendGreen.Margin = new Padding(10, 8, 10, 8);
             labelLegendGreen.Name = "labelLegendGreen";
@@ -271,9 +271,9 @@ namespace OHelper
             // labelLegendGray
             // 
             labelLegendGray.AutoSize = true;
-            labelLegendGray.BackColor = Color.Gray;
+            labelLegendGray.BackColor = RForm.borderMain;
             labelLegendGray.Dock = DockStyle.Top;
-            labelLegendGray.ForeColor = Color.White;
+            labelLegendGray.ForeColor = RForm.foreMain;
             labelLegendGray.Location = new Point(547, 8);
             labelLegendGray.Margin = new Padding(10, 8, 10, 8);
             labelLegendGray.Name = "labelLegendGray";
@@ -287,7 +287,7 @@ namespace OHelper
             labelLegendRed.AutoSize = true;
             labelLegendRed.BackColor = Color.Red;
             labelLegendRed.Dock = DockStyle.Top;
-            labelLegendRed.ForeColor = Color.White;
+            labelLegendRed.ForeColor = RForm.foreMain;
             labelLegendRed.Location = new Point(890, 8);
             labelLegendRed.Margin = new Padding(10, 8, 10, 8);
             labelLegendRed.Name = "labelLegendRed";

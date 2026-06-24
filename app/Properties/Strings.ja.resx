@@ -177,9 +177,6 @@
   <data name="APUMemory" xml:space="preserve">
     <value>GPUに割り当てられたメモリ</value>
   </data>
-  <data name="AsusServicesRunning" xml:space="preserve">
-    <value>Asusサービスを実行中</value>
-  </data>
   <data name="AuraBatteryState" xml:space="preserve">
     <value>バッテリーの状態</value>
   </data>
@@ -769,9 +766,6 @@
   </data>
   <data name="StoppingServices" xml:space="preserve">
     <value>サービスの停止中</value>
-  </data>
-  <data name="ToggleAura" xml:space="preserve">
-    <value>Auraを切り替える</value>
   </data>
   <data name="ToggleClamshellMode" xml:space="preserve">
     <value>クランシェルモードの自動切り替え</value>

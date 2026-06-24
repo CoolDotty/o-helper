@@ -21,6 +21,12 @@ namespace OHelper.Gpu
             settings = settingsForm;
         }
 
+        private void RefreshFansGpuTab()
+        {
+            if (settings.fansForm is not null && !settings.fansForm.IsDisposed && settings.fansForm.Text != "")
+                settings.fansForm.BeginInvoke((Action)settings.fansForm.InitGPU);
+        }
+
         public void InitGPUMode()
         {
             if (AppConfig.NoGpu())
@@ -54,12 +60,13 @@ namespace OHelper.Gpu
 
             if (mode == HpACPI.GPUModeEco && HardwareControl.GpuControl?.IsValid == true)
             {
-                Logger.WriteLine("GPU in iGPU-only mode but dGPU control still active — disposing");
+                Logger.WriteLine("GPU in iGPU-only mode but dGPU control still active - disposing");
                 HardwareControl.DisposeGpuControl();
             }
 
             AppConfig.Set("gpu_mode", gpuMode);
             settings.VisualiseGPUMode(gpuMode);
+            RefreshFansGpuTab();
 
             Aura.CustomRGB.ApplyGPUColor(gpuMode);
 
@@ -115,7 +122,7 @@ namespace OHelper.Gpu
             }
             else
             {
-                Logger.WriteLine("GPU mode change failed — no reboot");
+                Logger.WriteLine("GPU mode change failed - no reboot");
                 settings.VisualiseGPUMode();
             }
         }
@@ -176,6 +183,7 @@ namespace OHelper.Gpu
                             if (HardwareControl.GpuControl is not null) break;
                             await Task.Delay(TimeSpan.FromSeconds(2));
                         }
+                        settings.Invoke(RefreshFansGpuTab);
                         Program.modeControl.SetGPUClocks(false);
                     }
 
@@ -252,60 +260,7 @@ namespace OHelper.Gpu
 
         public void ToggleXGM(bool silent = false)
         {
-
-            Task.Run(async () =>
-            {
-                settings.LockGPUModes();
-
-                if (Program.acpi.DeviceGet(HpACPI.GPUXG) == 1)
-                {
-                    XGM.Reset();
-                    HardwareControl.KillGPUApps();
-
-                    if (silent)
-                    {
-                        Program.acpi.DeviceSet(HpACPI.GPUXG, 0, "GPU XGM");
-                        await Task.Delay(TimeSpan.FromSeconds(15));
-                    }
-                    else
-                    {
-                        DialogResult dialogResult = DialogResult.No;
-                        settings.Invoke((MethodInvoker)delegate
-                        {
-                            dialogResult = MessageBox.Show(settings, "Did you close all applications running on XG Mobile?", "Disabling XG Mobile", MessageBoxButtons.YesNo);
-                        });
-                        
-                        if (dialogResult == DialogResult.Yes)
-                        {
-                            Program.acpi.DeviceSet(HpACPI.GPUXG, 0, "GPU XGM");
-                            await Task.Delay(TimeSpan.FromSeconds(15));
-                        }
-                    }
-                }
-                else
-                {
-
-                    if (AppConfig.Is("xgm_special"))
-                        Program.acpi.DeviceSet(HpACPI.GPUXG, 0x101, "GPU XGM");
-                    else
-                        Program.acpi.DeviceSet(HpACPI.GPUXG, 1, "GPU XGM");
-
-                    XGM.Init();
-
-                    await Task.Delay(TimeSpan.FromSeconds(15));
-
-                    if (AppConfig.IsApplyFans())
-                        XGM.SetFan(AppConfig.GetFanConfig(HpFan.XGM));
-
-                    HardwareControl.RecreateGpuControl();
-
-                }
-
-                settings.Invoke(delegate
-                {
-                    InitGPUMode();
-                });
-            });
+            Logger.WriteLine("XG Mobile toggle is disabled in O-Helper; HP OMEN has no XG Mobile equivalent");
         }
 
         public void KillGPUApps()

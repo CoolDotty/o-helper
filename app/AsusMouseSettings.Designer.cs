@@ -189,8 +189,8 @@ namespace OHelper
             // comboProfile
             // 
             comboProfile.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
-            comboProfile.BorderColor = Color.White;
-            comboProfile.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboProfile.BorderColor = RForm.borderMain;
+            comboProfile.ButtonColor = RForm.buttonMain;
             comboProfile.DropDownStyle = ComboBoxStyle.DropDownList;
             comboProfile.FlatStyle = FlatStyle.Flat;
             comboProfile.FormattingEnabled = true;
@@ -371,8 +371,8 @@ namespace OHelper
             // 
             // comboBoxLiftOffDistance
             // 
-            comboBoxLiftOffDistance.BorderColor = Color.White;
-            comboBoxLiftOffDistance.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxLiftOffDistance.BorderColor = RForm.borderMain;
+            comboBoxLiftOffDistance.ButtonColor = RForm.buttonMain;
             comboBoxLiftOffDistance.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxLiftOffDistance.FlatStyle = FlatStyle.Flat;
             comboBoxLiftOffDistance.FormattingEnabled = true;
@@ -477,8 +477,8 @@ namespace OHelper
             // 
             // comboBoxZoneModePollingRate
             // 
-            comboBoxZoneModePollingRate.BorderColor = Color.White;
-            comboBoxZoneModePollingRate.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxZoneModePollingRate.BorderColor = RForm.borderMain;
+            comboBoxZoneModePollingRate.ButtonColor = RForm.buttonMain;
             comboBoxZoneModePollingRate.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxZoneModePollingRate.FlatStyle = FlatStyle.Flat;
             comboBoxZoneModePollingRate.FormattingEnabled = true;
@@ -602,8 +602,8 @@ namespace OHelper
             // 
             // comboBoxPollingRate
             // 
-            comboBoxPollingRate.BorderColor = Color.White;
-            comboBoxPollingRate.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxPollingRate.BorderColor = RForm.borderMain;
+            comboBoxPollingRate.ButtonColor = RForm.buttonMain;
             comboBoxPollingRate.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxPollingRate.FlatStyle = FlatStyle.Flat;
             comboBoxPollingRate.FormattingEnabled = true;
@@ -731,7 +731,7 @@ namespace OHelper
             buttonDPIColor.Activated = false;
             buttonDPIColor.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
             buttonDPIColor.AutoSize = true;
-            buttonDPIColor.BackColor = SystemColors.ButtonHighlight;
+            buttonDPIColor.BackColor = RForm.buttonMain;
             buttonDPIColor.BorderColor = Color.Transparent;
             buttonDPIColor.BorderRadius = 2;
             buttonDPIColor.FlatStyle = FlatStyle.Flat;
@@ -784,7 +784,7 @@ namespace OHelper
             // 
             buttonDPI2.AccessibleName = "DPI Setting 2";
             buttonDPI2.Activated = false;
-            buttonDPI2.BackColor = SystemColors.ControlLightLight;
+            buttonDPI2.BackColor = RForm.buttonMain;
             buttonDPI2.BorderColor = Color.Transparent;
             buttonDPI2.BorderRadius = 5;
             buttonDPI2.Dock = DockStyle.Top;
@@ -807,7 +807,7 @@ namespace OHelper
             // 
             buttonDPI1.AccessibleName = "DPI Setting 1";
             buttonDPI1.Activated = false;
-            buttonDPI1.BackColor = SystemColors.ControlLightLight;
+            buttonDPI1.BackColor = RForm.buttonMain;
             buttonDPI1.BorderColor = Color.Transparent;
             buttonDPI1.BorderRadius = 5;
             buttonDPI1.CausesValidation = false;
@@ -831,7 +831,7 @@ namespace OHelper
             // 
             buttonDPI3.AccessibleName = "DPI Setting 3";
             buttonDPI3.Activated = false;
-            buttonDPI3.BackColor = SystemColors.ControlLightLight;
+            buttonDPI3.BackColor = RForm.buttonMain;
             buttonDPI3.BorderColor = Color.Transparent;
             buttonDPI3.BorderRadius = 5;
             buttonDPI3.Dock = DockStyle.Top;
@@ -854,7 +854,7 @@ namespace OHelper
             // 
             buttonDPI4.AccessibleName = "DPI Setting 4";
             buttonDPI4.Activated = false;
-            buttonDPI4.BackColor = SystemColors.ControlLightLight;
+            buttonDPI4.BackColor = RForm.buttonMain;
             buttonDPI4.BorderColor = Color.Transparent;
             buttonDPI4.BorderRadius = 5;
             buttonDPI4.Dock = DockStyle.Top;
@@ -875,7 +875,7 @@ namespace OHelper
             // 
             // panelPerformanceHeader
             // 
-            panelPerformanceHeader.BackColor = SystemColors.ControlLight;
+            panelPerformanceHeader.BackColor = RForm.buttonSecond;
             panelPerformanceHeader.Controls.Add(pictureKeyboard);
             panelPerformanceHeader.Controls.Add(labelPerformance);
             panelPerformanceHeader.Dock = DockStyle.Top;
@@ -973,7 +973,7 @@ namespace OHelper
             buttonLightingZoneScroll.Activated = false;
             buttonLightingZoneScroll.AutoSize = true;
             buttonLightingZoneScroll.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonLightingZoneScroll.BackColor = SystemColors.ControlLightLight;
+            buttonLightingZoneScroll.BackColor = RForm.buttonMain;
             buttonLightingZoneScroll.BorderColor = Color.LightGreen;
             buttonLightingZoneScroll.BorderRadius = 5;
             buttonLightingZoneScroll.Dock = DockStyle.Fill;
@@ -997,7 +997,7 @@ namespace OHelper
             buttonLightingZoneLogo.Activated = false;
             buttonLightingZoneLogo.AutoSize = true;
             buttonLightingZoneLogo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonLightingZoneLogo.BackColor = SystemColors.ControlLightLight;
+            buttonLightingZoneLogo.BackColor = RForm.buttonMain;
             buttonLightingZoneLogo.BorderColor = Color.LightGreen;
             buttonLightingZoneLogo.BorderRadius = 5;
             buttonLightingZoneLogo.Dock = DockStyle.Fill;
@@ -1021,7 +1021,7 @@ namespace OHelper
             buttonLightingZoneAll.Activated = false;
             buttonLightingZoneAll.AutoSize = true;
             buttonLightingZoneAll.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonLightingZoneAll.BackColor = SystemColors.ControlLightLight;
+            buttonLightingZoneAll.BackColor = RForm.buttonMain;
             buttonLightingZoneAll.BorderColor = Color.LightGreen;
             buttonLightingZoneAll.BorderRadius = 5;
             buttonLightingZoneAll.CausesValidation = false;
@@ -1045,7 +1045,7 @@ namespace OHelper
             buttonLightingZoneUnderglow.Activated = false;
             buttonLightingZoneUnderglow.AutoSize = true;
             buttonLightingZoneUnderglow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonLightingZoneUnderglow.BackColor = SystemColors.ControlLightLight;
+            buttonLightingZoneUnderglow.BackColor = RForm.buttonMain;
             buttonLightingZoneUnderglow.BorderColor = Color.LightGreen;
             buttonLightingZoneUnderglow.BorderRadius = 5;
             buttonLightingZoneUnderglow.Dock = DockStyle.Fill;
@@ -1069,7 +1069,7 @@ namespace OHelper
             buttonLightingZoneDock.Activated = false;
             buttonLightingZoneDock.AutoSize = true;
             buttonLightingZoneDock.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            buttonLightingZoneDock.BackColor = SystemColors.ControlLightLight;
+            buttonLightingZoneDock.BackColor = RForm.buttonMain;
             buttonLightingZoneDock.BorderColor = Color.LightGreen;
             buttonLightingZoneDock.BorderRadius = 5;
             buttonLightingZoneDock.Dock = DockStyle.Fill;
@@ -1089,8 +1089,8 @@ namespace OHelper
             // 
             // comboBoxAnimationDirection
             // 
-            comboBoxAnimationDirection.BorderColor = Color.White;
-            comboBoxAnimationDirection.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxAnimationDirection.BorderColor = RForm.borderMain;
+            comboBoxAnimationDirection.ButtonColor = RForm.buttonMain;
             comboBoxAnimationDirection.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxAnimationDirection.FlatStyle = FlatStyle.Flat;
             comboBoxAnimationDirection.FormattingEnabled = true;
@@ -1132,8 +1132,8 @@ namespace OHelper
             // 
             // comboBoxAnimationSpeed
             // 
-            comboBoxAnimationSpeed.BorderColor = Color.White;
-            comboBoxAnimationSpeed.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxAnimationSpeed.BorderColor = RForm.borderMain;
+            comboBoxAnimationSpeed.ButtonColor = RForm.buttonMain;
             comboBoxAnimationSpeed.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxAnimationSpeed.FlatStyle = FlatStyle.Flat;
             comboBoxAnimationSpeed.FormattingEnabled = true;
@@ -1167,7 +1167,7 @@ namespace OHelper
             buttonLightingColor.AccessibleName = "Keyboard Color";
             buttonLightingColor.Activated = false;
             buttonLightingColor.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonLightingColor.BackColor = SystemColors.ButtonHighlight;
+            buttonLightingColor.BackColor = RForm.buttonMain;
             buttonLightingColor.BorderColor = Color.Transparent;
             buttonLightingColor.BorderRadius = 2;
             buttonLightingColor.FlatStyle = FlatStyle.Flat;
@@ -1184,8 +1184,8 @@ namespace OHelper
             // 
             // comboBoxLightingMode
             // 
-            comboBoxLightingMode.BorderColor = Color.White;
-            comboBoxLightingMode.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxLightingMode.BorderColor = RForm.borderMain;
+            comboBoxLightingMode.ButtonColor = RForm.buttonMain;
             comboBoxLightingMode.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxLightingMode.FlatStyle = FlatStyle.Flat;
             comboBoxLightingMode.FormattingEnabled = true;
@@ -1206,7 +1206,7 @@ namespace OHelper
             // 
             // panelLightingHeader
             // 
-            panelLightingHeader.BackColor = SystemColors.ControlLight;
+            panelLightingHeader.BackColor = RForm.buttonSecond;
             panelLightingHeader.Controls.Add(sliderBrightness);
             panelLightingHeader.Controls.Add(pictureBoxLighting);
             panelLightingHeader.Controls.Add(labelLighting);
@@ -1283,8 +1283,8 @@ namespace OHelper
             // 
             // comboBoxAutoPowerOff
             // 
-            comboBoxAutoPowerOff.BorderColor = Color.White;
-            comboBoxAutoPowerOff.ButtonColor = Color.FromArgb(255, 255, 255);
+            comboBoxAutoPowerOff.BorderColor = RForm.borderMain;
+            comboBoxAutoPowerOff.ButtonColor = RForm.buttonMain;
             comboBoxAutoPowerOff.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxAutoPowerOff.FlatStyle = FlatStyle.Flat;
             comboBoxAutoPowerOff.FormattingEnabled = true;
@@ -1329,7 +1329,7 @@ namespace OHelper
             // 
             // panelEnergyHeader
             // 
-            panelEnergyHeader.BackColor = SystemColors.ControlLight;
+            panelEnergyHeader.BackColor = RForm.buttonSecond;
             panelEnergyHeader.Controls.Add(pictureBoxEnergy);
             panelEnergyHeader.Controls.Add(labelEnergy);
             panelEnergyHeader.Dock = DockStyle.Top;
@@ -1434,7 +1434,7 @@ namespace OHelper
             buttonSync.AccessibleName = "Keyboard Color";
             buttonSync.Activated = false;
             buttonSync.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonSync.BackColor = SystemColors.ButtonHighlight;
+            buttonSync.BackColor = RForm.buttonMain;
             buttonSync.BorderColor = Color.Transparent;
             buttonSync.BorderRadius = 2;
             buttonSync.FlatStyle = FlatStyle.Flat;
@@ -1468,7 +1468,7 @@ namespace OHelper
             buttonImport.AccessibleName = "Keyboard Color";
             buttonImport.Activated = false;
             buttonImport.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonImport.BackColor = SystemColors.ButtonHighlight;
+            buttonImport.BackColor = RForm.buttonMain;
             buttonImport.BorderColor = Color.Transparent;
             buttonImport.BorderRadius = 2;
             buttonImport.FlatStyle = FlatStyle.Flat;
@@ -1488,7 +1488,7 @@ namespace OHelper
             buttonExport.AccessibleName = "Keyboard Color";
             buttonExport.Activated = false;
             buttonExport.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            buttonExport.BackColor = SystemColors.ButtonHighlight;
+            buttonExport.BackColor = RForm.buttonMain;
             buttonExport.BorderColor = Color.Transparent;
             buttonExport.BorderRadius = 2;
             buttonExport.FlatStyle = FlatStyle.Flat;
@@ -1524,7 +1524,7 @@ namespace OHelper
             // 
             rButton1.AccessibleName = "DPI Setting 2";
             rButton1.Activated = false;
-            rButton1.BackColor = SystemColors.ControlLightLight;
+            rButton1.BackColor = RForm.buttonMain;
             rButton1.BorderColor = Color.Transparent;
             rButton1.BorderRadius = 5;
             rButton1.Dock = DockStyle.Top;
@@ -1546,7 +1546,7 @@ namespace OHelper
             // 
             rButton2.AccessibleName = "DPI Setting 1";
             rButton2.Activated = false;
-            rButton2.BackColor = SystemColors.ControlLightLight;
+            rButton2.BackColor = RForm.buttonMain;
             rButton2.BorderColor = Color.Transparent;
             rButton2.BorderRadius = 5;
             rButton2.CausesValidation = false;
@@ -1615,7 +1615,7 @@ namespace OHelper
             // 
             // panelBindingsHeader
             // 
-            panelBindingsHeader.BackColor = SystemColors.ControlLight;
+            panelBindingsHeader.BackColor = RForm.buttonSecond;
             panelBindingsHeader.Controls.Add(pictureBindigs);
             panelBindingsHeader.Controls.Add(labelBindingsTitle);
             panelBindingsHeader.Dock = DockStyle.Top;

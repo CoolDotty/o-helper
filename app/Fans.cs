@@ -40,8 +40,11 @@ namespace OHelper
         FanSensorControl fanSensorControl;
 
         static int gpuPowerBase = 0;
-        static bool isGPUPower => gpuPowerBase > 0;
+        static bool isGPUPower => gpuPowerBase >= 0;
         static bool clampFanDots = AppConfig.IsClampFanDots();
+        bool runtimeSettingsReady = false;
+        RCheckBox checkAutoModeEnabled = default!, checkFlatTheme = default!;
+        RComboBox comboAutoModeAc = default!, comboAutoModeDc = default!, comboUiMode = default!;
 
         public Fans()
         {
@@ -83,6 +86,7 @@ namespace OHelper
             buttonReadLimits.Text = Properties.Strings.ReadLimits;
             buttonDownload.Text = Properties.Strings.InstallPawnIODriver;
 
+            InitRuntimeSettingsRows();
             InitTheme(true);
 
             labelTip.Visible = false;
@@ -191,8 +195,7 @@ namespace OHelper
             trackGPUTemp.Minimum = HpACPI.MinGPUTemp;
             trackGPUTemp.Maximum = HpACPI.MaxGPUTemp;
 
-            trackGPUPower.Minimum = HpACPI.MinGPUPower;
-            trackGPUPower.Maximum = HpACPI.MaxGPUPower;
+            SetTrackRange(trackGPUPower, HpACPI.MinGPUPower, HpACPI.MaxGPUPower);
 
             trackGPUClockLimit.Scroll += trackGPUClockLimit_Scroll;
             trackGPUCore.Scroll += trackGPU_Scroll;
@@ -263,7 +266,7 @@ namespace OHelper
 
             buttonCPU.BorderColor = colorStandard;
             buttonGPU.BorderColor = colorTurbo;
-            buttonAdvanced.BorderColor = Color.Gray;
+            buttonAdvanced.BorderColor = RForm.borderMain;
 
             buttonCPU.Click += ButtonCPU_Click;
             buttonGPU.Click += ButtonGPU_Click;
@@ -301,6 +304,131 @@ namespace OHelper
             chartGPU.AccessibleName = "GPU fan curve";
             chartMid.AccessibleName = "Mid fan curve";
             chartXGM.AccessibleName = "XG Mobile fan curve";
+        }
+
+        private void InitRuntimeSettingsRows()
+        {
+            var row = new TableLayoutPanel
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 3,
+                Dock = DockStyle.Top,
+                Margin = new Padding(0),
+                Padding = new Padding(15)
+            };
+            for (int i = 0; i < 3; i++) row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333F));
+
+            checkAutoModeEnabled = new RCheckBox { Text = Properties.Strings.AutoPowerSourceMode, AutoSize = true, Dock = DockStyle.Top, FlatStyle = FlatStyle.Flat };
+            checkFlatTheme = new RCheckBox { Text = Properties.Strings.ThemeFlat, AutoSize = true, Dock = DockStyle.Top, FlatStyle = FlatStyle.Flat };
+
+            var toggles = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Dock = DockStyle.Top,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
+                Margin = new Padding(0),
+                Padding = new Padding(15, 15, 15, 0)
+            };
+            toggles.Controls.Add(checkAutoModeEnabled);
+            toggles.Controls.Add(checkFlatTheme);
+
+            comboAutoModeAc = CreateModeCombo(AppConfig.Get("auto_mode_ac", 0));
+            comboAutoModeDc = CreateModeCombo(AppConfig.Get("auto_mode_dc", 2));
+            comboUiMode = new RComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top };
+            comboUiMode.DataSource = new BindingSource(new Dictionary<string, string>
+            {
+                { "windows", Properties.Strings.ThemeSystem },
+                { "dark", Properties.Strings.ThemeDark },
+                { "light", Properties.Strings.ThemeLight }
+            }, null);
+            comboUiMode.DisplayMember = "Value";
+            comboUiMode.ValueMember = "Key";
+
+            row.Controls.Add(CreateLabeledCell(Properties.Strings.ACPower, comboAutoModeAc), 0, 0);
+            row.Controls.Add(CreateLabeledCell(Properties.Strings.Battery, comboAutoModeDc), 1, 0);
+            row.Controls.Add(CreateLabeledCell(Properties.Strings.Theme, comboUiMode), 2, 0);
+            panelAdvanced.Controls.Add(row);
+            panelAdvanced.Controls.Add(toggles);
+            panelAdvanced.Controls.SetChildIndex(toggles, 0);
+            panelAdvanced.Controls.SetChildIndex(row, 1);
+
+            RefreshRuntimeSettings();
+
+            checkAutoModeEnabled.CheckedChanged += (_, _) =>
+            {
+                if (!runtimeSettingsReady) return;
+                AppConfig.Set("auto_mode_enabled", checkAutoModeEnabled.Checked ? 1 : 0);
+                Program.modeControl.ApplyAutoModeForPowerSource();
+                Program.settingsForm.SetContextMenu();
+            };
+            comboAutoModeAc.SelectedValueChanged += (_, _) => SaveAutoModeSelection();
+            comboAutoModeDc.SelectedValueChanged += (_, _) => SaveAutoModeSelection();
+            comboUiMode.SelectedValueChanged += (_, _) => ApplyThemeSelection();
+            checkFlatTheme.CheckedChanged += (_, _) => ApplyThemeSelection();
+
+            runtimeSettingsReady = true;
+            ControlHelper.Adjust(this);
+        }
+
+        public void RefreshRuntimeSettings()
+        {
+            if (checkAutoModeEnabled is null) return;
+
+            bool ready = runtimeSettingsReady;
+            runtimeSettingsReady = false;
+            checkAutoModeEnabled.Checked = AppConfig.Is("auto_mode_enabled");
+            checkFlatTheme.Checked = AppConfig.GetString("theme") == "flat";
+            comboAutoModeAc.SelectedValue = AppConfig.Get("auto_mode_ac", 0);
+            comboAutoModeDc.SelectedValue = AppConfig.Get("auto_mode_dc", 2);
+            comboUiMode.SelectedValue = AppConfig.GetString("ui_mode", "windows");
+            runtimeSettingsReady = ready;
+        }
+
+        private static RComboBox CreateModeCombo(int selected)
+        {
+            var combo = new RComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top };
+            combo.DataSource = new BindingSource(Modes.GetDictonary(), null);
+            combo.DisplayMember = "Value";
+            combo.ValueMember = "Key";
+            combo.SelectedValue = selected;
+            return combo;
+        }
+
+        private static Panel CreateLabeledCell(string label, Control control)
+        {
+            var panel = new Panel { AutoSize = true, Dock = DockStyle.Fill, Padding = new Padding(0, 0, 10, 0) };
+            var text = new Label { Text = label, AutoSize = true, Dock = DockStyle.Top };
+            control.Dock = DockStyle.Top;
+            panel.Controls.Add(control);
+            panel.Controls.Add(text);
+            panel.Controls.SetChildIndex(text, 0);
+            return panel;
+        }
+
+        private void SaveAutoModeSelection()
+        {
+            if (!runtimeSettingsReady) return;
+            if (comboAutoModeAc.SelectedValue is int ac) AppConfig.Set("auto_mode_ac", ac);
+            if (comboAutoModeDc.SelectedValue is int dc) AppConfig.Set("auto_mode_dc", dc);
+            Program.modeControl.ApplyAutoModeForPowerSource();
+        }
+
+        private void ApplyThemeSelection()
+        {
+            if (!runtimeSettingsReady) return;
+            if (comboUiMode.SelectedValue is string uiMode) AppConfig.Set("ui_mode", uiMode);
+            if (checkFlatTheme.Checked) AppConfig.Set("theme", "flat"); else AppConfig.Remove("theme");
+
+            Program.settingsForm.InitTheme();
+            Program.settingsForm.InitContextMenuTheme();
+            Program.settingsForm.fansForm?.InitTheme();
+            Program.settingsForm.extraForm?.InitTheme();
+            Program.settingsForm.updatesForm?.InitTheme();
+            Program.settingsForm.matrixForm?.InitTheme();
+            Program.settingsForm.handheldForm?.InitTheme();
         }
 
         private void CheckFanClamp_Click(object? sender, EventArgs e)
@@ -452,17 +580,27 @@ namespace OHelper
 
             VisualiseAdvanced();
 
-            buttonAdvanced.Visible = CpuInfo.IsAMD;
+            buttonAdvanced.Visible = true;
 
         }
 
         private void VisualiseAdvanced()
         {
+            if (!CpuInfo.IsAMD)
+            {
+                panelPawnIO.Visible = false;
+                panelDownload.Visible = true;
+                panelDownload.Enabled = false;
+                labelTemp.Text = Properties.Strings.UndervoltingUnsupportedPlatform;
+                return;
+            }
+
             bool available = ModeControl.IsPawnAvailable();
             bool installed = available || ModeControl.IsPawnInstalled();
 
             panelPawnIO.Visible   = installed;
             panelDownload.Visible = !installed;
+            panelDownload.Enabled = true;
 
             if (installed)
             {
@@ -477,7 +615,6 @@ namespace OHelper
 
             labelTemp.Text = (trackTemp.Value < CpuInfo.DefaultTemp) ? TempHelper.FormatTemp(trackTemp.Value) : "Default";
         }
-
         private void AdvancedScroll()
         {
             AppConfig.SetMode("auto_uv", 0);
@@ -588,14 +725,7 @@ namespace OHelper
 
             panelGPUPower.Visible = isGPUPower;
             if (!isGPUPower) return;
-
-            int maxGPUPower = NvidiaSmi.GetMaxGPUPower();
-            if (maxGPUPower > 0)
-            {
-                HpACPI.MaxGPUPower = maxGPUPower - gpuPowerBase - HpACPI.MaxGPUBoost;
-                trackGPUPower.Minimum = HpACPI.MinGPUPower;
-                trackGPUPower.Maximum = HpACPI.MaxGPUPower;
-            }
+            SetTrackRange(trackGPUPower, HpACPI.MinGPUPower, HpACPI.MaxGPUPower);
 
             Task.Run(async () =>
             {
@@ -618,24 +748,14 @@ namespace OHelper
         {
             Task.Run(() =>
             {
-                if (Program.acpi.DeviceGet(HpACPI.GPUEco) == 1)
-                {
-                    Invoke(delegate { gpuVisible = buttonGPU.Visible = false; });
-                    return;
-                }
-
-                if (HardwareControl.GpuControl is null || !HardwareControl.GpuControl.IsValid) HardwareControl.RecreateGpuControl();
-
-                if (HardwareControl.GpuControl is not NvidiaGpuControl nv)
-                {
-                    Invoke(delegate { gpuVisible = buttonGPU.Visible = false; });
-                    return;
-                }
-
-                nvControl = nv;
-
                 try
                 {
+                    if (HardwareControl.GpuControl is null || !HardwareControl.GpuControl.IsValid) HardwareControl.RecreateGpuControl();
+
+                    bool isNvidia = Program.acpi.DeviceGet(HpACPI.GPUEco) != 1
+                        && HardwareControl.GpuControl is NvidiaGpuControl;
+                    nvControl = isNvidia ? (NvidiaGpuControl)HardwareControl.GpuControl! : null;
+
                     int gpu_boost = AppConfig.GetMode("gpu_boost");
                     int gpu_temp = AppConfig.GetMode("gpu_temp");
 
@@ -667,19 +787,33 @@ namespace OHelper
 
                         try { gpuName = nvControl.FullName; } catch { }
                     }
+                    else
+                    {
+                        try { gpuName = HardwareControl.GpuControl?.FullName; } catch { }
+                    }
 
                     bool boostVisible = Program.acpi.IsSupported(HpACPI.PPT_GPUC0);
                     bool tempVisible = Program.acpi.IsSupported(HpACPI.PPT_GPUC2);
+                    bool powerVisible = Program.acpi.IsSupported(HpACPI.GPU_POWER) || Program.acpi.IsSupported(HpACPI.GPU_BASE);
+                    bool anyVisible = isNvidia || boostVisible || tempVisible || powerVisible;
 
                     Invoke(delegate
                     {
-                        gpuVisible = buttonGPU.Visible = true;
+                        gpuVisible = buttonGPU.Visible = anyVisible;
+                        if (!anyVisible) return;
+
                         if (gpuName is not null) labelGPU.Text = gpuName;
 
-                        trackGPUClockLimit.Value = Math.Max(Math.Min(clock_limit, NvidiaGpuControl.MaxClockLimit), NvidiaGpuControl.MinClockLimit);
+                        panelGPUClockLimit.Visible = isNvidia;
+                        panelGPUCore.Visible = isNvidia;
+                        panelGPUMemory.Visible = isNvidia;
 
-                        trackGPUCore.Value = Math.Max(Math.Min(core, NvidiaGpuControl.MaxCoreOffset), NvidiaGpuControl.MinCoreOffset);
-                        trackGPUMemory.Value = Math.Max(Math.Min(memory, NvidiaGpuControl.MaxMemoryOffset), NvidiaGpuControl.MinMemoryOffset);
+                        if (isNvidia)
+                        {
+                            trackGPUClockLimit.Value = Math.Max(Math.Min(clock_limit, NvidiaGpuControl.MaxClockLimit), NvidiaGpuControl.MinClockLimit);
+                            trackGPUCore.Value = Math.Max(Math.Min(core, NvidiaGpuControl.MaxCoreOffset), NvidiaGpuControl.MinCoreOffset);
+                            trackGPUMemory.Value = Math.Max(Math.Min(memory, NvidiaGpuControl.MaxMemoryOffset), NvidiaGpuControl.MinMemoryOffset);
+                        }
 
                         trackGPUBoost.Value = Math.Max(Math.Min(gpu_boost, HpACPI.MaxGPUBoost), HpACPI.MinGPUBoost);
                         trackGPUTemp.Value = Math.Max(Math.Min(gpu_temp, HpACPI.MaxGPUTemp), HpACPI.MinGPUTemp);
@@ -700,6 +834,15 @@ namespace OHelper
             });
         }
 
+        private static void SetTrackRange(TrackBar track, int minimum, int maximum)
+        {
+            int value = Math.Clamp(track.Value, minimum, maximum);
+
+            if (track.Minimum > minimum) track.Minimum = minimum;
+            if (track.Value != value) track.Value = value;
+            track.Maximum = maximum;
+            track.Minimum = minimum;
+        }
         private void VisualiseGPUSettings()
         {
             labelGPUCore.Text = $"{trackGPUCore.Value} MHz";
@@ -713,7 +856,14 @@ namespace OHelper
             else
                 labelGPUClockLimit.Text = $"{trackGPUClockLimit.Value} MHz";
 
-            labelGPUPower.Text = (gpuPowerBase + trackGPUPower.Value) + "W";
+            labelGPUPower.Text = trackGPUPower.Value switch
+            {
+                0 => Properties.Strings.Default,
+                1 => Properties.Strings.Medium,
+                2 => Properties.Strings.High,
+                3 => Properties.Strings.VeryHigh,
+                _ => Properties.Strings.VeryHigh
+            };
 
         }
 
@@ -834,7 +984,7 @@ namespace OHelper
         {
 
             string title = "";
-            string scale = TempHelper.IsFahrenheit ? ", RPM/°F" : ", RPM/°C";
+            string scale = TempHelper.IsFahrenheit ? ", RPM/Â°F" : ", RPM/Â°C";
 
             switch (device)
             {
@@ -940,7 +1090,7 @@ namespace OHelper
             string powerMode = (string)comboPowerMode.SelectedValue;
             PowerNative.SetPowerMode(powerMode);
 
-            if (PowerNative.GetDefaultPowerMode(Modes.GetCurrentBase()) != powerMode)
+            if (PowerNative.GetDefaultPowerMode(Modes.GetCurrent()) != powerMode)
                 AppConfig.SetMode("powermode", powerMode);
             else
                 AppConfig.RemoveMode("powermode");
@@ -1142,7 +1292,7 @@ namespace OHelper
 
             // XG Mobile Fan check
 #pragma warning disable CS0618 // IsXGConnected is ASUS-only
-            if (Program.acpi.IsXGConnected() || XGM.IsConnected())
+            if (AppConfig.IsASUS() && (Program.acpi.IsXGConnected() || XGM.IsConnected()))
 #pragma warning restore CS0618
             {
                 AppConfig.Set("xgm_fan", 1);
@@ -1188,10 +1338,10 @@ namespace OHelper
             }
             else
             {
-                seriesCPU.Color = Color.Gray;
-                seriesGPU.Color = Color.Gray;
-                seriesMid.Color = Color.Gray;
-                seriesXGM.Color = Color.Gray;
+                seriesCPU.Color = RForm.colorGray;
+                seriesGPU.Color = RForm.colorGray;
+                seriesMid.Color = RForm.colorGray;
+                seriesXGM.Color = RForm.colorGray;
             }
 
             InitHysteresis();
@@ -1265,10 +1415,10 @@ namespace OHelper
 
             checkApplyFans.Checked = false;
             checkApplyPower.Checked = false;
-            seriesCPU.Color = Color.Gray;
-            seriesGPU.Color = Color.Gray;
-            seriesMid.Color = Color.Gray;
-            seriesXGM.Color = Color.Gray;
+            seriesCPU.Color = RForm.colorGray;
+            seriesGPU.Color = RForm.colorGray;
+            seriesMid.Color = RForm.colorGray;
+            seriesXGM.Color = RForm.colorGray;
 
             AppConfig.SetMode("auto_apply", 0);
             AppConfig.SetMode("auto_apply_power", 0);

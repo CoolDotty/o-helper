@@ -75,7 +75,7 @@ namespace OHelper.UI
         private void UpdateHoverColor()
         {
             int lum = (BackColor.R * 30 + BackColor.G * 59 + BackColor.B * 11) / 100;
-            Color target = lum > 128 ? Color.Black : Color.White;
+            Color target = lum > 128 ? RForm.formBack : RForm.foreMain;
             FlatAppearance.MouseOverBackColor = Shift(BackColor, target, HoverShiftAmount);
             FlatAppearance.MouseDownBackColor = Shift(BackColor, target, HoverShiftAmount * 2f);
         }
@@ -164,7 +164,7 @@ namespace OHelper.UI
                     rect.Height -= Image.Height;
                 }
                 TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak;
-                TextRenderer.DrawText(pevent.Graphics, Text, Font, rect, Color.Gray, flags);
+                TextRenderer.DrawText(pevent.Graphics, Text, Font, rect, Color.FromArgb(150, ForeColor), flags);
             }
 
 
