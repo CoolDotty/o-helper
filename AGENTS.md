@@ -85,6 +85,18 @@ Three built-in modes + up to 20 custom:
 - Mode settings stored as `{key}_{modeID}` in config (e.g., `limit_total_0`, `fan_profile_cpu_1`)
 - Auto-mode switching on power state change (AC ↔ battery) is configurable
 
+#### Power Mode Cache Gotchas
+
+HP performance mode is effectively write-only for this app: do **not** assume BIOS can be queried for the active mode. The app must treat its config cache as the source of truth and, on startup, explicitly call the BIOS mode set for the expected cached mode before showing it as current.
+
+- Main/current mode cache: `performance_mode`, `performance_mode_base`, and `performance_{Program.PerformanceKey()}`.
+- Advanced Fans + Power auto defaults: `auto_mode_ac`, `auto_mode_dc`, and `auto_mode_enabled`.
+- `auto_mode_ac` / `auto_mode_dc` are user-owned advanced settings. Do not update them from ordinary main-mode button/menu/hotkey changes.
+- Startup with Auto Power Source Mode enabled should apply `auto_mode_ac` or `auto_mode_dc` directly and force the `SetPerformanceMode(...)` path even if `performance_mode` already matches. That both writes BIOS and calls `Settings.ShowMode(...)`.
+- WinForms combo boxes fire `SelectedValueChanged` during data binding and layout. Never persist AC/DC auto defaults from `SelectedValueChanged`; use `SelectionChangeCommitted` or an equivalent user-initiated path.
+- For settings that matter across immediate app restart, call `AppConfig.Flush()` after `AppConfig.Set(...)`. The normal write path is debounced.
+- `Application.StartupPath\config.json` can exist beside a launched EXE. Avoid letting an EXE-local config silently override `%APPDATA%\OHelper\config.json` unless it is the only available config.
+
 ### Custom UI Controls (`UI/`)
 
 All custom WinForms controls in the `OHelper.UI` namespace:
