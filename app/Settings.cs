@@ -1392,6 +1392,13 @@ namespace OHelper
 
         public void InitAura()
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled())
+            {
+                panelKeyboard.Visible = false;
+                Logger.WriteLine("Keyboard lighting control disabled");
+                return;
+            }
+
             if (AppConfig.IsOmenKeyboardSupported())
             {
                 InitOmenKeyboard();
@@ -1715,6 +1722,8 @@ namespace OHelper
 
         public void CycleAuraMode(int delta)
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled()) return;
+
             if (delta > 0)
             {
                 if (comboKeyboard.SelectedIndex < comboKeyboard.Items.Count - 1)

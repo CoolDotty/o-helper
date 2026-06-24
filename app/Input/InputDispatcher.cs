@@ -57,6 +57,7 @@ namespace OHelper.Input
 
         private void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled()) return;
             if (GetBacklight() == 0) return;
 
             TimeSpan iddle = NativeMethods.GetIdleTime();
@@ -105,6 +106,12 @@ namespace OHelper.Input
 
         public void InitBacklightTimer()
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled())
+            {
+                timer.Enabled = false;
+                return;
+            }
+
             timer.Enabled = AppConfig.Get("keyboard_timeout") > 0 && SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online ||
                             AppConfig.Get("keyboard_ac_timeout") > 0 && SystemInformation.PowerStatus.PowerLineStatus == PowerLineStatus.Online;
         }
@@ -1028,6 +1035,12 @@ namespace OHelper.Input
 
         public static void AutoKeyboard()
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled())
+            {
+                Logger.WriteLine("AutoKeyboard: keyboard lighting control disabled");
+                return;
+            }
+
             if (AppConfig.HasTabletMode()) TabletMode();
             if (lidClose)
             {
@@ -1071,6 +1084,7 @@ namespace OHelper.Input
 
         public static void SetBacklightAuto()
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled()) return;
             if (lidClose || tentMode) return;
             if (AppConfig.IsOmenKeyboardSupported())
                 OmenApplyBacklight(GetBacklight(), "Auto");
@@ -1081,6 +1095,12 @@ namespace OHelper.Input
 
         public static void StartupBacklight()
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled())
+            {
+                Logger.WriteLine("StartupBacklight: keyboard lighting control disabled");
+                return;
+            }
+
             if (AppConfig.IsOmenKeyboardSupported())
             {
                 OmenApplyBacklight(GetBacklight(), "Startup");
@@ -1092,6 +1112,8 @@ namespace OHelper.Input
 
         public static void SetBacklight(int delta, bool force = false)
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled()) return;
+
             int backlight_power = AppConfig.Get("keyboard_brightness", 1);
             int backlight_battery = AppConfig.Get("keyboard_brightness_ac", 1);
             bool onBattery = SystemInformation.PowerStatus.PowerLineStatus != PowerLineStatus.Online;
@@ -1134,7 +1156,7 @@ namespace OHelper.Input
 
         static bool UseAsusAuraBacklight()
         {
-            return AppConfig.IsASUS() && !AppConfig.Is("skip_aura");
+            return AppConfig.IsKeyboardLightingControlEnabled() && AppConfig.IsASUS() && !AppConfig.Is("skip_aura");
         }
 
         // Translate the 0..3 backlight level the rest of the app uses into the
@@ -1142,6 +1164,7 @@ namespace OHelper.Input
         // apply it through the WMI keyboard interface.
         static void OmenApplyBacklight(int backlight, string log)
         {
+            if (!AppConfig.IsKeyboardLightingControlEnabled()) return;
             if (Program.acpi == null) return;
 
             byte raw;

@@ -863,6 +863,7 @@ public static class AppConfig
     // is actually present and reachable.
     public static bool IsOmenKeyboardSupported()
     {
+        if (!IsKeyboardLightingControlEnabled()) return false;
         if (!IsOmen()) return false;
 
         // Victus and Desktop entries in the DB disable 4-zone/per-key RGB.
@@ -875,6 +876,11 @@ public static class AppConfig
         if (Is("no_rgb")) return false;
 
         return true;
+    }
+
+    public static bool IsKeyboardLightingControlEnabled()
+    {
+        return Is("enable_keyboard_lighting_control");
     }
 
     public static bool IsOmenKeyboardRgb()
