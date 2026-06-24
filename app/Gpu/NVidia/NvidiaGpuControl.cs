@@ -23,6 +23,14 @@ public class NvidiaGpuControl : IGpuControl
 
     private static PhysicalGPU? _internalGpu;
 
+    public bool SupportsGpuClockControl => true;
+    public int MinGpuCoreOffset => MinCoreOffset;
+    public int MaxGpuCoreOffset => MaxCoreOffset;
+    public int MinGpuMemoryOffset => MinMemoryOffset;
+    public int MaxGpuMemoryOffset => MaxMemoryOffset;
+    public int MinGpuClockLimit => MinClockLimit;
+    public int MaxGpuClockLimit => MaxClockLimit;
+
     public NvidiaGpuControl()
     {
         _internalGpu = GetInternalDiscreteGpu();
@@ -261,6 +269,8 @@ public class NvidiaGpuControl : IGpuControl
         }
     }
 
+    public int GetMaxGpuClock() => GetMaxGPUCLock();
+
 
     public int SetMaxGPUClock(int clock)
     {
@@ -277,6 +287,8 @@ public class NvidiaGpuControl : IGpuControl
 
 
     }
+
+    public int SetMaxGpuClock(int clock) => SetMaxGPUClock(clock);
 
     public static void RestartNvContainer()
     {
@@ -335,6 +347,10 @@ public class NvidiaGpuControl : IGpuControl
 
         return 1;
     }
+
+    public bool GetGpuClockOffsets(out int core, out int memory) => GetClocks(out core, out memory);
+
+    public int SetGpuClockOffsets(int core, int memory) => SetClocks(core, memory);
 
     private static PhysicalGPU? GetInternalDiscreteGpu()
     {

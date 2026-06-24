@@ -109,7 +109,8 @@ namespace OHelper.Mode
 
         public static int GetCurrent()
         {
-            return AppConfig.Get("performance_mode");
+            int mode = AppConfig.Get("performance_mode", HpACPI.PerformanceBalanced);
+            return Exists(mode) ? mode : HpACPI.PerformanceBalanced;
         }
 
         public static bool IsCurrentCustom()
@@ -120,13 +121,27 @@ namespace OHelper.Mode
 
         public static void SetCurrent(int mode)
         {
+            if (!Exists(mode)) mode = HpACPI.PerformanceBalanced;
+
             AppConfig.Set("performance_" + Program.PerformanceKey(), mode);
             AppConfig.Set("performance_mode", mode);
+            AppConfig.Set("performance_mode_base", GetBase(mode));
+            AppConfig.Flush();
         }
 
         public static int GetCurrentBase()
         {
-            return GetBase(GetCurrent());
+            int baseMode = GetBase(GetCurrent());
+            if (baseMode >= 0) return baseMode;
+
+            baseMode = AppConfig.Get("performance_mode_base", HpACPI.PerformanceBalanced);
+            return IsBaseMode(baseMode) ? baseMode : HpACPI.PerformanceBalanced;
+        }
+
+        private static bool IsBaseMode(int mode)
+        {
+            return mode >= HpACPI.PerformanceBalanced && mode <= HpACPI.PerformanceSilent
+                || mode == HpACPI.PerformanceManual;
         }
 
         public static string GetCurrentName()

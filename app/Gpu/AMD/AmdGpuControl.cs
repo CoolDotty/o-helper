@@ -16,6 +16,13 @@ public class AmdGpuControl : IGpuControl
     public bool IsNvidia => false;
 
     public string FullName => _internalDiscreteAdapter!.AdapterName;
+    public bool SupportsGpuClockControl => false;
+    public int MinGpuCoreOffset => 0;
+    public int MaxGpuCoreOffset => 0;
+    public int MinGpuMemoryOffset => 0;
+    public int MaxGpuMemoryOffset => 0;
+    public int MinGpuClockLimit => 0;
+    public int MaxGpuClockLimit => 0;
 
     private ADLAdapterInfo? FindByType(ADLAsicFamilyType type = ADLAsicFamilyType.Discrete)
     {
@@ -285,6 +292,19 @@ public class AmdGpuControl : IGpuControl
 
         return performanceLevels;
     }
+
+    public bool GetGpuClockOffsets(out int core, out int memory)
+    {
+        core = 0;
+        memory = 0;
+        return false;
+    }
+
+    public int GetMaxGpuClock() => 0;
+
+    public int SetGpuClockOffsets(int core, int memory) => 0;
+
+    public int SetMaxGpuClock(int clock) => 0;
 
     public void KillGPUApps()
     {

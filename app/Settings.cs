@@ -834,7 +834,7 @@ namespace OHelper
                             break;
                         case 1:
                             Logger.WriteLine("Monitor Power On");
-                            if (!Program.SetAutoModes(wakeup: true)) BatteryControl.AutoBattery();
+                            BatteryControl.AutoBattery();
                             Program.hardwareOverlay?.ResumeForDisplayOn();
                             break;
                         case 2:
@@ -897,6 +897,7 @@ namespace OHelper
             {
                 bool enabled = !AppConfig.Is("auto_mode_enabled");
                 AppConfig.Set("auto_mode_enabled", enabled ? 1 : 0);
+                AppConfig.Flush();
                 fansForm?.RefreshRuntimeSettings();
                 Program.modeControl.ApplyAutoModeForPowerSource();
                 SetContextMenu();

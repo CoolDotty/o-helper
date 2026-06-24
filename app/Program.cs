@@ -145,7 +145,6 @@ namespace OHelper
             settingsForm.InitMatrix();
 
             SetAutoModes(init: true);
-            modeControl.ApplyAutoModeForPowerSource(false);
 
             powerSettleTimer.Elapsed += OnPowerSettled;
 
@@ -181,10 +180,13 @@ namespace OHelper
                 case "cpu":
                     Startup.ReScheduleAdmin();
                     settingsForm.FansToggle();
+                    modeControl.AutoPower(false);
                     break;
                 case "gpu":
                     Startup.ReScheduleAdmin();
                     settingsForm.FansToggle(1);
+                    modeControl.SetGPUClocks(false);
+                    modeControl.SetGPUPower();
                     break;
                 case "services":
                     Logger.WriteLine("Services action ignored: ASUS service management is not part of O-Helper");
@@ -304,7 +306,10 @@ namespace OHelper
             inputDispatcher.Init();
             //HardwareControl.ReadSensors(true);
 
-            modeControl.AutoPerformance(powerChanged);
+            if (init && AppConfig.Is("auto_mode_enabled") && !AppConfig.Is("manual_mode"))
+                modeControl.ApplyAutoModeForPowerSource(false, force: true);
+            else
+                modeControl.AutoPerformance(powerChanged);
 
             settingsForm.matrixControl.SetDevice(true);
             InputDispatcher.InitStatusLed();
@@ -352,7 +357,7 @@ namespace OHelper
         public static bool usbcProfile = AppConfig.Is("usbc_profile");
 
         public static int PerformanceKey() =>
-            usbcProfile ? (int)ReadPowerSource() : (int)SystemInformation.PowerStatus.PowerLineStatus;
+            usbcProfile ? (int)currentSource : currentSource == PowerSource.Battery ? 0 : 1;
 
         public static void SchedulePowerCheck()
         {
@@ -458,6 +463,7 @@ namespace OHelper
             NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotify);
             NativeMethods.UnregisterPowerSettingNotification(unRegPowerNotifyLid);
             NativeMethods.UnregisterSuspendResumeNotification(unRegSuspendResume);
+            AppConfig.Flush();
             Application.Exit();
         }
 

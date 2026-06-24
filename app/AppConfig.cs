@@ -28,15 +28,20 @@ public static class AppConfig
     {
         string configName = "config.json";
         string appPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "OHelper");
+        string appConfig = Path.Combine(appPath, configName);
         string startupConfig = Path.Combine(Application.StartupPath.Trim('\\'), configName);
+        bool runningAsSystem = ProcessHelper.IsRunningAsSystem();
 
         fallbackConfigFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "OHelper", configName);
 
-        configFile = File.Exists(startupConfig) ? startupConfig
-        : ProcessHelper.IsRunningAsSystem() && File.Exists(fallbackConfigFile) ? fallbackConfigFile
-        : Path.Combine(appPath, configName);
+        configFile = runningAsSystem && File.Exists(fallbackConfigFile) ? fallbackConfigFile
+        : File.Exists(appConfig) ? appConfig
+        : File.Exists(startupConfig) ? startupConfig
+        : runningAsSystem ? fallbackConfigFile
+        : appConfig;
 
-        Directory.CreateDirectory(appPath);
+        Logger.WriteLine($"Config path selected: {configFile}");
+        Directory.CreateDirectory(Path.GetDirectoryName(configFile)!);
 
         if (!TryLoadConfig(configFile) && !TryRecoverConfig(configFile) && !TryLoadConfig(configFile + ".bak") && !TryLoadConfig(fallbackConfigFile)) Init();
 
@@ -84,6 +89,11 @@ public static class AppConfig
 
     private static void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
+        Flush();
+    }
+
+    public static void Flush()
+    {
         timer.Stop();
         string jsonString;
         lock (configLock) jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
@@ -94,6 +104,8 @@ public static class AppConfig
         }
         catch (Exception ex) { Logger.WriteLine("Config write failed: " + ex.Message); }
     }
+
+    public static string GetConfigPath() => configFile;
 
     private static void WriteAtomic(string path, string content)
     {

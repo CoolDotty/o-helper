@@ -43,6 +43,7 @@ namespace OHelper
         static bool isGPUPower => gpuPowerBase >= 0;
         static bool clampFanDots = AppConfig.IsClampFanDots();
         bool runtimeSettingsReady = false;
+        bool powerPlanInitializing = false;
         RCheckBox checkAutoModeEnabled = default!, checkFlatTheme = default!;
         RComboBox comboAutoModeAc = default!, comboAutoModeDc = default!, comboUiMode = default!;
 
@@ -361,11 +362,12 @@ namespace OHelper
             {
                 if (!runtimeSettingsReady) return;
                 AppConfig.Set("auto_mode_enabled", checkAutoModeEnabled.Checked ? 1 : 0);
+                AppConfig.Flush();
                 Program.modeControl.ApplyAutoModeForPowerSource();
                 Program.settingsForm.SetContextMenu();
             };
-            comboAutoModeAc.SelectedValueChanged += (_, _) => SaveAutoModeSelection();
-            comboAutoModeDc.SelectedValueChanged += (_, _) => SaveAutoModeSelection();
+            comboAutoModeAc.SelectionChangeCommitted += (_, _) => SaveAutoModeSelection(comboAutoModeAc, "auto_mode_ac", "AC");
+            comboAutoModeDc.SelectionChangeCommitted += (_, _) => SaveAutoModeSelection(comboAutoModeDc, "auto_mode_dc", "Battery");
             comboUiMode.SelectedValueChanged += (_, _) => ApplyThemeSelection();
             checkFlatTheme.CheckedChanged += (_, _) => ApplyThemeSelection();
 
@@ -381,8 +383,8 @@ namespace OHelper
             runtimeSettingsReady = false;
             checkAutoModeEnabled.Checked = AppConfig.Is("auto_mode_enabled");
             checkFlatTheme.Checked = AppConfig.GetString("theme") == "flat";
-            comboAutoModeAc.SelectedValue = AppConfig.Get("auto_mode_ac", 0);
-            comboAutoModeDc.SelectedValue = AppConfig.Get("auto_mode_dc", 2);
+            SetModeComboValue(comboAutoModeAc, AppConfig.Get("auto_mode_ac", 0));
+            SetModeComboValue(comboAutoModeDc, AppConfig.Get("auto_mode_dc", 2));
             comboUiMode.SelectedValue = AppConfig.GetString("ui_mode", "windows");
             runtimeSettingsReady = ready;
         }
@@ -390,11 +392,26 @@ namespace OHelper
         private static RComboBox CreateModeCombo(int selected)
         {
             var combo = new RComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top };
-            combo.DataSource = new BindingSource(Modes.GetDictonary(), null);
             combo.DisplayMember = "Value";
             combo.ValueMember = "Key";
-            combo.SelectedValue = selected;
+            combo.DataSource = new BindingSource(Modes.GetDictonary(), null);
+            SetModeComboValue(combo, selected);
             return combo;
+        }
+
+        private static void SetModeComboValue(ComboBox combo, int selected)
+        {
+            combo.SelectedValue = selected;
+            if (combo.SelectedValue is int value && value == selected) return;
+
+            for (int i = 0; i < combo.Items.Count; i++)
+            {
+                if (combo.Items[i] is KeyValuePair<int, string> item && item.Key == selected)
+                {
+                    combo.SelectedIndex = i;
+                    return;
+                }
+            }
         }
 
         private static Panel CreateLabeledCell(string label, Control control)
@@ -408,12 +425,26 @@ namespace OHelper
             return panel;
         }
 
-        private void SaveAutoModeSelection()
+        private void SaveAutoModeSelection(ComboBox combo, string key, string label)
         {
             if (!runtimeSettingsReady) return;
-            if (comboAutoModeAc.SelectedValue is int ac) AppConfig.Set("auto_mode_ac", ac);
-            if (comboAutoModeDc.SelectedValue is int dc) AppConfig.Set("auto_mode_dc", dc);
+
+            int? mode = GetSelectedMode(combo);
+            if (!mode.HasValue) return;
+            if (AppConfig.Get(key) == mode.Value) return;
+
+            AppConfig.Set(key, mode.Value);
+            AppConfig.Flush();
+            Logger.WriteLine($"Auto power-source default saved: {label}={mode.Value}, Config={AppConfig.GetConfigPath()}");
             Program.modeControl.ApplyAutoModeForPowerSource();
+        }
+
+        private static int? GetSelectedMode(ComboBox combo)
+        {
+            if (combo.SelectedValue is int mode) return mode;
+            if (combo.SelectedItem is KeyValuePair<int, string> item) return item.Key;
+            if (combo.SelectedValue is not null && int.TryParse(combo.SelectedValue.ToString(), out mode)) return mode;
+            return null;
         }
 
         private void ApplyThemeSelection()
@@ -480,6 +511,7 @@ namespace OHelper
 
         public void InitAll()
         {
+            RefreshRuntimeSettings();
             InitMode();
             InitFans();
             InitPower();
@@ -752,40 +784,46 @@ namespace OHelper
                 {
                     if (HardwareControl.GpuControl is null || !HardwareControl.GpuControl.IsValid) HardwareControl.RecreateGpuControl();
 
-                    bool isNvidia = Program.acpi.DeviceGet(HpACPI.GPUEco) != 1
-                        && HardwareControl.GpuControl is NvidiaGpuControl;
-                    nvControl = isNvidia ? (NvidiaGpuControl)HardwareControl.GpuControl! : null;
+                    bool gpuClockControl = Program.acpi.DeviceGet(HpACPI.GPUEco) != 1
+                        && HardwareControl.GpuControl?.SupportsGpuClockControl == true;
+                    nvControl = HardwareControl.GpuControl as NvidiaGpuControl;
 
                     int gpu_boost = AppConfig.GetMode("gpu_boost");
                     int gpu_temp = AppConfig.GetMode("gpu_temp");
 
-                    int core = AppConfig.GetMode("gpu_core");
-                    int memory = AppConfig.GetMode("gpu_memory");
-                    int clock_limit = AppConfig.GetMode("gpu_clock_limit");
+                    int currentMode = Modes.GetCurrent();
+                    bool hasCoreCache = AppConfig.Exists("gpu_core_" + currentMode);
+                    bool hasMemoryCache = AppConfig.Exists("gpu_memory_" + currentMode);
+                    bool hasClockLimitCache = AppConfig.Exists("gpu_clock_limit_" + currentMode);
+
+                    int core = AppConfig.GetMode("gpu_core", 0);
+                    int memory = AppConfig.GetMode("gpu_memory", 0);
+                    int clock_limit = AppConfig.GetMode("gpu_clock_limit", 0);
 
                     if (gpu_boost < 0) gpu_boost = HpACPI.MaxGPUBoost;
                     if (gpu_temp < 0) gpu_temp = HpACPI.MaxGPUTemp;
 
-                    if (core == -1) core = 0;
-                    if (memory == -1) memory = 0;
-                    if (clock_limit == -1) clock_limit = NvidiaGpuControl.MaxClockLimit;
-
                     string? gpuName = null;
 
-                    if (nvControl is not null)
+                    if (gpuClockControl && HardwareControl.GpuControl is not null)
                     {
-                        if (nvControl.GetClocks(out int current_core, out int current_memory))
+                        if ((!hasCoreCache || !hasMemoryCache)
+                            && HardwareControl.GpuControl.GetGpuClockOffsets(out int current_core, out int current_memory))
                         {
-                            core = current_core;
-                            memory = current_memory;
+                            if (!hasCoreCache) core = current_core;
+                            if (!hasMemoryCache) memory = current_memory;
                         }
 
-                        int _clockLimit = nvControl.GetMaxGPUCLock();
+                        int _clockLimit = HardwareControl.GpuControl.GetMaxGpuClock();
 
-                        if (_clockLimit == 0) clock_limit = NvidiaGpuControl.MaxClockLimit;
-                        else if (_clockLimit > 0) clock_limit = _clockLimit;
+                        if (!hasClockLimitCache)
+                        {
+                            if (_clockLimit == 0) clock_limit = HardwareControl.GpuControl.MaxGpuClockLimit;
+                            else if (_clockLimit > 0) clock_limit = _clockLimit;
+                            else clock_limit = HardwareControl.GpuControl.MaxGpuClockLimit;
+                        }
 
-                        try { gpuName = nvControl.FullName; } catch { }
+                        try { gpuName = HardwareControl.GpuControl.FullName; } catch { }
                     }
                     else
                     {
@@ -795,7 +833,7 @@ namespace OHelper
                     bool boostVisible = Program.acpi.IsSupported(HpACPI.PPT_GPUC0);
                     bool tempVisible = Program.acpi.IsSupported(HpACPI.PPT_GPUC2);
                     bool powerVisible = Program.acpi.IsSupported(HpACPI.GPU_POWER) || Program.acpi.IsSupported(HpACPI.GPU_BASE);
-                    bool anyVisible = isNvidia || boostVisible || tempVisible || powerVisible;
+                    bool anyVisible = gpuClockControl || boostVisible || tempVisible || powerVisible;
 
                     Invoke(delegate
                     {
@@ -804,15 +842,19 @@ namespace OHelper
 
                         if (gpuName is not null) labelGPU.Text = gpuName;
 
-                        panelGPUClockLimit.Visible = isNvidia;
-                        panelGPUCore.Visible = isNvidia;
-                        panelGPUMemory.Visible = isNvidia;
+                        panelGPUClockLimit.Visible = gpuClockControl;
+                        panelGPUCore.Visible = gpuClockControl;
+                        panelGPUMemory.Visible = gpuClockControl;
 
-                        if (isNvidia)
+                        if (gpuClockControl && HardwareControl.GpuControl is not null)
                         {
-                            trackGPUClockLimit.Value = Math.Max(Math.Min(clock_limit, NvidiaGpuControl.MaxClockLimit), NvidiaGpuControl.MinClockLimit);
-                            trackGPUCore.Value = Math.Max(Math.Min(core, NvidiaGpuControl.MaxCoreOffset), NvidiaGpuControl.MinCoreOffset);
-                            trackGPUMemory.Value = Math.Max(Math.Min(memory, NvidiaGpuControl.MaxMemoryOffset), NvidiaGpuControl.MinMemoryOffset);
+                            SetTrackRange(trackGPUClockLimit, HardwareControl.GpuControl.MinGpuClockLimit, HardwareControl.GpuControl.MaxGpuClockLimit);
+                            SetTrackRange(trackGPUCore, HardwareControl.GpuControl.MinGpuCoreOffset, HardwareControl.GpuControl.MaxGpuCoreOffset);
+                            SetTrackRange(trackGPUMemory, HardwareControl.GpuControl.MinGpuMemoryOffset, HardwareControl.GpuControl.MaxGpuMemoryOffset);
+
+                            trackGPUClockLimit.Value = Math.Max(Math.Min(clock_limit, HardwareControl.GpuControl.MaxGpuClockLimit), HardwareControl.GpuControl.MinGpuClockLimit);
+                            trackGPUCore.Value = Math.Max(Math.Min(core, HardwareControl.GpuControl.MaxGpuCoreOffset), HardwareControl.GpuControl.MinGpuCoreOffset);
+                            trackGPUMemory.Value = Math.Max(Math.Min(memory, HardwareControl.GpuControl.MaxGpuMemoryOffset), HardwareControl.GpuControl.MinGpuMemoryOffset);
                         }
 
                         trackGPUBoost.Value = Math.Max(Math.Min(gpu_boost, HpACPI.MaxGPUBoost), HpACPI.MinGPUBoost);
@@ -858,9 +900,9 @@ namespace OHelper
 
             labelGPUPower.Text = trackGPUPower.Value switch
             {
-                0 => Properties.Strings.Default,
-                1 => Properties.Strings.Medium,
-                2 => Properties.Strings.High,
+                0 => "0W",
+                1 => "5W",
+                2 => "15W",
                 3 => Properties.Strings.VeryHigh,
                 _ => Properties.Strings.VeryHigh
             };
@@ -1069,25 +1111,36 @@ namespace OHelper
 
         public void InitPowerPlan()
         {
-            int boost = PowerNative.GetCPUBoost();
-            if (boost >= 0)
-                comboBoost.SelectedIndex = Math.Min(boost, comboBoost.Items.Count - 1);
+            powerPlanInitializing = true;
 
-            string powerMode = PowerNative.GetPowerMode();
-            bool batterySaver = PowerNative.GetBatterySaverStatus();
+            try
+            {
+                int boost = AppConfig.GetMode("auto_boost", PowerNative.GetCPUBoost());
+                if (boost >= 0)
+                    comboBoost.SelectedIndex = Math.Min(boost, comboBoost.Items.Count - 1);
 
-            comboPowerMode.Enabled = !batterySaver;
+                string powerMode = AppConfig.GetModeString("powermode")
+                    ?? PowerNative.GetDefaultPowerMode(Modes.GetCurrent());
+                bool batterySaver = PowerNative.GetBatterySaverStatus();
 
-            if (batterySaver)
-                comboPowerMode.SelectedIndex = 0;
-            else
-                comboPowerMode.SelectedValue = powerMode;
+                comboPowerMode.Enabled = !batterySaver;
 
+                if (batterySaver)
+                    comboPowerMode.SelectedIndex = 0;
+                else
+                    comboPowerMode.SelectedValue = powerMode;
+            }
+            finally
+            {
+                powerPlanInitializing = false;
+            }
         }
 
         private void ComboPowerMode_Changed(object? sender, EventArgs e)
         {
-            string powerMode = (string)comboPowerMode.SelectedValue;
+            if (powerPlanInitializing) return;
+            if (comboPowerMode.SelectedValue is not string powerMode) return;
+
             PowerNative.SetPowerMode(powerMode);
 
             if (PowerNative.GetDefaultPowerMode(Modes.GetCurrent()) != powerMode)
@@ -1098,6 +1151,8 @@ namespace OHelper
 
         private void ComboBoost_Changed(object? sender, EventArgs e)
         {
+            if (powerPlanInitializing) return;
+
             if (AppConfig.GetMode("auto_boost") != comboBoost.SelectedIndex)
             {
                 PowerNative.SetCPUBoost(comboBoost.SelectedIndex);

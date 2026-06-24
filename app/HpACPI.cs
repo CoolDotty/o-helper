@@ -1576,6 +1576,7 @@ public class HpACPI
         Logger.WriteLine($"HpACPI: Overdrive supported: {IsOverdriveSupported()}");
 
         var modelCaps = AppConfig.GetModelCapabilities();
+        MaxGPUPower = modelCaps.SupportsOverboost ? 4 : 2;
         Logger.WriteLine($"HpACPI: Model capabilities loaded: {modelCaps.ModelName} (ProductId: {modelCaps.ProductId}, Family: {modelCaps.Family})");
     }
 

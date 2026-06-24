@@ -1,4 +1,4 @@
-using OHelper.Gpu.NVidia;
+using OHelper.Gpu;
 using OHelper.Helpers;
 using OHelper.USB;
 using PawnIO;
@@ -92,7 +92,7 @@ namespace OHelper.Mode
             SetRyzenPower();
         }
 
-        public void ApplyAutoModeForPowerSource(bool notify = true)
+        public void ApplyAutoModeForPowerSource(bool notify = true, bool force = false)
         {
             if (!AppConfig.Is("auto_mode_enabled") || AppConfig.Is("manual_mode")) return;
 
@@ -107,13 +107,13 @@ namespace OHelper.Mode
             int mode = AppConfig.Get(onAc ? "auto_mode_ac" : "auto_mode_dc", onAc ? 0 : 2);
             if (!Modes.Exists(mode)) mode = onAc ? 0 : 2;
 
-            if (Modes.GetCurrent() == mode)
+            if (!force && Modes.GetCurrent() == mode)
             {
                 ApplyWindowsPowerMode(mode);
                 return;
             }
 
-            Logger.WriteLine($"Auto power-source mode: {(onAc ? "AC" : "Battery")} -> {Modes.GetName(mode)}");
+            Logger.WriteLine($"Auto power-source mode: {(onAc ? "AC" : "Battery")} -> {Modes.GetName(mode)}{(force ? " (forced)" : "")}");
             SetPerformanceMode(mode, notify);
         }
 
@@ -148,6 +148,7 @@ namespace OHelper.Mode
             }
 
             int mode = AppConfig.Get("performance_" + Program.PerformanceKey());
+            if (mode != -1 && !Modes.Exists(mode)) mode = -1;
             Logger.WriteLine($"{Program.currentSource} Performance Mode: {Modes.GetName(mode == -1 ? Modes.GetCurrent() : mode)}");
 
             if (mode != -1)
@@ -606,27 +607,21 @@ namespace OHelper.Mode
 
             if (limit_slow < 0 || allAMD) limit_slow = limit_total;
 
-            if (limit_total > HpACPI.MaxTotal) return;
-            if (limit_total < HpACPI.MinTotal) return;
-
-            if (limit_cpu > HpACPI.MaxCPU) return;
-            if (limit_cpu < HpACPI.MinCPU) return;
-
-            if (limit_fast > HpACPI.MaxTotal) return;
-            if (limit_fast < HpACPI.MinTotal) return;
-
-            if (limit_slow > HpACPI.MaxTotal) return;
-            if (limit_slow < HpACPI.MinTotal) return;
-
             // SPL and SPPT
             if (Program.acpi.IsSupported(HpACPI.PPT_APUA0))
             {
-                Program.acpi.DeviceSet(HpACPI.PPT_APUA3, limit_total, "PowerLimit A3");
-                Program.acpi.DeviceSet(HpACPI.PPT_APUA0, limit_slow, "PowerLimit A0");
-                customPower = limit_total;
+                if (IsValidPowerLimit(limit_total, HpACPI.MinTotal, HpACPI.MaxTotal)
+                    && IsValidPowerLimit(limit_slow, HpACPI.MinTotal, HpACPI.MaxTotal))
+                {
+                    Program.acpi.DeviceSet(HpACPI.PPT_APUA3, limit_total, "PowerLimit A3");
+                    Program.acpi.DeviceSet(HpACPI.PPT_APUA0, limit_slow, "PowerLimit A0");
+                    customPower = limit_total;
+                }
             }
             else if (isAMD)
             {
+                if (!IsValidPowerLimit(limit_total, HpACPI.MinTotal, HpACPI.MaxTotal)) return;
+
                 if (ProcessHelper.IsUserAdministrator())
                 {
                     SetRyzenPower(true);
@@ -640,16 +635,25 @@ namespace OHelper.Mode
 
             if (allAMD) // CPU limit all amd models
             {
-                Program.acpi.DeviceSet(HpACPI.PPT_CPUB0, limit_cpu, "PowerLimit B0");
-                customPower = limit_cpu;
+                if (IsValidPowerLimit(limit_cpu, HpACPI.MinCPU, HpACPI.MaxCPU))
+                {
+                    Program.acpi.DeviceSet(HpACPI.PPT_CPUB0, limit_cpu, "PowerLimit B0");
+                    customPower = limit_cpu;
+                }
             }
             else if (isAMD && Program.acpi.IsSupported(HpACPI.PPT_APUC1)) // FPPT boost for non all-amd models
             {
-                Program.acpi.DeviceSet(HpACPI.PPT_APUC1, limit_fast, "PowerLimit C1");
+                if (IsValidPowerLimit(limit_fast, HpACPI.MinTotal, HpACPI.MaxTotal))
+                    Program.acpi.DeviceSet(HpACPI.PPT_APUC1, limit_fast, "PowerLimit C1");
             }
 
             SetModeLabel();
 
+        }
+
+        private static bool IsValidPowerLimit(int value, int min, int max)
+        {
+            return value >= min && value <= max;
         }
 
         public void SetGPUClocks(bool launchAsAdmin = true, bool reset = false)
@@ -657,24 +661,27 @@ namespace OHelper.Mode
             Task.Run(() =>
             {
 
-                int core = AppConfig.GetMode("gpu_core");
-                int memory = AppConfig.GetMode("gpu_memory");
-                int clock_limit = AppConfig.GetMode("gpu_clock_limit");
+                int core = AppConfig.GetMode("gpu_core", 0);
+                int memory = AppConfig.GetMode("gpu_memory", 0);
+                int clock_limit = AppConfig.GetMode("gpu_clock_limit", 0);
 
                 if (reset) core = memory = clock_limit = 0;
 
-                if (core == -1 && memory == -1 && clock_limit == -1) return;
+                bool hasClockSettings = AppConfig.Exists("gpu_core_" + Modes.GetCurrent())
+                    || AppConfig.Exists("gpu_memory_" + Modes.GetCurrent())
+                    || AppConfig.Exists("gpu_clock_limit_" + Modes.GetCurrent());
+                if (!hasClockSettings && !reset) return;
                 //if ((gpu_core > -5 && gpu_core < 5) && (gpu_memory > -5 && gpu_memory < 5)) launchAsAdmin = false;
 
                 if (Program.acpi.DeviceGet(HpACPI.GPUEco) == 1) { Logger.WriteLine("Clocks: Eco"); return; }
                 if (HardwareControl.GpuControl is null) { Logger.WriteLine("Clocks: NoGPUControl"); return; }
-                if (!HardwareControl.GpuControl!.IsNvidia) { Logger.WriteLine("Clocks: NotNvidia"); return; }
+                if (!HardwareControl.GpuControl.SupportsGpuClockControl) { Logger.WriteLine("Clocks: UnsupportedGPU"); return; }
 
-                NvidiaGpuControl nvControl = (NvidiaGpuControl)HardwareControl.GpuControl;
+                IGpuControl gpuControl = HardwareControl.GpuControl;
                 try
                 {
-                    int statusClocks = nvControl.SetClocks(core, memory);
-                    int statusLimit = nvControl.SetMaxGPUClock(clock_limit);
+                    int statusClocks = gpuControl.SetGpuClockOffsets(core, memory);
+                    int statusLimit = gpuControl.SetMaxGpuClock(clock_limit);
                     if ((statusLimit != 0 || statusClocks != 0) && launchAsAdmin) ProcessHelper.RunAsAdmin("gpu");
                 }
                 catch (Exception ex)
