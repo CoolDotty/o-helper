@@ -1,6 +1,6 @@
 using System.Drawing.Drawing2D;
 
-namespace GHelper.UI
+namespace OHelper.UI
 {
     // Themed HSV color picker replacing the native Win32 ColorDialog. The swatch grid is saved to
     // the aura_color_custom config key (0x00BBGGRR COLORREF, same format ColorDialog used).
@@ -142,7 +142,7 @@ namespace GHelper.UI
         }
 
         // Fixed Cols slots, white by default. Garbage config is tolerated: only valid integer tokens fill slots
-        // (left to right), bad tokens are skipped and any beyond Cols are ignored — empty/short/long never breaks it.
+        // (left to right), bad tokens are skipped and any beyond Cols are ignored.
         private void LoadCustom()
         {
             for (int i = 0; i < Cols; i++) customColors.Add(Color.White);
