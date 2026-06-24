@@ -82,7 +82,7 @@ namespace OHelper.Helpers
         {
             AppConfig.Set("donate_click", AppConfig.Get("start_count"));
             SetThankYou();
-            Process.Start(new ProcessStartInfo("https://github.com/CoolDotty/o-helper") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://g-helper.com/support") { UseShellExecute = true });
         }
 
         private void SetThankYou()

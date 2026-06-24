@@ -251,8 +251,7 @@ namespace OHelper
             buttonMiniled.MouseLeave += ButtonScreen_MouseLeave;
 
             buttonUpdates.Click += ButtonUpdates_Click;
-            // Updates tab queries the ASUS ROG driver/BIOS API - useless on HP Omen, hide it
-            if (!AppConfig.IsASUS()) buttonUpdates.Visible = false;
+            // ASUS models keep the driver/BIOS update form; O-Helper models use this as a static releases link.
 
             sliderBattery.MouseUp += SliderBattery_MouseUp;
             sliderBattery.KeyUp += SliderBattery_KeyUp;
@@ -758,7 +757,18 @@ namespace OHelper
 
         private void ButtonUpdates_Click(object? sender, EventArgs e)
         {
-            if (!AppConfig.IsASUS()) return;
+            if (!AppConfig.IsASUS())
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo("https://github.com/CoolDotty/o-helper/releases") { UseShellExecute = true });
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine("Failed to open releases page:" + ex.Message);
+                }
+                return;
+            }
 
             if (updatesForm == null || updatesForm.Text == "")
             {
