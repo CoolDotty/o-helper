@@ -4,6 +4,11 @@ on:
   release:
     types: [ published ]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to build, using upstream.OHelper patch format such as v0.260.1'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -20,9 +25,23 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
+    - name: Resolve release version
+      shell: pwsh
+      env:
+        RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+      run: |
+        $tag = $env:RELEASE_TAG.Trim()
+        if ($tag -notmatch '^v?\d+\.\d+\.\d+(\.\d+)?$') {
+          throw "Release tag '$tag' must be numeric and updater-compatible, for example v0.260.1."
+        }
+
+        $version = $tag.TrimStart('v')
+        "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
+        "RELEASE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
     - name: Publish
       run: |
-        dotnet publish app/OHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+        dotnet publish app/OHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained -p:AssemblyVersion=$env:RELEASE_VERSION -p:FileVersion=$env:RELEASE_VERSION -p:Version=$env:RELEASE_VERSION
 
     - name: Upload unsigned EXE
       id: upload-unsigned
@@ -48,7 +67,7 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh release upload "${{ github.event.release.tag_name }}" ./signed/OHelper.exe ./signed/OHelper.zip --clobber
+        gh release upload "$env:RELEASE_TAG" ./signed/OHelper.exe ./signed/OHelper.zip --clobber
     - name: Generate SLSA build provenance attestation
       uses: actions/attest-build-provenance@v2
       with:
