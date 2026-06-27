@@ -49,8 +49,23 @@ jobs:
       with:
         path: app/bin/x64/Release/net8.0-windows/win-x64/publish/OHelper.exe
 
+    - name: Detect signing configuration
+      id: detect-signing
+      shell: pwsh
+      env:
+        SIGNPATH_API_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        SIGNPATH_ORG_ID: ${{ secrets.SIGNPATH_ORG_ID }}
+        SIGNPATH_PROJECT: ${{ secrets.SIGNPATH_PROJECT }}
+        SIGNPATH_POLICY: ${{ secrets.SIGNPATH_POLICY }}
+      run: |
+        $hasSignPath = -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_API_TOKEN) `
+          -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_ORG_ID) `
+          -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_PROJECT) `
+          -and -not [string]::IsNullOrWhiteSpace($env:SIGNPATH_POLICY)
+        "has_signpath=$($hasSignPath.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
     - id: sign-exe
-      if: ${{ secrets.SIGNPATH_API_TOKEN != '' && secrets.SIGNPATH_ORG_ID != '' && secrets.SIGNPATH_PROJECT != '' && secrets.SIGNPATH_POLICY != '' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath == 'true' }}
       uses: signpath/github-action-submit-signing-request@v1.1
       with:
         api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -62,18 +77,18 @@ jobs:
         output-artifact-directory: './signed'
 
     - name: Create ZIP from signed EXE
-      if: ${{ steps.sign-exe.outcome == 'success' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath == 'true' && steps.sign-exe.outcome == 'success' }}
       run: powershell Compress-Archive ./signed/OHelper.exe ./signed/OHelper.zip
 
     - name: Upload signed EXE and ZIP
-      if: ${{ steps.sign-exe.outcome == 'success' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath == 'true' && steps.sign-exe.outcome == 'success' }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         gh release upload "$env:RELEASE_TAG" ./signed/OHelper.exe ./signed/OHelper.zip --clobber
 
     - name: Create ZIP from unsigned EXE
-      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath != 'true' }}
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path ./unsigned | Out-Null
@@ -81,14 +96,14 @@ jobs:
         Compress-Archive ./unsigned/OHelper.exe ./unsigned/OHelper.zip -Force
 
     - name: Upload unsigned EXE and ZIP
-      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath != 'true' }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         gh release upload "$env:RELEASE_TAG" ./unsigned/OHelper.exe ./unsigned/OHelper.zip --clobber
 
     - name: Generate SLSA build provenance attestation
-      if: ${{ steps.sign-exe.outcome == 'success' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath == 'true' && steps.sign-exe.outcome == 'success' }}
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: |
@@ -96,7 +111,7 @@ jobs:
           ./signed/OHelper.zip
 
     - name: Generate unsigned build provenance attestation
-      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      if: ${{ steps.detect-signing.outputs.has_signpath != 'true' }}
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: |
