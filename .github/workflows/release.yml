@@ -50,6 +50,7 @@ jobs:
         path: app/bin/x64/Release/net8.0-windows/win-x64/publish/OHelper.exe
 
     - id: sign-exe
+      if: ${{ secrets.SIGNPATH_API_TOKEN != '' && secrets.SIGNPATH_ORG_ID != '' && secrets.SIGNPATH_PROJECT != '' && secrets.SIGNPATH_POLICY != '' }}
       uses: signpath/github-action-submit-signing-request@v1.1
       with:
         api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -61,16 +62,43 @@ jobs:
         output-artifact-directory: './signed'
 
     - name: Create ZIP from signed EXE
+      if: ${{ steps.sign-exe.outcome == 'success' }}
       run: powershell Compress-Archive ./signed/OHelper.exe ./signed/OHelper.zip
 
     - name: Upload signed EXE and ZIP
+      if: ${{ steps.sign-exe.outcome == 'success' }}
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
         gh release upload "$env:RELEASE_TAG" ./signed/OHelper.exe ./signed/OHelper.zip --clobber
+
+    - name: Create ZIP from unsigned EXE
+      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path ./unsigned | Out-Null
+        Copy-Item app/bin/x64/Release/net8.0-windows/win-x64/publish/OHelper.exe ./unsigned/OHelper.exe -Force
+        Compress-Archive ./unsigned/OHelper.exe ./unsigned/OHelper.zip -Force
+
+    - name: Upload unsigned EXE and ZIP
+      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        gh release upload "$env:RELEASE_TAG" ./unsigned/OHelper.exe ./unsigned/OHelper.zip --clobber
+
     - name: Generate SLSA build provenance attestation
+      if: ${{ steps.sign-exe.outcome == 'success' }}
       uses: actions/attest-build-provenance@v2
       with:
         subject-path: |
           ./signed/OHelper.exe
           ./signed/OHelper.zip
+
+    - name: Generate unsigned build provenance attestation
+      if: ${{ steps.sign-exe.outcome == 'skipped' }}
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: |
+          ./unsigned/OHelper.exe
+          ./unsigned/OHelper.zip
