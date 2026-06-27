@@ -2,19 +2,17 @@
 
 ## What This Is
 
-O-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0), being refactored from an ASUS Armoury Crate replacement into an **HP Omen controller**. The original ASUS ACPI/HID hardware communication has been replaced with real HP WMI BIOS communication via `hpqBIntM`/`hpqBDataIn` in `root\wmi`.
+O-Helper is a **lightweight Windows Forms (WinForms) tray application** written in C# (.NET 8.0) for controlling supported **HP OMEN** systems. It uses HP WMI BIOS communication via `hpqBIntM`/`hpqBDataIn` in `root\wmi`, with feature availability determined by model capabilities and runtime hardware probes.
 
 ## Essential Commands
 
 | Command | Purpose |
 |---------|---------|
-| `dev.bat` | Build debug + launch (elevated) |
-| `prod.bat` | Publish single-file release + launch (elevated) |
 | `dotnet build app/OHelper.sln` | Build only (Debug) |
 | `dotnet publish app/OHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained` | Publish release EXE |
 
 - **No test project** exists. No unit tests, no test framework.
-- **Admin elevation required** — `dev.bat`/`prod.bat` launch with `Start-Process -Verb RunAs`. WMI `root\wmi` + `EnablePrivileges=true` needs admin. Without elevation, every call returns "Access denied".
+- **Admin elevation required for runtime hardware operations** — WMI `root\wmi` + `EnablePrivileges=true` needs admin. Without elevation, firmware calls can return "Access denied". Build commands do not require elevation.
 - **Build kills running OHelper processes** before building (see `.csproj` line 94 — only applies locally, not on CI).
 
 ## Project Structure
@@ -119,7 +117,7 @@ Labels use `Properties.Strings.{Key}` — resources are in `.resx` files. Locali
 - **Instance**: `ACPI\PNP0C14\0_0`
 - **Signature**: `SECU` (`0x53454355`)
 - **Method dispatch**: `hpqBIOSInt4` (out ≤4), `hpqBIOSInt128` (out ≤128), `hpqBIOSInt1024`, `hpqBIOSInt4096` — always use `returnDataSize ≥ 4` (HP firmware has no `hpqBIOSInt0`)
-- **Admin required**: `dev.bat`/`prod.bat` launch with UAC elevation; `root\wmi` + `EnablePrivileges=true` needs admin
+- **Admin required**: runtime firmware calls to `root\wmi` with `EnablePrivileges=true` need UAC elevation
 
 ### Reliability
 - **60-second heartbeat**: sends `SystemGetData` (0x20008/0x28) to prevent WMI silence on 2023+ models

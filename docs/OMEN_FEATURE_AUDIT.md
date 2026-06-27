@@ -1,6 +1,6 @@
 # OMEN Feature Audit
 
-This audit records the current HP OMEN implementation state for controls that were inherited from the ASUS-focused UI.
+This audit records the current HP OMEN implementation state for hardware controls, unsupported features, and guarded compatibility paths.
 
 ## GPU Tab
 
@@ -59,7 +59,7 @@ Windows power mode is synchronized through `PowerSetActiveOverlayScheme` unless 
 
 | Feature | State | Notes |
 | --- | --- | --- |
-| XG Mobile toggle/fan/light | Disabled | `AppConfig.IsASUS()` is hard false in this fork, XGM startup/hotkey routes are removed, and HP systems do not scan or write ASUS XGM HID devices. |
+| XG Mobile toggle/fan/light | Disabled | `AppConfig.IsASUS()` is hard false for HP OMEN systems, XGM startup/hotkey routes are removed, and HP systems do not scan or write ASUS XGM HID devices. |
 | Legacy utility actions | Removed | No OMEN UI path launches vendor-specific uninstallers or utility managers. |
 | ASUS services | Disabled | The services panel is hidden and the command-line services action is skipped. |
 | ASUS driver/BIOS updater tab | Disabled | The tab is hidden and the old ROG web API calls have been removed until an HP source is implemented. |
