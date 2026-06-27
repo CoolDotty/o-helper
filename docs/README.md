@@ -2,6 +2,8 @@
 
 O-Helper is a lightweight Windows Forms tray application for HP OMEN laptops. It is being refactored from an ASUS-focused upstream codebase into an HP OMEN controller that uses HP WMI BIOS communication through `hpqBIntM` / `hpqBDataIn` in `root\wmi`.
 
+<img width="518" height="648" alt="image" src="https://github.com/user-attachments/assets/a7ed4210-842c-4eaa-8eba-3f910a5f5979" />
+
 ## Current Scope
 
 - Performance mode switching for HP OMEN firmware modes.
