@@ -10,11 +10,21 @@ namespace OHelper.Overlay
 {
     public class HardwareOverlay : OSDNativeForm
     {
-        // Foreground window — used to pin FPS measurement to the active process
+        // Foreground window - used to pin FPS measurement to the active process
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
         [DllImport("user32.dll")]
         private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc,
+            WinEventProc lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+        [DllImport("user32.dll")]
+        private static extern bool UnhookWinEvent(IntPtr hWinEventHook);
+        private delegate void WinEventProc(IntPtr hWinEventHook, uint eventType, IntPtr hwnd,
+            int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+        private const uint EVENT_SYSTEM_FOREGROUND = 0x0003;
+        private const uint WINEVENT_OUTOFCONTEXT = 0x0000;
+        private const uint WINEVENT_SKIPOWNPROCESS = 0x0002;
 
         // Drag support
         [DllImport("user32.dll")]
@@ -49,7 +59,7 @@ namespace OHelper.Overlay
         private int _scalePercent = 100;
 
         // Fixed base scale, deliberately independent of Windows DPI. 2.0 reproduces
-        // the size the overlay had at 200% display scaling — the desired default.
+        // the size the overlay had at 200% display scaling - the desired default.
         private const float BaseScale = 2.0f;
 
         private bool _dragging;
@@ -61,14 +71,14 @@ namespace OHelper.Overlay
         private enum OverlayMode { Default = 0, Light = 1, Full = 2, Complete = 3 }
         private OverlayMode _mode;
 
-        // ── Layout constants (base = 96 dpi) ─────────────────────────────────
+        // Layout constants (base = 96 dpi)
         //
         // Light:    fps | temp                        | power
         // Default:  fps | temp + fan RPM              | chart | power
         // Full:     fps | temp + fan RPM              | chart | power | usage% | bar
         // Complete: fps | name | temp + fan RPM       | chart | power | usage% | bar | mem GB | bar
         //
-        // Click on the overlay cycles Light → Default → Full → Complete → Light.
+        // Click on the overlay cycles Light -> Default -> Full -> Complete -> Light.
         //
         // Bar height is fixed per DPI (~BaseUsageBarHeight * sc) and cell pitch is
         // integer, so the number of cells varies with available pixels while every
@@ -88,7 +98,7 @@ namespace OHelper.Overlay
         private const int BaseColGap = 8;
         private const int CornerRadius = 3;
         private const int MarginFromEdge = 10;
-        private const int BaseLightLeftColWidth = 64; // fits "GPU: 82° " (9 Consolas chars); trailing space is the gap to the power column
+        private const int BaseLightLeftColWidth = 64; // fits "GPU: 82 deg " (9 Consolas chars); trailing space is the gap to the power column
         private const int BaseUsageBarGap = 11;       // gap between the power W and the usage % column (full mode)
         private const int BaseUsageBarWidth = 5;
         private const int BaseUsageNumGap = 4;        // gap between the usage % text and its bar
@@ -122,7 +132,7 @@ namespace OHelper.Overlay
         private SolidBrush _gpuFillBrush = new(Color.FromArgb(128, 0, 85, 27));
         private SolidBrush _cpuFillBrush = new(Color.FromArgb(128, 20, 73, 85));
 
-        // Cached drawing resources — recreated only when the scale changes
+        // Cached drawing resources - recreated only when the scale changes
         private float _lastScale = 0f;
         private Font? _font;
         private Font? _rpmFont;
@@ -130,7 +140,7 @@ namespace OHelper.Overlay
         private Pen? _totalPen;
         private Pen? _axPen;
 
-        // Pre-allocated chart point arrays — reused every repaint to avoid GC pressure
+        // Pre-allocated chart point arrays - reused every repaint to avoid GC pressure
         private readonly PointF[] _basePts = new PointF[HistoryLength];
         private readonly PointF[] _cpuPts  = new PointF[HistoryLength];
         private readonly PointF[] _gpuPts  = new PointF[HistoryLength];
@@ -169,6 +179,8 @@ namespace OHelper.Overlay
         private bool _hidden;
         private int _shownPid;
         private bool _fgDesktop;
+        private IntPtr _fgHook;
+        private WinEventProc? _fgHookProc;
         private const int MinGameFps = 6;
 
         private static readonly HashSet<string> DesktopApps = new(StringComparer.OrdinalIgnoreCase)
@@ -281,7 +293,7 @@ namespace OHelper.Overlay
                     ApplyPreset(_mode);
                     ApplySensorFlags();
                     EnsureFpsMonitor();
-                    Invalidate(); // resizes the window synchronously via PerformPaint → Size.set
+                    Invalidate(); // resizes the window synchronously via PerformPaint -> Size.set
 
                     if (isRight)
                     {
@@ -387,7 +399,7 @@ namespace OHelper.Overlay
                 SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0,
                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 
-            // Pin FPS counter to foreground process — queried every second so
+            // Pin FPS counter to foreground process - queried every second so
             // switching games is handled automatically without manual configuration.
             GetWindowThreadProcessId(GetForegroundWindow(), out uint fgPidRaw);
             int fgPid = (int)fgPidRaw;
@@ -416,7 +428,7 @@ namespace OHelper.Overlay
 
             HardwareControl.ReadSensorsOverlay();
 
-            // gpuActive gates power, fan and chart history — when the GPU is disabled
+            // gpuActive gates power, fan and chart history - when the GPU is disabled
             // its sensors return stale non-zero values, so we zero them out explicitly.
             double gpuTemp = D(HardwareControl.gpuTemp);
             double cpuTemp = D(HardwareControl.cpuTemp);
@@ -457,6 +469,25 @@ namespace OHelper.Overlay
             if (_currentFps >= MinGameFps && !_fgDesktop) _shownPid = fgPid;
             bool show = fgPid == _shownPid;
             if (show != _hidden) return;
+            _hidden = !show;
+            if (Handle != nint.Zero)
+                User32.ShowWindow(Handle, (short)(_hidden ? User32.SW_HIDE : User32.SW_SHOWNOACTIVATE));
+        }
+
+        private void OnForegroundChanged()
+        {
+            if (!_active || !_gameOnly)
+                return;
+
+            GetWindowThreadProcessId(GetForegroundWindow(), out uint fgPidRaw);
+            int fgPid = (int)fgPidRaw;
+            if (fgPid == 0 || fgPid == Environment.ProcessId)
+                return;
+
+            bool show = fgPid == _shownPid;
+            if (show != _hidden)
+                return;
+
             _hidden = !show;
             if (Handle != nint.Zero)
                 User32.ShowWindow(Handle, (short)(_hidden ? User32.SW_HIDE : User32.SW_SHOWNOACTIVATE));
@@ -586,11 +617,11 @@ namespace OHelper.Overlay
             DrawTempFan(g, font, rpmFont, charW, sc, leftX, textY, showTemp ? _gpuTempStr : "", showFans ? _gpuFanNum : "", _gpuBrush);
             DrawTempFan(g, font, rpmFont, charW, sc, leftX, textY + lineH + lineGap, showTemp ? _cpuTempStr : "", showFans ? _cpuFanNum : "", _cpuBrush);
 
-            // Chart — hidden in Light mode
+            // Chart - hidden in Light mode
             if (showChart)
                 DrawStackedChart(g, chartX, topY, chartColW, innerH, sc);
 
-            // Power — right-aligned, drawn in all modes
+            // Power - right-aligned, drawn in all modes
             if (showPower && _gpuPow.Length > 0)
                 g.DrawString(_gpuPow, font, _gpuBrush,
                 new PointF(powX + powColW - g.MeasureString(_gpuPow, font).Width, textY));
@@ -619,7 +650,7 @@ namespace OHelper.Overlay
                     DrawUsagePercent(g, font, usageNumX, usageNumColW, textY + row2Y,   _cpuUsage, _cpuBrush);
                 }
 
-                // VRAM (GPU row) / RAM (CPU row) — complete mode only
+                // VRAM (GPU row) / RAM (CPU row) - complete mode only
                 if (showMem)
                 {
                     DrawMemGb(g, font, memNumX, memNumColW, textY,         _vramUsedMb, _gpuBrush);
@@ -633,7 +664,7 @@ namespace OHelper.Overlay
 
         private static void DrawUsagePercent(Graphics g, Font font, int x, int colW, int y, int? usage, SolidBrush brush)
         {
-            if (!usage.HasValue) return; // mirror the power column — empty when unavailable
+            if (!usage.HasValue) return; // mirror the power column - empty when unavailable
             string s = usage.Value + "%";
             g.DrawString(s, font, brush, new PointF(x + colW - g.MeasureString(s, font).Width, y));
         }
@@ -662,7 +693,7 @@ namespace OHelper.Overlay
             g.SmoothingMode = prevSmoothing;
         }
 
-        // tempStr already has a trailing space — natural separator from fan number.
+        // tempStr already has a trailing space - natural separator from fan number.
         // 2px gap added before "RPM" superscript so it doesn't glue to the digits.
         private static void DrawTempFan(Graphics g, Font font, Font rpmFont, float charW, float sc,
         float x, float y, string tempStr, string fanNum, SolidBrush brush)
@@ -759,7 +790,7 @@ namespace OHelper.Overlay
 
             _scalePercent = next;
             AppConfig.Set("overlay_scale_percent", _scalePercent);
-            Invalidate(); // resizes synchronously via PerformPaint → Size.set
+            Invalidate(); // resizes synchronously via PerformPaint -> Size.set
 
             int newX = isRight  ? rightEdge  - Width  : Location.X;
             int newY = isBottom ? bottomEdge - Height : Location.Y;
@@ -832,7 +863,7 @@ namespace OHelper.Overlay
         }
 
         // Started for the FPS block, or for Auto Show to detect a game even with FPS hidden. Only
-        // torn down in StopOverlay — disposing here would race the timer thread's SampleFps (the
+        // torn down in StopOverlay - disposing here would race the timer thread's SampleFps (the
         // reference write is atomic, so that thread cleanly sees null-or-monitor).
         private void EnsureFpsMonitor()
         {
@@ -843,7 +874,7 @@ namespace OHelper.Overlay
         }
 
         // Re-anchor the overlay after the user changes resolution or swaps the primary
-        // display — without this the absolute Location can end up off-screen or far
+        // display - without this the absolute Location can end up off-screen or far
         // from the corner the user originally pinned it to.
         private void OnDisplaySettingsChanged(object? sender, EventArgs e)
         {
@@ -907,11 +938,24 @@ namespace OHelper.Overlay
             Tick();
             RestorePosition(); // re-anchor once the first paint has settled the collapsed width
             _timer.Start();
+
+            if (_gameOnly && _fgHook == IntPtr.Zero)
+            {
+                _fgHookProc = (_, _, _, _, _, _, _) => OnForegroundChanged();
+                _fgHook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND,
+                    IntPtr.Zero, _fgHookProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            }
         }
 
         public void StopOverlay()
         {
             _active = false;
+            if (_fgHook != IntPtr.Zero)
+            {
+                UnhookWinEvent(_fgHook);
+                _fgHook = IntPtr.Zero;
+            }
+            _fgHookProc = null;
             HardwareControl.readUsage = false;
             HardwareControl.readFans = false;
             HardwareControl.readMemory = false;

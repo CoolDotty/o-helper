@@ -107,11 +107,11 @@ public class AmdGpuControl : IGpuControl
             return null;
 
         if (!GetPMLog(out ADLPMLogDataOutput adlpmLogDataOutput))
-            return null;
+            return GetLegacy().temp;
 
         ADLSingleSensorData temperatureSensor = adlpmLogDataOutput.Sensors[(int)ADLSensorType.PMLOG_TEMPERATURE_EDGE];
         if (temperatureSensor.Supported == 0)
-            return null;
+            return GetLegacy().temp;
 
         return temperatureSensor.Value;
     }
@@ -138,17 +138,17 @@ public class AmdGpuControl : IGpuControl
         if (!IsValid) return null;
 
         if (!GetPMLog(out ADLPMLogDataOutput adlpmLogDataOutput))
-            return null;
+            return GetLegacy().use;
 
         ADLSingleSensorData gpuUsage = adlpmLogDataOutput.Sensors[(int)ADLSensorType.PMLOG_INFO_ACTIVITY_GFX];
         if (gpuUsage.Supported == 0)
-            return null;
+            return GetLegacy().use;
 
         return gpuUsage.Value;
 
     }
 
-    private long _totalVramMB; // total VRAM is static — cached on first successful query (0 = not yet)
+    private long _totalVramMB; // total VRAM is static - cached on first successful query (0 = not yet)
 
     public (long usedMb, long totalMb)? GetVramInfo()
     {
@@ -183,7 +183,7 @@ public class AmdGpuControl : IGpuControl
     public float? GetGpuPower()
     {
         if (!IsValid) return null;
-        if (!GetPMLog(out ADLPMLogDataOutput adlpmLogDataOutput)) return null;
+        if (!GetPMLog(out ADLPMLogDataOutput adlpmLogDataOutput)) return GetLegacy().power;
 
         foreach (var sensorType in new[] { ADLSensorType.PMLOG_ASIC_POWER, ADLSensorType.PMLOG_GFX_POWER, ADLSensorType.PMLOG_BOARD_POWER })
         {
@@ -192,7 +192,47 @@ public class AmdGpuControl : IGpuControl
                 return sensor.Value;
         }
 
-        return null;
+        return GetLegacy().power;
+    }
+
+    private bool? _oldGpu;
+    private (int? temp, int? use, float? power) _legacy;
+    private long _legacyTick = -PMLogCacheMs;
+
+    private (int? temp, int? use, float? power) GetLegacy()
+    {
+        _oldGpu ??= ADL2_Overdrive_Caps(_adlContextHandle, _internalDiscreteAdapter.AdapterIndex, out _, out _, out int version) == Adl2.ADL_SUCCESS && version < 8;
+        if (_oldGpu == false) return default;
+        if (Environment.TickCount64 - _legacyTick < PMLogCacheMs) return _legacy;
+
+        int adapterIndex = _internalDiscreteAdapter.AdapterIndex;
+        (int? temp, int? use, float? power) data = default;
+
+        try
+        {
+            if (ADL2_OverdriveN_Temperature_Get(_adlContextHandle, adapterIndex, 1, out int temperature) == Adl2.ADL_SUCCESS)
+            {
+                if (temperature > 1000) temperature /= 1000;
+                if (temperature > 0 && temperature < 125) data.temp = temperature;
+            }
+
+            if (ADL2_OverdriveN_PerformanceStatus_Get(_adlContextHandle, adapterIndex, out ADLODNPerformanceStatus status) == Adl2.ADL_SUCCESS
+                && status.iGPUActivityPercent >= 0 && status.iGPUActivityPercent <= 100)
+                data.use = status.iGPUActivityPercent;
+
+            if (ADL2_Overdrive6_CurrentPower_Get(_adlContextHandle, adapterIndex, 0, out int power) == Adl2.ADL_SUCCESS)
+            {
+                float watts = power / 256f;
+                if (watts > 0 && watts < 1000) data.power = watts;
+            }
+        }
+        catch (EntryPointNotFoundException)
+        {
+            _oldGpu = false;
+        }
+
+        _legacyTick = Environment.TickCount64;
+        return _legacy = data;
     }
 
     // Used by ROG Ally (iGPU-only) for auto-TDP logic - queries the integrated GPU adapter
